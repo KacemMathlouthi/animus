@@ -1,0 +1,29 @@
+# dependencies
+node_modules
+
+# build outputs
+dist
+dist-ssr
+*.tsbuildinfo
+
+# vite
+.vite
+
+# turbo
+.turbo
+
+# test / coverage
+coverage
+
+# env
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / os
+.DS_Store
+*.local

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unjs.io/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [],
+      "ignoreDependencies": ["@biomejs/biome"]
+    },
+    "apps/*": {
+      "entry": ["src/index.ts", "src/main.ts"],
+      "project": "src/**/*.ts"
+    },
+    "packages/*": {
+      "entry": ["src/index.ts"],
+      "project": "src/**/*.ts"
+    }
+  }
+}
