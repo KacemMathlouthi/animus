@@ -13,7 +13,7 @@ import {
 const user = {
 	name: "Kacem Mathlouthi",
 	email: "kacem@tryanimus.com",
-	avatar: "https://github.com/shadcn.png",
+	avatar: "https://avatars.githubusercontent.com/u/84121071",
 };
 
 export function NavUser() {

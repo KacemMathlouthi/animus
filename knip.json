@@ -8,6 +8,7 @@
       "entry": [
         "index.html",
         "src/components/ui/**",
+        "src/components/ai-elements/**",
         "src/components/theme-provider.tsx"
       ],
       "project": "src/**/*.{ts,tsx}",
