@@ -22,6 +22,7 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@efferd": "https://efferd.com/r/{style}/{name}.json"
+    "@efferd": "https://efferd.com/r/{style}/{name}.json",
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
   }
 }
