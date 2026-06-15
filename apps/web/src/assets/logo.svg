@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 14 100 152">
+  <title>anima</title>
+<!-- SVG created with Arrow, by QuiverAI (https://quiver.ai) -->
+  <style type="text/css">.cls-0 {fill:#4946E5;}
+.cls-2 {fill:url(#SVGID_1_);}
+.cls-3 {fill:url(#SVGID_2_);}
+.cls-4 {fill:#F2F2F4;}
+.cls-5 {fill:#FFFFFF;}
+.cls-6 {fill:url(#SVGID_3_);}
+.cls-7 {fill:url(#SVGID_4_);stroke:#000000;stroke-width:0.125;stroke-miterlimit:10;}
+.cls-8 {fill:url(#SVGID_5_);stroke:#000000;stroke-width:0.125;stroke-miterlimit:10;}</style>
+  <radialGradient id="SVGID_1_" cx="-1510" cy="-5055" r="25.98" gradientTransform="matrix(-1.031 0 0 -.94 -1501 -4654)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#C7C7C7" offset="0"/>
+    <stop stop-color="#fff" stop-opacity="0" offset="1"/>
+  </radialGradient>
+  <path class="cls-2" d="m80 71c-2.7-19-10-45.2-22.2-51.8-15-8-18 10.7-15.4 27.9s10.3 30.6 16.8 36.9l20.8-13z"/>
+  <linearGradient id="SVGID_2_" x1="42.11" x2="79.01" y1="125.2" y2="125.2" gradientTransform="matrix(1 0 0 -1 0 180)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#F0F0F0" offset="0"/>
+    <stop stop-color="#fff" offset=".4709"/>
+    <stop stop-color="#DCDCDE" offset="1"/>
+  </linearGradient>
+  <path class="cls-3" d="m78.9 69.1c-2.1-19.2-11.7-48.2-24.2-51.1-12-2.8-14.2 13-11.6 30s10 30.2 13.9 35.7l21.9-14.6z"/>
+  <path class="cls-4" d="m59.4 78.8c-3.8-5.3-8.4-14.7-10.5-26.5-2.2-13.3 0.1-22.3 5.4-22.6 6.9-0.3 14.7 12.8 19.2 31 0.5 2.2 1 5.7 1.4 8.7-6 1.7-10.8 4.7-15.5 9.4z"/>
+  <radialGradient id="SVGID_3_" cx="-1252" cy="-5050" r="26.74" gradientTransform="matrix(1 0 0 -.94 1363 -4654)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#DDDDDF" offset="0"/>
+    <stop stop-color="#fff" offset="1"/>
+  </radialGradient>
+  <path class="cls-6" d="m100.9 69.1c2.3-18.1 9.9-41.1 20.7-48.6 11.3-7.9 17.4-0.5 16.5 18.9-0.6 11.8-4.5 26.6-13.9 42.9l-23.3-13.2z"/>
+  <path class="cls-4" d="m105.3 70.4c1.3-14.4 9.5-39.4 19.8-40.7 5.3-0.7 8.4 6.6 6.6 20-1.6 11.4-5.6 20.2-10.8 29.3l-15.6-8.6z"/>
+  <radialGradient id="SVGID_4_" cx="118.1" cy="-5151" r="27.49" fx="124.5" fy="-5178" gradientTransform="matrix(1 0 0 -.94 0 -4725)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#3A37BA" offset="0"/>
+    <stop stop-color="#4946E5" stop-opacity="0" offset="1"/>
+  </radialGradient>
+  <path d="m90 162.9c-27.2 0.1-47.4-18.8-47.6-47.9h95.6c-0.1 24.5-18 47.7-48 47.9z" fill="url(#SVGID_4_)"/>
+  <path class="cls-5" d="m90 67.7c-24.3 0-48 20.2-48 46.5 0 23.8 17 48.5 48 48.5 23.6 0 48-16.5 48-48.3 0-25.1-21-46.7-48-46.7z"/>
+  <linearGradient id="SVGID_5_" x1="105.3" x2="105.3" y1="82.61" y2="52.99" gradientTransform="matrix(1 0 0 -1 0 180)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#060505" offset="0"/>
+    <stop stop-color="#7B7681" offset="1"/>
+  </linearGradient>
+  <path class="cls-8" d="m105.4 97.4h0.1c3 0 5.7 2.5 5.7 5.8v17.8c0 3-2.5 6.1-6 6.1-2.8-0.1-5.7-2.3-5.8-6.1v-18c0.2-3.1 2.6-5.6 6-5.6z"/>
+  <linearGradient id="SVGID_6_" x1="74.72" x2="74.72" y1="82.61" y2="52.99" gradientTransform="matrix(1 0 0 -1 0 180)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#060505" offset="0"/>
+    <stop stop-color="#7B7681" offset="1"/>
+  </linearGradient>
+  <path d="m74.6 97.4h0.2c3.2 0 5.6 2.6 5.6 5.8l0.1 17.9c-0.1 3.1-2.4 5.9-5.9 6-2.9-0.1-5.7-2.1-5.7-6.2v-17.9c0-3.1 2.5-5.6 5.7-5.6z" fill="url(#SVGID_6_)" stroke="#000" stroke-miterlimit="10" stroke-width=".125"/>
+</svg>
