@@ -43,7 +43,7 @@ export function Header() {
 				)}
 			>
 				<a
-					className="rounded-md px-2 py-1.5 hover:bg-muted dark:hover:bg-muted/50"
+					className="-ml-1 inline-flex items-center rounded-md px-2 py-1 hover:bg-muted dark:hover:bg-muted/50"
 					href="#top"
 				>
 					<Wordmark />
