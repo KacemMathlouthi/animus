@@ -16,9 +16,10 @@ export function AuthPage() {
 				<div className="absolute inset-0">
 					<AuthBackdrop />
 				</div>
-				<div className="absolute inset-0 bg-linear-to-b from-background/40 via-transparent to-background" />
+				<div className="absolute inset-0 bg-linear-to-b from-background/30 via-transparent to-background" />
+				<div className="absolute inset-0 bg-[linear-gradient(170deg,theme(--color-background)_0%,transparent_15%)]" />
 				<Link className="z-10 mr-auto" to="/">
-					<Wordmark />
+					<Wordmark className="text-2xl" />
 				</Link>
 
 				<div className="z-10 mt-auto">

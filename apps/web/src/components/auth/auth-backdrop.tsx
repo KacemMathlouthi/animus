@@ -42,25 +42,25 @@ export function AuthBackdrop() {
 	return (
 		<Grainient
 			{...colors}
-			blendAngle={0}
-			blendSoftness={0.18}
+			blendAngle={-12}
+			blendSoftness={0.28}
 			centerX={0}
 			centerY={0}
 			colorBalance={0}
-			contrast={1.12}
-			gamma={1}
-			grainAmount={0.06}
+			contrast={1.3}
+			gamma={1.05}
+			grainAmount={0.1}
 			grainAnimated={false}
-			grainScale={1.6}
-			noiseScale={1.4}
-			rotationAmount={280}
-			saturation={0.82}
-			timeSpeed={0.14}
-			warpAmplitude={90}
-			warpFrequency={3.5}
-			warpSpeed={1.4}
-			warpStrength={1}
-			zoom={1.05}
+			grainScale={1.4}
+			noiseScale={1.7}
+			rotationAmount={340}
+			saturation={0.95}
+			timeSpeed={0.12}
+			warpAmplitude={62}
+			warpFrequency={4}
+			warpSpeed={1.2}
+			warpStrength={1.1}
+			zoom={1.25}
 		/>
 	);
 }
