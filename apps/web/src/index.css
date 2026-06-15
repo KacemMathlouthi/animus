@@ -173,59 +173,78 @@
 	}
 
 	.logo--loading .logo-root {
-		animation: logo-float 3s ease-in-out infinite;
+		animation: logo-float 2.8s ease-in-out infinite;
+		filter: drop-shadow(0 5px 4px rgb(0 0 0 / 0.18));
+		will-change: transform, filter;
 	}
 	.logo--loading .logo-body {
-		animation: logo-squash 3s ease-in-out infinite;
+		animation: logo-squash 2.8s ease-in-out infinite;
 	}
+	/* Snappy darts (custom cubic) for the eyes; the body stays smooth. */
 	.logo--loading .logo-eyes-x {
-		animation: logo-scan 3s ease-in-out infinite;
+		animation: logo-scan 2.8s cubic-bezier(0.6, 0, 0.2, 1) infinite;
 	}
 	.logo--loading .logo-eyes-y {
-		animation: logo-blink-loop 3s ease-in-out infinite;
+		animation: logo-blink-loop 2.8s ease-in-out infinite;
 	}
 }
 
+/* Two crisp blinks, timed to land as the gaze changes. */
 @keyframes logo-blink-loop {
 	0%,
-	8%,
+	12%,
+	19%,
+	45%,
+	52%,
 	100% {
 		transform: scaleY(1);
 	}
-	4% {
-		transform: scaleY(0.12);
+	15%,
+	48% {
+		transform: scaleY(0.08);
 	}
 }
 
+/* Light, quick bob with a faint pondering head-tilt; shadow breathes with it. */
 @keyframes logo-float {
 	0%,
 	100% {
-		transform: translateY(0);
+		transform: translateY(0) rotate(-1.5deg);
+		filter: drop-shadow(0 5px 4px rgb(0 0 0 / 0.18));
 	}
 	50% {
-		transform: translateY(-4px);
+		transform: translateY(-4px) rotate(1.5deg);
+		filter: drop-shadow(0 9px 6px rgb(0 0 0 / 0.12));
 	}
 }
 
+/* Jelly: squished at the bottom of the bob, stretched at the top. */
 @keyframes logo-squash {
 	0%,
 	100% {
-		transform: scaleX(1.015) scaleY(0.99);
+		transform: scaleX(1.035) scaleY(0.965);
 	}
 	50% {
-		transform: scaleX(1) scaleY(1);
+		transform: scaleX(0.99) scaleY(1.025);
 	}
 }
 
+/* "Hmm…" — eyes dart up-and-to-the-side, hold a beat, then dart back. */
 @keyframes logo-scan {
 	0%,
+	10% {
+		transform: translate(0, 0);
+	}
+	18%,
+	40% {
+		transform: translate(-3px, -2px);
+	}
+	48%,
+	72% {
+		transform: translate(3px, -2.5px);
+	}
+	80%,
 	100% {
-		transform: translateX(0);
-	}
-	25% {
-		transform: translateX(-3px);
-	}
-	75% {
-		transform: translateX(3px);
+		transform: translate(0, 0);
 	}
 }
