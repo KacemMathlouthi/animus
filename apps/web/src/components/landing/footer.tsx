@@ -1,5 +1,5 @@
-import { GithubIcon } from "@/components/landing/icons/github-icon";
-import { XIcon } from "@/components/landing/icons/x-icon";
+import { GithubIcon } from "@/components/icons/github-icon";
+import { XIcon } from "@/components/icons/x-icon";
 import { Wordmark } from "@/components/landing/wordmark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

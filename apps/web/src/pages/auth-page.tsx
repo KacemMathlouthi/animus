@@ -1,9 +1,9 @@
 import { AtSignIcon, ChevronLeftIcon } from "lucide-react";
 import { Link } from "react-router";
 import { AuthDivider } from "@/components/auth/auth-divider";
-import { AppleIcon } from "@/components/auth/icons/apple-icon";
-import { GithubIcon } from "@/components/auth/icons/github-icon";
-import { GoogleIcon } from "@/components/auth/icons/google-icon";
+import { AppleIcon } from "@/components/icons/apple-icon";
+import { GithubIcon } from "@/components/icons/github-icon";
+import { GoogleIcon } from "@/components/icons/google-icon";
 import { Wordmark } from "@/components/landing/wordmark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
