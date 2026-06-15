@@ -15,7 +15,6 @@
         "tailwindcss",
         "tw-animate-css",
         "@fontsource-variable/geist",
-        "lucide-react",
         "shadcn"
       ]
     },
