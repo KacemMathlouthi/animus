@@ -20,7 +20,7 @@ export function LogoMark({
 	return (
 		<svg
 			className={cn(
-				"logo",
+				"logo overflow-visible",
 				animate === "loading" && "logo--loading",
 				className,
 			)}
