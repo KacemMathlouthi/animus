@@ -61,7 +61,7 @@ export function Integrations() {
 					Built on tools you already trust
 				</h2>
 				<p className="text-muted-foreground leading-relaxed md:text-lg">
-					anima orchestrates best-in-class engines instead of reinventing them.
+					animus orchestrates best-in-class engines instead of reinventing them.
 				</p>
 			</div>
 

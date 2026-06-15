@@ -14,11 +14,11 @@ export function Wordmark({
 			{...props}
 		>
 			<img
-				alt="anima logo"
+				alt="animus logo"
 				className="-translate-y-[0.1em] h-[1.8em] w-auto shrink-0 invert dark:invert-0"
 				src={logoUrl}
 			/>
-			anima
+			animus
 		</span>
 	);
 }

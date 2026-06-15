@@ -18,8 +18,8 @@ export function CallToAction() {
 				Ready to explain something?
 			</h2>
 			<p className="mx-auto max-w-md text-balance text-center text-muted-foreground md:text-lg">
-				Pick a topic and watch anima research, storyboard, and render your first
-				explainer.
+				Pick a topic and watch animus research, storyboard, and render your
+				first explainer.
 			</p>
 
 			<div className="flex items-center justify-center gap-2 pt-2">

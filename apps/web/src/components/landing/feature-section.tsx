@@ -27,7 +27,7 @@ export function FeatureSection() {
 					Everything a good explainer needs
 				</h2>
 				<p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed md:text-lg">
-					anima handles the research, the storyboard, the math, and the voice —
+					animus handles the research, the storyboard, the math, and the voice —
 					so a finished video is the default, not the destination.
 				</p>
 			</div>
@@ -98,7 +98,7 @@ const features: FeatureType[] = [
 		title: "Storyboarded scenes",
 		icon: <SquareStackIcon />,
 		description:
-			"anima plans the full arc scene by scene before a single frame is drawn — you can edit it first.",
+			"animus plans the full arc scene by scene before a single frame is drawn — you can edit it first.",
 	},
 	{
 		title: "Real narration",

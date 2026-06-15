@@ -4,7 +4,7 @@ const steps = [
 	{
 		title: "Describe it",
 		description:
-			"Drop in a topic, a question, or a paper. anima figures out what needs explaining and to whom.",
+			"Drop in a topic, a question, or a paper. animus figures out what needs explaining and to whom.",
 	},
 	{
 		title: "It researches",
@@ -19,7 +19,7 @@ const steps = [
 	{
 		title: "It renders",
 		description:
-			"anima animates each scene in Manim, narrates it, and repairs anything that looks off. You get a video.",
+			"animus animates each scene in Manim, narrates it, and repairs anything that looks off. You get a video.",
 	},
 ];
 

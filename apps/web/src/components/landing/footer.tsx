@@ -65,7 +65,7 @@ export function Footer() {
 			</div>
 			<div className="flex items-center justify-center gap-2 border-t py-4">
 				<p className="text-center font-light text-muted-foreground text-sm">
-					&copy; {new Date().getFullYear()} anima · All rights reserved
+					&copy; {new Date().getFullYear()} animus · All rights reserved
 				</p>
 			</div>
 		</footer>

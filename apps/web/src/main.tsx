@@ -12,7 +12,7 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
 	<StrictMode>
-		<ThemeProvider defaultTheme="light" storageKey="anima-theme">
+		<ThemeProvider defaultTheme="light" storageKey="animus-theme">
 			<App />
 		</ThemeProvider>
 	</StrictMode>,

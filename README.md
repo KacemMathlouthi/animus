@@ -1,4 +1,4 @@
-# anima
+# animus
 
 Agent that produces narrated, research-grounded **Manim explainer videos** for any topic — mathematically precise, code-driven visuals with real narration.
 

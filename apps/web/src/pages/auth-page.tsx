@@ -28,7 +28,7 @@ export function AuthPage() {
 							animated explainer before the cup was empty.&rdquo;
 						</p>
 						<footer className="font-mono font-semibold text-muted-foreground text-sm">
-							~ an early anima user
+							~ an early animus user
 						</footer>
 					</blockquote>
 				</div>

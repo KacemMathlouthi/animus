@@ -59,7 +59,7 @@ export function HeroSection() {
 						"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-out",
 					)}
 				>
-					anima researches your topic, storyboards it, and renders a narrated,
+					animus researches your topic, storyboards it, and renders a narrated,
 					math-precise video — grounded in real sources and ready to share.
 				</p>
 
