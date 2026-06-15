@@ -151,3 +151,81 @@
 		scroll-padding-top: 5rem;
 	}
 }
+
+/* Logo mark "loading" animation — see logo-mark.tsx. The spirit ponders:
+   it floats with a faint squash while its eyes scan side to side and blink.
+   Transforms act in each group's own local box so they pivot on their centers.
+   Gated behind no-preference so reduced-motion users get a still mark. */
+@media (prefers-reduced-motion: no-preference) {
+	.logo-root,
+	.logo-body,
+	.logo-eyes-x,
+	.logo-eyes-y {
+		transform-box: fill-box;
+	}
+	.logo-root,
+	.logo-eyes-x,
+	.logo-eyes-y {
+		transform-origin: center;
+	}
+	.logo-body {
+		transform-origin: center bottom;
+	}
+
+	.logo--loading .logo-root {
+		animation: logo-float 3s ease-in-out infinite;
+	}
+	.logo--loading .logo-body {
+		animation: logo-squash 3s ease-in-out infinite;
+	}
+	.logo--loading .logo-eyes-x {
+		animation: logo-scan 3s ease-in-out infinite;
+	}
+	.logo--loading .logo-eyes-y {
+		animation: logo-blink-loop 3s ease-in-out infinite;
+	}
+}
+
+@keyframes logo-blink-loop {
+	0%,
+	8%,
+	100% {
+		transform: scaleY(1);
+	}
+	4% {
+		transform: scaleY(0.12);
+	}
+}
+
+@keyframes logo-float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-4px);
+	}
+}
+
+@keyframes logo-squash {
+	0%,
+	100% {
+		transform: scaleX(1.015) scaleY(0.99);
+	}
+	50% {
+		transform: scaleX(1) scaleY(1);
+	}
+}
+
+@keyframes logo-scan {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-3px);
+	}
+	75% {
+		transform: translateX(3px);
+	}
+}

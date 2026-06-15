@@ -1,4 +1,4 @@
-import logoUrl from "@/assets/logo.svg";
+import { LogoMark } from "@/components/landing/logo-mark";
 import { cn } from "@/lib/utils";
 
 export function Wordmark({
@@ -13,11 +13,7 @@ export function Wordmark({
 			)}
 			{...props}
 		>
-			<img
-				alt="animus logo"
-				className="h-[1.5em] w-auto shrink-0"
-				src={logoUrl}
-			/>
+			<LogoMark className="h-[1.5em] w-auto shrink-0" />
 			animus
 		</span>
 	);
