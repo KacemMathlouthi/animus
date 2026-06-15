@@ -29,7 +29,7 @@ export function HowItWorks() {
 			className="mx-auto w-full max-w-5xl px-4 py-20 md:px-8 md:py-28"
 			id="how"
 		>
-			<div className="mx-auto mb-14 max-w-2xl space-y-3 text-center">
+			<div className="mb-14 space-y-3 text-center">
 				<p className="font-mono text-muted-foreground text-xs uppercase tracking-widest">
 					How it works
 				</p>

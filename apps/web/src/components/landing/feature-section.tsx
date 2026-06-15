@@ -22,11 +22,11 @@ export function FeatureSection() {
 			className="mx-auto flex w-full max-w-5xl flex-col justify-center gap-12 px-4 py-20 md:px-8 md:py-28"
 			id="features"
 		>
-			<div className="mx-auto max-w-2xl space-y-3 text-center">
+			<div className="space-y-3 text-center">
 				<h2 className="font-medium text-3xl tracking-tight md:text-5xl">
 					Everything a good explainer needs
 				</h2>
-				<p className="text-muted-foreground leading-relaxed md:text-lg">
+				<p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed md:text-lg">
 					anima handles the research, the storyboard, the math, and the voice —
 					so a finished video is the default, not the destination.
 				</p>
