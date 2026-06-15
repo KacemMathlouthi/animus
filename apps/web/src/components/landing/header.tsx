@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { MobileNav } from "@/components/landing/mobile-nav";
 import { Wordmark } from "@/components/landing/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -56,10 +57,12 @@ export function Header() {
 						))}
 					</div>
 					<ThemeToggle />
-					<Button className="ml-1" size="sm" variant="outline">
-						Sign in
+					<Button asChild className="ml-1" size="sm" variant="outline">
+						<Link to="/auth">Sign in</Link>
 					</Button>
-					<Button size="sm">Get started</Button>
+					<Button asChild size="sm">
+						<Link to="/auth">Get started</Link>
+					</Button>
 				</div>
 				<div className="flex items-center gap-1 md:hidden">
 					<ThemeToggle />

@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router";
+import { AuthPage } from "@/pages/auth-page";
 import { LandingPage } from "@/pages/landing-page";
 
 function App() {
@@ -6,6 +7,7 @@ function App() {
 		<BrowserRouter>
 			<Routes>
 				<Route element={<LandingPage />} path="/" />
+				<Route element={<AuthPage />} path="/auth" />
 			</Routes>
 		</BrowserRouter>
 	);
