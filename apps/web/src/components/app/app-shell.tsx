@@ -3,7 +3,6 @@ import { AppHeader } from "@/components/app/app-header";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 
 export function AppShell({
 	breadcrumbs,
@@ -14,18 +13,11 @@ export function AppShell({
 }) {
 	return (
 		<TooltipProvider delayDuration={0}>
-			<SidebarProvider className={cn("[--app-wrapper-max-width:80rem]")}>
+			<SidebarProvider>
 				<AppSidebar />
-				<SidebarInset>
+				<SidebarInset className="h-svh overflow-hidden">
 					<AppHeader breadcrumbs={breadcrumbs} />
-					<div
-						className={cn(
-							"flex flex-1 flex-col p-4 md:p-6",
-							"mx-auto w-full max-w-(--app-wrapper-max-width)",
-						)}
-					>
-						{children}
-					</div>
+					<div className="flex min-h-0 flex-1 flex-col">{children}</div>
 				</SidebarInset>
 			</SidebarProvider>
 		</TooltipProvider>

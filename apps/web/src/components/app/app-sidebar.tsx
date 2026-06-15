@@ -1,6 +1,9 @@
+import { PlusIcon } from "lucide-react";
+import { Link } from "react-router";
 import { ConversationList } from "@/components/app/conversation-list";
 import { SidebarSearch } from "@/components/app/sidebar-search";
 import { Wordmark } from "@/components/landing/wordmark";
+import { Button } from "@/components/ui/button";
 import {
 	Sidebar,
 	SidebarContent,
@@ -29,7 +32,13 @@ export function AppSidebar() {
 				</a>
 			</SidebarHeader>
 			<SidebarContent>
-				<SidebarGroup>
+				<SidebarGroup className="gap-2">
+					<Button asChild className="w-full justify-start" variant="outline">
+						<Link to="/studio">
+							<PlusIcon data-icon="inline-start" />
+							New video
+						</Link>
+					</Button>
 					<SidebarSearch />
 				</SidebarGroup>
 				<ConversationList />
