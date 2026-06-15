@@ -27,3 +27,6 @@ npm-debug.log*
 # editor / os
 .DS_Store
 *.local
+
+# mcp (playwright/chrome devtools) generated artifacts
+.playwright-mcp/
