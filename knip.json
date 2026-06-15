@@ -2,12 +2,22 @@
   "$schema": "https://unjs.io/schema.json",
   "workspaces": {
     ".": {
-      "entry": [],
-      "ignoreDependencies": ["@biomejs/biome"]
+      "entry": []
     },
-    "apps/*": {
-      "entry": ["src/index.ts", "src/main.ts"],
-      "project": "src/**/*.ts"
+    "apps/web": {
+      "entry": [
+        "index.html",
+        "src/components/ui/**",
+        "src/components/theme-provider.tsx"
+      ],
+      "project": "src/**/*.{ts,tsx}",
+      "ignoreDependencies": [
+        "tailwindcss",
+        "tw-animate-css",
+        "@fontsource-variable/geist",
+        "lucide-react",
+        "shadcn"
+      ]
     },
     "packages/*": {
       "entry": ["src/index.ts"],
