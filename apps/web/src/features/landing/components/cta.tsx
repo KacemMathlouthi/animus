@@ -1,8 +1,12 @@
 import { ArrowRightIcon } from "lucide-react";
+import { Link } from "react-router";
 import { DecorIcon } from "@/components/decor-icon";
 import { Button } from "@/components/ui/button";
+import { useCtaTarget } from "@/features/landing/hooks/use-cta-target";
 
 export function CallToAction() {
+	const ctaTarget = useCtaTarget();
+
 	return (
 		<div className="relative mx-auto my-20 flex w-full max-w-3xl flex-col justify-between gap-y-4 border-y px-4 py-12 md:my-28 dark:bg-[radial-gradient(35%_80%_at_25%_0%,theme(--color-foreground/.06),transparent)]">
 			<DecorIcon className="size-4" position="top-left" />
@@ -23,9 +27,10 @@ export function CallToAction() {
 			</p>
 
 			<div className="flex items-center justify-center gap-2 pt-2">
-				<Button variant="outline">Talk to us</Button>
-				<Button>
-					Start creating <ArrowRightIcon data-icon="inline-end" />
+				<Button asChild>
+					<Link to={ctaTarget}>
+						Start creating <ArrowRightIcon data-icon="inline-end" />
+					</Link>
 				</Button>
 			</div>
 		</div>

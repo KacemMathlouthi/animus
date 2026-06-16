@@ -1,11 +1,15 @@
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
+import { Link } from "react-router";
 import { DecorIcon } from "@/components/decor-icon";
 import { Button } from "@/components/ui/button";
 import { FullWidthDivider } from "@/features/landing/components/full-width-divider";
 import { StudioPreview } from "@/features/landing/components/studio-preview";
+import { useCtaTarget } from "@/features/landing/hooks/use-cta-target";
 import { cn } from "@/lib/utils";
 
 export function HeroSection() {
+	const ctaTarget = useCtaTarget();
+
 	return (
 		<section>
 			<div className="relative flex min-h-svh flex-col items-center justify-center gap-5 px-4 py-20">
@@ -64,16 +68,20 @@ export function HeroSection() {
 				</p>
 
 				<div className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center gap-3 fill-mode-backwards pt-2 delay-300 duration-500 ease-out">
-					<Button variant="outline">
-						<PlayIcon data-icon="inline-start" /> Watch a demo
+					<Button asChild variant="outline">
+						<a href="#demo">
+							<PlayIcon data-icon="inline-start" /> Watch a demo
+						</a>
 					</Button>
-					<Button>
-						Start creating <ArrowRightIcon data-icon="inline-end" />
+					<Button asChild>
+						<Link to={ctaTarget}>
+							Start creating <ArrowRightIcon data-icon="inline-end" />
+						</Link>
 					</Button>
 				</div>
 			</div>
 
-			<div className="relative">
+			<div className="relative scroll-mt-20" id="demo">
 				<DecorIcon className="size-4" position="top-left" />
 				<DecorIcon className="size-4" position="top-right" />
 				<DecorIcon className="size-4" position="bottom-left" />

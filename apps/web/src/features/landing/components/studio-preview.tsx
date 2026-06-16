@@ -35,7 +35,7 @@ export function StudioPreview() {
 				<div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 md:p-5">
 					<div className="space-y-1">
 						<p className="font-medium text-foreground text-sm md:text-base">
-							Why integration measures area
+							Why integration measures area under a curve
 						</p>
 						<p className="flex items-center gap-1.5 text-muted-foreground text-xs">
 							<AudioLinesIcon className="size-3.5" /> Narrated · grounded in 7
