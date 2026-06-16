@@ -37,9 +37,11 @@ export const auth = betterAuth({
     // Slide the expiry forward at most once a day instead of every request.
     updateAge: DAY,
     cookieCache: {
-      // Cache the resolved session in a short-lived signed cookie
+      // Cache the resolved session in a short-lived cookie, encrypted (JWE) so
+      // the session data isn't readable if the cookie is intercepted.
       enabled: true,
       maxAge: 60,
+      strategy: "jwe",
     },
   },
 
