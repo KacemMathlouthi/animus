@@ -5,6 +5,7 @@
  */
 
 import { db, schema } from "@animus/db";
+import { dash } from "@better-auth/infra";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
@@ -15,6 +16,7 @@ const githubSecret = process.env.GITHUB_CLIENT_SECRET;
 const googleId = process.env.GOOGLE_CLIENT_ID;
 const googleSecret = process.env.GOOGLE_CLIENT_SECRET;
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+const infraApiKey = process.env.BETTER_AUTH_API_KEY;
 
 const DAY = 60 * 60 * 24;
 
@@ -65,5 +67,7 @@ export const auth = betterAuth({
       expiresIn: 60 * 5,
       sendMagicLink: ({ email, url }) => deliverMagicLink({ email, url }),
     }),
+    // Managed dashboard + analytics. No-op until BETTER_AUTH_API_KEY is set.
+    ...(infraApiKey ? [dash({ apiKey: infraApiKey })] : []),
   ],
 });
