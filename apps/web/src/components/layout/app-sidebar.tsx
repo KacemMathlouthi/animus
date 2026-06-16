@@ -1,8 +1,8 @@
 import { PlusIcon } from "lucide-react";
 import { Link } from "react-router";
-import { ConversationList } from "@/components/app/conversation-list";
-import { SidebarSearch } from "@/components/app/sidebar-search";
-import { Wordmark } from "@/components/landing/wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
+import { ConversationList } from "@/components/layout/conversation-list";
+import { SidebarSearch } from "@/components/layout/sidebar-search";
 import { Button } from "@/components/ui/button";
 import {
 	Sidebar,

@@ -1,8 +1,8 @@
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
-import { DecorIcon } from "@/components/landing/decor-icon";
-import { FullWidthDivider } from "@/components/landing/full-width-divider";
-import { StudioPreview } from "@/components/landing/studio-preview";
+import { DecorIcon } from "@/components/decor-icon";
 import { Button } from "@/components/ui/button";
+import { FullWidthDivider } from "@/features/landing/components/full-width-divider";
+import { StudioPreview } from "@/features/landing/components/studio-preview";
 import { cn } from "@/lib/utils";
 
 export function HeroSection() {

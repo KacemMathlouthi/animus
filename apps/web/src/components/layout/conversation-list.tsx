@@ -1,5 +1,4 @@
 import { Link, useParams } from "react-router";
-import { conversationGroups } from "@/components/app/app-shared";
 import {
 	SidebarGroup,
 	SidebarGroupLabel,
@@ -7,6 +6,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { conversationGroups } from "@/entities/conversation";
 
 export function ConversationList() {
 	const { chatId } = useParams<{ chatId?: string }>();

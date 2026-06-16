@@ -1,9 +1,9 @@
 import { MenuIcon, XIcon } from "lucide-react";
 import React from "react";
 import { Link } from "react-router";
-import { navLinks } from "@/components/landing/header";
-import { Portal, PortalBackdrop } from "@/components/landing/portal";
 import { Button } from "@/components/ui/button";
+import { navLinks } from "@/features/landing/components/header";
+import { Portal, PortalBackdrop } from "@/features/landing/components/portal";
 import { cn } from "@/lib/utils";
 
 export function MobileNav() {

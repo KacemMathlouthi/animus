@@ -1,11 +1,11 @@
-import { CallToAction } from "@/components/landing/cta";
-import { FaqsSection } from "@/components/landing/faqs";
-import { FeatureSection } from "@/components/landing/feature-section";
-import { Footer } from "@/components/landing/footer";
-import { Header } from "@/components/landing/header";
-import { HeroSection } from "@/components/landing/hero";
-import { HowItWorks } from "@/components/landing/how-it-works";
-import { Integrations } from "@/components/landing/integrations";
+import { CallToAction } from "@/features/landing/components/cta";
+import { FaqsSection } from "@/features/landing/components/faqs";
+import { FeatureSection } from "@/features/landing/components/feature-section";
+import { Footer } from "@/features/landing/components/footer";
+import { Header } from "@/features/landing/components/header";
+import { HeroSection } from "@/features/landing/components/hero";
+import { HowItWorks } from "@/features/landing/components/how-it-works";
+import { Integrations } from "@/features/landing/components/integrations";
 
 export function LandingPage() {
 	return (

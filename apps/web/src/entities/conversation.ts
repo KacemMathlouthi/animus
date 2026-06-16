@@ -1,4 +1,4 @@
-/** Placeholder workspace data for the app shell. Swap for real data later. */
+/** Conversation domain (mock). Swap for real data later. */
 
 type Conversation = {
 	id: string;
@@ -55,12 +55,6 @@ export const conversationGroups: ConversationGroup[] = [
 		],
 	},
 ];
-
-export const currentUser = {
-	name: "Kacem Mathlouthi",
-	email: "kacem@tryanimus.com",
-	avatar: "https://avatars.githubusercontent.com/u/84121071",
-};
 
 export function findConversation(id: string) {
 	for (const group of conversationGroups) {

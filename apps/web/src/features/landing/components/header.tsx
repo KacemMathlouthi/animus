@@ -1,8 +1,8 @@
 import { Link } from "react-router";
-import { MobileNav } from "@/components/landing/mobile-nav";
-import { Wordmark } from "@/components/landing/wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { MobileNav } from "@/features/landing/components/mobile-nav";
 import { useScroll } from "@/hooks/use-scroll";
 import { cn } from "@/lib/utils";
 

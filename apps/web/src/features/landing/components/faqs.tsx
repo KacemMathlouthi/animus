@@ -1,4 +1,4 @@
-import { DecorIcon } from "@/components/landing/decor-icon";
+import { DecorIcon } from "@/components/decor-icon";
 import {
 	Accordion,
 	AccordionContent,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import Grainient from "@/components/grainient";
 import { useTheme } from "@/components/theme-provider";
+import Grainient from "@/features/auth/components/grainient";
 
 // Source the gradient from theme tokens (the botanical --chart-* ramp, which
 // already inverts per theme in index.css) rather than hardcoded hex.

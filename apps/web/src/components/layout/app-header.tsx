@@ -1,11 +1,11 @@
+import { DecorIcon } from "@/components/decor-icon";
 import {
 	type AppBreadcrumbSegment,
 	AppBreadcrumbs,
-} from "@/components/app/app-breadcrumbs";
-import { CustomSidebarTrigger } from "@/components/app/custom-sidebar-trigger";
-import { NavUser } from "@/components/app/nav-user";
-import { PublishMenu } from "@/components/app/publish-menu";
-import { DecorIcon } from "@/components/landing/decor-icon";
+} from "@/components/layout/app-breadcrumbs";
+import { CustomSidebarTrigger } from "@/components/layout/custom-sidebar-trigger";
+import { NavUser } from "@/components/layout/nav-user";
+import { PublishMenu } from "@/components/layout/publish-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";

@@ -7,7 +7,7 @@ import {
 	SquareStackIcon,
 } from "lucide-react";
 import type React from "react";
-import { DecorIcon } from "@/components/landing/decor-icon";
+import { DecorIcon } from "@/components/decor-icon";
 import { cn } from "@/lib/utils";
 
 type FeatureType = {

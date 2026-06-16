@@ -1,4 +1,4 @@
-import { LogoMark } from "@/components/landing/logo-mark";
+import { LogoMark } from "@/components/brand/logo-mark";
 import { cn } from "@/lib/utils";
 
 export function Wordmark({

@@ -1,5 +1,4 @@
 import { LogOutIcon, SettingsIcon, UserIcon } from "lucide-react";
-import { currentUser as user } from "@/components/app/app-shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -10,6 +9,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { currentUser as user } from "@/entities/user";
 
 export function NavUser() {
 	return (
