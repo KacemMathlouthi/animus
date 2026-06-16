@@ -10,6 +10,7 @@ function App() {
 				<Route element={<LandingPage />} path="/" />
 				<Route element={<AuthPage />} path="/auth" />
 				<Route element={<StudioPage />} path="/studio" />
+				<Route element={<StudioPage />} path="/studio/c/:chatId" />
 			</Routes>
 		</BrowserRouter>
 	);

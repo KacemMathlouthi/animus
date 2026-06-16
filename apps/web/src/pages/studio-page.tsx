@@ -1,24 +1,62 @@
-import type { AppBreadcrumbSegment } from "@/components/app/app-breadcrumbs";
-import { AppShell } from "@/components/app/app-shell";
-import { LogoMark } from "@/components/landing/logo-mark";
+import { LayoutGroup } from "motion/react";
+import { useLocation, useNavigate, useParams } from "react-router";
+import type { AppBreadcrumbSegment } from "@/components/layout/app-breadcrumbs";
+import { AppShell } from "@/components/layout/app-shell";
+import { findConversation } from "@/entities/conversation";
+import { StudioEmptyState } from "@/features/studio/components/studio-empty-state";
+import { StudioStage } from "@/features/studio/components/studio-view";
+import { createConversationMessages } from "@/features/studio/data";
+import { useStudioChat } from "@/features/studio/hooks/use-studio-chat";
 
-const breadcrumbs: AppBreadcrumbSegment[] = [{ title: "New video" }];
+function NewStudio() {
+	const navigate = useNavigate();
+	return (
+		<StudioEmptyState
+			onSubmit={(text) =>
+				navigate(`/studio/c/${crypto.randomUUID()}`, {
+					state: { prompt: text },
+				})
+			}
+		/>
+	);
+}
+
+function StudioChat({ chatId }: { chatId: string }) {
+	const location = useLocation();
+	const prompt = (location.state as { prompt?: string } | null)?.prompt;
+	const conversation = findConversation(chatId);
+	const initialMessages =
+		!prompt && conversation
+			? createConversationMessages(conversation.title)
+			: undefined;
+	const { phase, messages, status, renderStatus, send } = useStudioChat({
+		initialMessages,
+		initialPrompt: prompt,
+	});
+
+	return (
+		<StudioStage
+			messages={messages}
+			onSubmit={send}
+			phase={phase}
+			renderStatus={renderStatus}
+			status={status}
+		/>
+	);
+}
 
 export function StudioPage() {
+	const { chatId } = useParams<{ chatId?: string }>();
+	const conversation = chatId ? findConversation(chatId) : undefined;
+	const breadcrumbs: AppBreadcrumbSegment[] = [
+		{ title: conversation?.title ?? "New video" },
+	];
+
 	return (
 		<AppShell breadcrumbs={breadcrumbs}>
-			<div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
-				<LogoMark animate="loading" className="h-32 w-auto" />
-				<div className="space-y-2">
-					<h1 className="font-medium text-2xl tracking-tight">
-						What do you want to explain?
-					</h1>
-					<p className="mx-auto max-w-sm text-muted-foreground text-sm">
-						Describe a topic and animus will research it and produce a narrated,
-						animated explainer.
-					</p>
-				</div>
-			</div>
+			<LayoutGroup>
+				{chatId ? <StudioChat chatId={chatId} key={chatId} /> : <NewStudio />}
+			</LayoutGroup>
 		</AppShell>
 	);
 }
