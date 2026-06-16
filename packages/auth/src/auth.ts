@@ -21,6 +21,8 @@ const infraApiKey = process.env.BETTER_AUTH_API_KEY;
 const DAY = 60 * 60 * 24;
 
 export const auth = betterAuth({
+  // Product name (used by Better Auth in tokens, emails, and the dashboard).
+  appName: "animus",
   // Signs session cookies.
   secret: process.env.BETTER_AUTH_SECRET,
   // Where this auth server lives, used to build OAuth callback URLs.
