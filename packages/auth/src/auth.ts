@@ -8,6 +8,7 @@ import { db, schema } from "@animus/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
+import { deliverMagicLink } from "./email.ts";
 
 const githubId = process.env.GITHUB_CLIENT_ID;
 const githubSecret = process.env.GITHUB_CLIENT_SECRET;
@@ -62,10 +63,7 @@ export const auth = betterAuth({
     magicLink({
       // The link is single-use and valid for five minutes.
       expiresIn: 60 * 5,
-      sendMagicLink: ({ email, url }) => {
-        // TODO: deliver via Resend. Until then, print to the API console
-        console.log(`Magic link for ${email}: ${url}`);
-      },
+      sendMagicLink: ({ email, url }) => deliverMagicLink({ email, url }),
     }),
   ],
 });

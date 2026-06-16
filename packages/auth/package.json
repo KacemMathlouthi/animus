@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@animus/db": "workspace:*",
-    "better-auth": "^1.6.19"
+    "better-auth": "^1.6.19",
+    "resend": "^6.12.4"
   },
   "devDependencies": {
     "@better-auth/cli": "^1.4.21"
