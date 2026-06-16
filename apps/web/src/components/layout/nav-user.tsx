@@ -1,6 +1,5 @@
 import { LogOutIcon, SettingsIcon, UserIcon } from "lucide-react";
 import { useNavigate } from "react-router";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -10,7 +9,26 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UserAvatar } from "@/components/user-avatar";
 import { signOut, useSession } from "@/lib/auth-client";
+
+/** A name to show. Real name when we have one, otherwise a friendly version of
+ * the email's local part (magic-link sign-ups don't provide a name). */
+function displayNameFrom(
+	name: string | null | undefined,
+	email: string,
+): string {
+	const trimmed = name?.trim();
+	if (trimmed) {
+		return trimmed;
+	}
+	const local = email.split("@")[0] ?? email;
+	return local
+		.split(/[._-]+/)
+		.filter(Boolean)
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(" ");
+}
 
 export function NavUser() {
 	const { data } = useSession();
@@ -21,9 +39,7 @@ export function NavUser() {
 		return null;
 	}
 
-	const displayName = user.name?.trim() || user.email;
-	const initial = displayName.charAt(0).toUpperCase();
-	const avatar = user.image ?? undefined;
+	const displayName = displayNameFrom(user.name, user.email);
 
 	async function handleLogout() {
 		await signOut();
@@ -33,27 +49,36 @@ export function NavUser() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Avatar className="size-8">
-					<AvatarImage src={avatar} />
-					<AvatarFallback>{initial}</AvatarFallback>
-				</Avatar>
+				<button
+					aria-label="Account menu"
+					className="rounded-full"
+					type="button"
+				>
+					<UserAvatar
+						className="size-8"
+						email={user.email}
+						image={user.image}
+						name={user.name}
+					/>
+				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-60">
-				<DropdownMenuItem className="flex items-center justify-start gap-2">
-					<DropdownMenuLabel className="flex items-center gap-3">
-						<Avatar className="size-10">
-							<AvatarImage src={avatar} />
-							<AvatarFallback>{initial}</AvatarFallback>
-						</Avatar>
-						<div>
-							<span className="font-medium text-foreground">{displayName}</span>{" "}
-							<br />
-							<div className="max-w-full overflow-hidden overflow-ellipsis whitespace-nowrap text-muted-foreground text-xs">
-								{user.email}
-							</div>
-						</div>
-					</DropdownMenuLabel>
-				</DropdownMenuItem>
+			<DropdownMenuContent align="end" className="w-64">
+				<DropdownMenuLabel className="flex items-center gap-3 py-2">
+					<UserAvatar
+						className="size-10 shrink-0"
+						email={user.email}
+						image={user.image}
+						name={user.name}
+					/>
+					<div className="min-w-0">
+						<p className="truncate font-medium text-foreground text-sm">
+							{displayName}
+						</p>
+						<p className="break-all text-muted-foreground text-xs">
+							{user.email}
+						</p>
+					</div>
+				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuItem>
