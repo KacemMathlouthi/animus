@@ -1,7 +1,7 @@
-import { Link } from "react-router";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { AuthActions } from "@/features/landing/components/auth-actions";
 import { MobileNav } from "@/features/landing/components/mobile-nav";
 import { useScroll } from "@/hooks/use-scroll";
 import { cn } from "@/lib/utils";
@@ -57,12 +57,7 @@ export function Header() {
 						))}
 					</div>
 					<ThemeToggle />
-					<Button asChild className="ml-1" size="sm" variant="outline">
-						<Link to="/auth">Sign in</Link>
-					</Button>
-					<Button asChild size="sm">
-						<Link to="/auth">Get started</Link>
-					</Button>
+					<AuthActions />
 				</div>
 				<div className="flex items-center gap-1 md:hidden">
 					<ThemeToggle />

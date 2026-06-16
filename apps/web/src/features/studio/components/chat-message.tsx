@@ -16,8 +16,8 @@ import {
 } from "@/components/ai-elements/sources";
 import { LogoMark } from "@/components/brand/logo-mark";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { currentUser } from "@/entities/user";
 import type { StudioMessage } from "@/features/studio/types";
+import { useSession } from "@/lib/auth-client";
 
 function AgentAvatar() {
 	return (
@@ -28,11 +28,18 @@ function AgentAvatar() {
 }
 
 function UserAvatar() {
+	const { data } = useSession();
+	const user = data?.user;
+	const name = user?.name?.trim() || user?.email || "You";
 	return (
-		<Avatar className="size-8 shrink-0 rounded-md">
-			<AvatarImage alt={currentUser.name} src={currentUser.avatar} />
+		<Avatar className="size-8 shrink-0 rounded-md after:rounded-md">
+			<AvatarImage
+				alt={name}
+				className="rounded-md"
+				src={user?.image ?? undefined}
+			/>
 			<AvatarFallback className="rounded-md">
-				{currentUser.name.charAt(0)}
+				{name.charAt(0).toUpperCase()}
 			</AvatarFallback>
 		</Avatar>
 	);
