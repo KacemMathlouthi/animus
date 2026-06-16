@@ -67,6 +67,8 @@ export const auth = betterAuth({
     magicLink({
       // The link is single-use and valid for five minutes.
       expiresIn: 60 * 5,
+      // Store only a hash of the token, so a DB breach can't reveal usable links.
+      storeToken: "hashed",
       sendMagicLink: ({ email, url }) => deliverMagicLink({ email, url }),
     }),
     // Managed dashboard + analytics. No-op until BETTER_AUTH_API_KEY is set.
