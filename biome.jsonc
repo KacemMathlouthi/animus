@@ -2,6 +2,6 @@
   "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
   "extends": ["ultracite/biome/core"],
   "files": {
-    "includes": ["!**/.turbo", "!**/dist", "!**/bun.lock"]
+    "includes": ["!**/.turbo", "!**/dist", "!**/bun.lock", "!**/drizzle"]
   }
 }

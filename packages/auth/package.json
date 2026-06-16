@@ -1,0 +1,22 @@
+{
+  "name": "@animus/auth",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "auth:generate": "bun --env-file=../../.env better-auth generate --config ./src/auth.ts --output ../db/src/schema/auth.ts -y",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@animus/db": "workspace:*",
+    "@better-auth/infra": "^0.2.14",
+    "better-auth": "^1.6.19",
+    "resend": "^6.12.4"
+  },
+  "devDependencies": {
+    "@better-auth/cli": "^1.4.21"
+  }
+}

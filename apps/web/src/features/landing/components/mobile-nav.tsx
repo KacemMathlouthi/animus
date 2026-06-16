@@ -1,7 +1,7 @@
 import { MenuIcon, XIcon } from "lucide-react";
 import React from "react";
-import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
+import { AuthActions } from "@/features/landing/components/auth-actions";
 import { navLinks } from "@/features/landing/components/header";
 import { Portal, PortalBackdrop } from "@/features/landing/components/portal";
 import { cn } from "@/lib/utils";
@@ -49,12 +49,7 @@ export function MobileNav() {
 							))}
 						</div>
 						<div className="mt-12 flex flex-col gap-2">
-							<Button asChild className="w-full" variant="outline">
-								<Link to="/auth">Sign in</Link>
-							</Button>
-							<Button asChild className="w-full">
-								<Link to="/auth">Get started</Link>
-							</Button>
+							<AuthActions stacked />
 						</div>
 					</div>
 				</Portal>

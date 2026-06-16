@@ -15,9 +15,9 @@ import {
 	SourcesTrigger,
 } from "@/components/ai-elements/sources";
 import { LogoMark } from "@/components/brand/logo-mark";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { currentUser } from "@/entities/user";
+import { UserAvatar } from "@/components/user-avatar";
 import type { StudioMessage } from "@/features/studio/types";
+import { useSession } from "@/lib/auth-client";
 
 function AgentAvatar() {
 	return (
@@ -27,14 +27,17 @@ function AgentAvatar() {
 	);
 }
 
-function UserAvatar() {
+function MessageUserAvatar() {
+	const { data } = useSession();
+	const user = data?.user;
 	return (
-		<Avatar className="size-8 shrink-0 rounded-md">
-			<AvatarImage alt={currentUser.name} src={currentUser.avatar} />
-			<AvatarFallback className="rounded-md">
-				{currentUser.name.charAt(0)}
-			</AvatarFallback>
-		</Avatar>
+		<UserAvatar
+			className="size-8 shrink-0"
+			email={user?.email}
+			image={user?.image}
+			name={user?.name}
+			square
+		/>
 	);
 }
 
@@ -45,7 +48,7 @@ export function ChatMessage({ message }: { message: StudioMessage }) {
 				<Message className="ml-0 max-w-[80%]" from="user">
 					<MessageContent>{message.text}</MessageContent>
 				</Message>
-				<UserAvatar />
+				<MessageUserAvatar />
 			</div>
 		);
 	}
