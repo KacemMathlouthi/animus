@@ -64,7 +64,7 @@ export const auth = betterAuth({
       expiresIn: 60 * 5,
       sendMagicLink: ({ email, url }) => {
         // TODO: deliver via Resend. Until then, print to the API console
-        console.log(`\n🔗 Magic link for ${email}:\n${url}\n`);
+        console.log(`Magic link for ${email}: ${url}`);
       },
     }),
   ],

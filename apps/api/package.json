@@ -1,0 +1,18 @@
+{
+  "name": "@animus/api",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch --env-file=../../.env src/app.ts",
+    "start": "bun --env-file=../../.env src/app.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@animus/db": "workspace:*",
+    "hono": "^4.12.25",
+    "pino": "^10.3.1",
+    "pino-pretty": "^13.1.3",
+    "zod": "^4.4.3"
+  }
+}
