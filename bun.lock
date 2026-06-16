@@ -17,6 +17,7 @@
       "name": "@animus/api",
       "version": "0.0.1",
       "dependencies": {
+        "@animus/auth": "workspace:*",
         "@animus/db": "workspace:*",
         "hono": "^4.12.25",
         "pino": "^10.3.1",

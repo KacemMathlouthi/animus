@@ -19,8 +19,14 @@
         "shadcn"
       ]
     },
+    "apps/api": {
+      "project": "src/**/*.ts"
+    },
+    "packages/auth": {
+      "project": "src/**/*.ts",
+      "ignoreDependencies": ["@better-auth/cli"]
+    },
     "packages/*": {
-      "entry": ["src/index.ts"],
       "project": "src/**/*.ts"
     }
   }

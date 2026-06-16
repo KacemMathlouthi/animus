@@ -3,15 +3,11 @@
 
 import { defineConfig } from "drizzle-kit";
 
-const url = process.env.DATABASE_URL;
-
-if (!url) {
-  throw new Error("DATABASE_URL is not set (expected from .env at repo root).");
-}
-
 export default defineConfig({
-  schema: "./src/schema/*.ts",
-  out: "./drizzle",
-  dialect: "postgresql",
-  dbCredentials: { url },
+	schema: "./src/schema/*.ts",
+	out: "./drizzle",
+	dialect: "postgresql",
+	// Supplied via --env-file in this package's scripts; drizzle-kit reports a
+	// clear error if it is missing when a command actually runs.
+	dbCredentials: { url: process.env.DATABASE_URL ?? "" },
 });
