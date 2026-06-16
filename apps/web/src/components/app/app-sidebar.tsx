@@ -24,12 +24,12 @@ export function AppSidebar() {
 			variant="sidebar"
 		>
 			<SidebarHeader className="h-14 justify-center border-b px-3">
-				<a
+				<Link
 					className="-mx-1 inline-flex w-fit items-center rounded-md px-1.5 py-1 transition-colors hover:bg-sidebar-accent"
-					href="#/"
+					to="/studio"
 				>
 					<Wordmark className="gap-2.5 text-xl" />
-				</a>
+				</Link>
 			</SidebarHeader>
 			<SidebarContent>
 				<SidebarGroup className="gap-2">

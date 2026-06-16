@@ -1,3 +1,4 @@
+import { Link, useParams } from "react-router";
 import { conversationGroups } from "@/components/app/app-shared";
 import {
 	SidebarGroup,
@@ -8,6 +9,8 @@ import {
 } from "@/components/ui/sidebar";
 
 export function ConversationList() {
+	const { chatId } = useParams<{ chatId?: string }>();
+
 	return (
 		<>
 			{conversationGroups.map((group) => (
@@ -16,10 +19,10 @@ export function ConversationList() {
 					<SidebarMenu>
 						{group.items.map((item) => (
 							<SidebarMenuItem key={item.id}>
-								<SidebarMenuButton asChild>
-									<a href={`#/c/${item.id}`}>
+								<SidebarMenuButton asChild isActive={chatId === item.id}>
+									<Link to={`/studio/c/${item.id}`}>
 										<span className="truncate">{item.title}</span>
-									</a>
+									</Link>
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						))}

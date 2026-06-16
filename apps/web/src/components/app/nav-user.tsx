@@ -1,4 +1,5 @@
 import { LogOutIcon, SettingsIcon, UserIcon } from "lucide-react";
+import { currentUser as user } from "@/components/app/app-shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -9,12 +10,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const user = {
-	name: "Kacem Mathlouthi",
-	email: "kacem@tryanimus.com",
-	avatar: "https://avatars.githubusercontent.com/u/84121071",
-};
 
 export function NavUser() {
 	return (
