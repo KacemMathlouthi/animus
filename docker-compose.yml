@@ -1,0 +1,25 @@
+# Local development services. Run `docker compose up -d` to start Postgres.
+# Data persists in the named volume across restarts; `docker compose down -v`
+# wipes it. Production Postgres is provisioned separately.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: animus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: animus
+      POSTGRES_PASSWORD: animus
+      POSTGRES_DB: animus
+    ports:
+      - "5432:5432"
+    volumes:
+      - animus-pgdata:/var/lib/postgresql/data
+    # Lets other tooling wait until Postgres is actually accepting connections.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U animus -d animus"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  animus-pgdata:
