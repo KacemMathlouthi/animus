@@ -1,6 +1,6 @@
 import { AtSignIcon, ChevronLeftIcon, MailCheckIcon } from "lucide-react";
 import { useState } from "react";
-import { Link, Navigate, useSearchParams } from "react-router";
+import { Link, Navigate, useLocation, useSearchParams } from "react-router";
 import { Wordmark } from "@/components/brand/wordmark";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { GoogleIcon } from "@/components/icons/google-icon";
@@ -14,12 +14,32 @@ import { signIn, useSession } from "@/lib/auth-client";
 const STUDIO_PATH = "/studio";
 const DEFAULT_ERROR = "Something went wrong. Please try again.";
 
+/** Only honor an internal, single-leading-slash path so the post-login redirect
+ * can't be pointed at an external origin. */
+function safeRedirect(from: unknown): string {
+	if (
+		typeof from === "string" &&
+		from.startsWith("/") &&
+		!from.startsWith("//")
+	) {
+		return from;
+	}
+	return STUDIO_PATH;
+}
+
 type SocialProvider = "github" | "google";
 type Pending = SocialProvider | "email" | null;
 
 export function AuthPage() {
 	const { data: session, isPending } = useSession();
+	const location = useLocation();
 	const [searchParams] = useSearchParams();
+
+	// Where to land after signing in: the page the guard bounced us from, else
+	// the studio.
+	const destination = safeRedirect(
+		(location.state as { from?: string } | null)?.from,
+	);
 	const [email, setEmail] = useState("");
 	const [pending, setPending] = useState<Pending>(null);
 	const [sentTo, setSentTo] = useState<string | null>(null);
@@ -29,10 +49,10 @@ export function AuthPage() {
 
 	// Already signed in — skip the form entirely.
 	if (!isPending && session) {
-		return <Navigate replace to={STUDIO_PATH} />;
+		return <Navigate replace to={destination} />;
 	}
 
-	const callbackURL = `${window.location.origin}${STUDIO_PATH}`;
+	const callbackURL = `${window.location.origin}${destination}`;
 	const errorCallbackURL = `${window.location.origin}/auth`;
 
 	async function handleSocial(provider: SocialProvider) {

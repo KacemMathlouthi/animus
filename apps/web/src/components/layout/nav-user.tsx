@@ -94,7 +94,7 @@ export function NavUser() {
 				<DropdownMenuGroup>
 					<DropdownMenuItem
 						className="w-full cursor-pointer"
-						onClick={() => {
+						onSelect={() => {
 							void handleLogout();
 						}}
 						variant="destructive"

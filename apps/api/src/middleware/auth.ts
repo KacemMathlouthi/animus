@@ -5,10 +5,19 @@
 import { auth } from "@animus/auth";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
+import { logger } from "../lib/logger.ts";
 import type { AppEnv } from "../types.ts";
 
 export const sessionMiddleware = createMiddleware<AppEnv>(async (c, next) => {
-  const result = await auth.api.getSession({ headers: c.req.raw.headers });
+  // Resolve the session defensively: if the auth layer or DB is momentarily
+  // unavailable, continue with an anonymous context instead of failing every
+  // route. Protected endpoints still reject via `requireAuth`.
+  let result: Awaited<ReturnType<typeof auth.api.getSession>> = null;
+  try {
+    result = await auth.api.getSession({ headers: c.req.raw.headers });
+  } catch (error) {
+    logger.error({ err: error }, "failed to resolve session");
+  }
   c.set("user", result?.user ?? null);
   c.set("session", result?.session ?? null);
   await next();
