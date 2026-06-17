@@ -76,7 +76,7 @@ export function SettingsSaveBar({
 	onReset: () => void;
 }) {
 	return (
-		<div className="mt-8 flex items-center justify-end gap-2 border-t pt-5">
+		<div className="mt-2 flex items-center justify-end gap-2 border-t pt-5">
 			{dirty ? (
 				<Button onClick={onReset} variant="ghost">
 					Reset

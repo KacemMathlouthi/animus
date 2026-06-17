@@ -34,6 +34,10 @@ interface VoicePickerProps {
 	onOpenChange?: (open: boolean) => void;
 }
 
+// Warm brand tones for the orb gradient (our --primary in light/dark), instead
+// of the default blue. The orb itself inverts its backdrop per theme.
+const ORB_COLORS: [string, string] = ["#4a3212", "#d8b98a"];
+
 function capitalize(value?: string) {
 	return value ? value.charAt(0).toUpperCase() + value.slice(1) : undefined;
 }
@@ -69,7 +73,11 @@ function VoicePicker({
 						{selectedVoice ? (
 							<div className="flex items-center gap-2 overflow-hidden">
 								<div className="relative size-6 shrink-0 overflow-visible">
-									<Orb agentState="thinking" className="absolute inset-0" />
+									<Orb
+										agentState="thinking"
+										className="absolute inset-0"
+										colors={ORB_COLORS}
+									/>
 								</div>
 								<span className="truncate">{selectedVoice.name}</span>
 							</div>
@@ -175,6 +183,7 @@ function VoicePickerItem({
 				<Orb
 					agentState={isPlaying ? "talking" : undefined}
 					className="pointer-events-none absolute inset-0"
+					colors={ORB_COLORS}
 				/>
 				{preview && isHovered && (
 					<div className="pointer-events-none absolute inset-0 flex size-8 shrink-0 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm transition-opacity hover:bg-black/50">
