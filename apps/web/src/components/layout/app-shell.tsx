@@ -15,9 +15,11 @@ export function AppShell({
 		<TooltipProvider delayDuration={0}>
 			<SidebarProvider>
 				<AppSidebar />
-				<SidebarInset className="h-svh overflow-hidden">
+				<SidebarInset className="h-svh">
 					<AppHeader breadcrumbs={breadcrumbs} />
-					<div className="flex min-h-0 flex-1 flex-col">{children}</div>
+					<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+						{children}
+					</div>
 				</SidebarInset>
 			</SidebarProvider>
 		</TooltipProvider>

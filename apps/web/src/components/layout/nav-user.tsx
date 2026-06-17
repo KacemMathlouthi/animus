@@ -11,24 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/user-avatar";
 import { signOut, useSession } from "@/lib/auth-client";
-
-/** A name to show. Real name when we have one, otherwise a friendly version of
- * the email's local part (magic-link sign-ups don't provide a name). */
-function displayNameFrom(
-	name: string | null | undefined,
-	email: string,
-): string {
-	const trimmed = name?.trim();
-	if (trimmed) {
-		return trimmed;
-	}
-	const local = email.split("@")[0] ?? email;
-	return local
-		.split(/[._-]+/)
-		.filter(Boolean)
-		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-		.join(" ");
-}
+import { displayNameFrom } from "@/lib/user";
 
 export function NavUser() {
 	const { data } = useSession();
@@ -81,11 +64,17 @@ export function NavUser() {
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
-					<DropdownMenuItem>
+					<DropdownMenuItem
+						className="cursor-pointer"
+						onSelect={() => navigate("/settings/account")}
+					>
 						<UserIcon />
 						Account
 					</DropdownMenuItem>
-					<DropdownMenuItem>
+					<DropdownMenuItem
+						className="cursor-pointer"
+						onSelect={() => navigate("/settings/generation")}
+					>
 						<SettingsIcon />
 						Settings
 					</DropdownMenuItem>
