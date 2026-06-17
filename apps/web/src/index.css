@@ -150,6 +150,16 @@
 		scroll-behavior: smooth;
 		scroll-padding-top: 5rem;
 	}
+	/* Brand text selection — uses the primary accent, so it adapts to the theme
+	   (warm loam in light, warm sand in dark). */
+	::selection {
+		background-color: var(--primary);
+		color: var(--primary-foreground);
+	}
+	::-moz-selection {
+		background-color: var(--primary);
+		color: var(--primary-foreground);
+	}
 }
 
 /* Logo mark "loading" animation — see logo-mark.tsx. The spirit ponders:
