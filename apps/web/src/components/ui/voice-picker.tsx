@@ -27,9 +27,15 @@ interface VoicePickerProps {
 	value?: string;
 	onValueChange?: (value: string) => void;
 	placeholder?: string;
+	searchPlaceholder?: string;
+	emptyLabel?: string;
 	className?: string;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
+}
+
+function capitalize(value?: string) {
+	return value ? value.charAt(0).toUpperCase() + value.slice(1) : undefined;
 }
 
 function VoicePicker({
@@ -37,6 +43,8 @@ function VoicePicker({
 	value,
 	onValueChange,
 	placeholder = "Select a voice...",
+	searchPlaceholder = "Search voices...",
+	emptyLabel = "No voice found.",
 	className,
 	open,
 	onOpenChange,
@@ -73,9 +81,9 @@ function VoicePicker({
 				</PopoverTrigger>
 				<PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
 					<Command>
-						<CommandInput placeholder="Search voices..." />
+						<CommandInput placeholder={searchPlaceholder} />
 						<CommandList>
-							<CommandEmpty>No voice found.</CommandEmpty>
+							<CommandEmpty>{emptyLabel}</CommandEmpty>
 							<CommandGroup>
 								{voices.map((voice) => (
 									<VoicePickerItem
@@ -135,6 +143,13 @@ function VoicePickerItem({
 		[audioItem, isPlaying, player],
 	);
 
+	const meta = [
+		voice.labels?.accent,
+		capitalize(voice.labels?.gender),
+		capitalize(voice.labels?.age),
+		voice.labels?.description,
+	].filter((part): part is string => Boolean(part));
+
 	return (
 		<CommandItem
 			value={voice.voiceId}
@@ -172,20 +187,12 @@ function VoicePickerItem({
 				)}
 			</button>
 
-			<div className="flex flex-1 flex-col gap-0.5">
+			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<span className="font-medium">{voice.name}</span>
-				{voice.labels && (
-					<div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-						{voice.labels.accent && <span>{voice.labels.accent}</span>}
-						{voice.labels.gender && <span>•</span>}
-						{voice.labels.gender && (
-							<span className="capitalize">{voice.labels.gender}</span>
-						)}
-						{voice.labels.age && <span>•</span>}
-						{voice.labels.age && (
-							<span className="capitalize">{voice.labels.age}</span>
-						)}
-					</div>
+				{meta.length > 0 && (
+					<span className="truncate text-muted-foreground text-xs">
+						{meta.join(" • ")}
+					</span>
 				)}
 			</div>
 
