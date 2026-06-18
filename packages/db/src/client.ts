@@ -12,6 +12,7 @@ import {
   userRelations,
   verification,
 } from "./schema/auth.ts";
+import { providerKey, userSettings } from "./schema/settings.ts";
 
 /** Every table + relation, in one object — passed to Drizzle (for `db.query.*`)
  * and to the Better Auth adapter (so it can map its models onto our columns). */
@@ -20,6 +21,8 @@ export const schema = {
   session,
   user,
   verification,
+  userSettings,
+  providerKey,
   accountRelations,
   sessionRelations,
   userRelations,
