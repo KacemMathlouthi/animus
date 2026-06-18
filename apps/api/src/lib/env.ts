@@ -13,6 +13,9 @@ const EnvSchema = z.object({
   WEB_ORIGIN: z.url().default("http://localhost:5173"),
   /** Postgres connection string (consumed by @animus/db). */
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  /** Base64 32-byte key for encrypting BYO provider keys at rest (AES-256-GCM).
+   * Optional at boot; required only when a provider key is actually stored. */
+  ENCRYPTION_KEY: z.string().optional(),
   /** Optional override for the log verbosity. */
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace"])
@@ -33,6 +36,7 @@ export const env = {
   port: parsed.data.PORT,
   webOrigin: parsed.data.WEB_ORIGIN,
   databaseUrl: parsed.data.DATABASE_URL,
+  encryptionKey: parsed.data.ENCRYPTION_KEY,
   logLevel: parsed.data.LOG_LEVEL,
 };
 
