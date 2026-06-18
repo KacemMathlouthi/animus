@@ -4,6 +4,7 @@
  * Postgres tables through the Drizzle adapter. `apps/api` mounts its handler.
  */
 
+import { getServerEnv } from "@animus/core/env";
 import { db, schema } from "@animus/db";
 import { dash } from "@better-auth/infra";
 import { betterAuth } from "better-auth";
@@ -11,12 +12,12 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
 import { deliverMagicLink } from "./email.ts";
 
-const githubId = process.env.GITHUB_CLIENT_ID;
-const githubSecret = process.env.GITHUB_CLIENT_SECRET;
-const googleId = process.env.GOOGLE_CLIENT_ID;
-const googleSecret = process.env.GOOGLE_CLIENT_SECRET;
-const WEB_ORIGIN = process.env.WEB_ORIGIN ?? "http://localhost:5173";
-const infraApiKey = process.env.BETTER_AUTH_API_KEY;
+const env = getServerEnv();
+const githubId = env.githubClientId;
+const githubSecret = env.githubClientSecret;
+const googleId = env.googleClientId;
+const googleSecret = env.googleClientSecret;
+const infraApiKey = env.betterAuthApiKey;
 
 const DAY = 60 * 60 * 24;
 
@@ -24,11 +25,11 @@ export const auth = betterAuth({
   // Product name (used by Better Auth in tokens, emails, and the dashboard).
   appName: "animus",
   // Signs session cookies.
-  secret: process.env.BETTER_AUTH_SECRET,
+  secret: env.betterAuthSecret,
   // Where this auth server lives, used to build OAuth callback URLs.
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: env.betterAuthUrl,
   // The web app's origin is allowed to drive auth (cookies + redirects).
-  trustedOrigins: [WEB_ORIGIN],
+  trustedOrigins: [env.webOrigin],
   // Store everything in our Postgres via Drizzle. `schema` carries the table
   database: drizzleAdapter(db, { provider: "pg", schema }),
   // How long a login lasts and how it is read on each request.

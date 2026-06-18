@@ -1,8 +1,11 @@
 /** App-wide structured logger (pino) */
 
+import { getServerEnv } from "@animus/core/env";
 import pino from "pino";
 import pretty from "pino-pretty";
-import { env, isProduction } from "./env.ts";
+
+const env = getServerEnv();
+const isProduction = env.nodeEnv === "production";
 
 const level = env.logLevel ?? (isProduction ? "info" : "debug");
 

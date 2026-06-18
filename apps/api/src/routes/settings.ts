@@ -3,10 +3,10 @@
  * are encrypted before they touch the database, and only a masked preview
  * (provider + last 4 chars) is ever returned to the client. */
 
+import { GenerationSettingsSchema, ProviderKeyInputSchema } from "@animus/core";
 import { db, eq, providerKey, userSettings } from "@animus/db";
 import { type Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { z } from "zod";
 import { encryptSecret } from "../lib/crypto.ts";
 import { requireAuth } from "../middleware/auth.ts";
 import type { AppEnv } from "../types.ts";
@@ -14,29 +14,6 @@ import type { AppEnv } from "../types.ts";
 export const settingsRoute = new Hono<AppEnv>();
 
 settingsRoute.use("*", requireAuth);
-
-/** Provider ids the web client offers — keep in sync with the web providers list. */
-const PROVIDER_IDS = [
-  "openai",
-  "anthropic",
-  "google",
-  "mistral",
-  "groq",
-  "xai",
-] as const;
-
-const GenerationSchema = z.object({
-  videoTheme: z.enum(["light", "dark"]),
-  backgroundMusic: z.boolean(),
-  musicTrack: z.string().min(1),
-  voiceId: z.string().min(1),
-  font: z.string().min(1),
-});
-
-const KeySchema = z.object({
-  provider: z.enum(PROVIDER_IDS),
-  key: z.string().min(1).max(512),
-});
 
 /** The caller's id, guaranteed present by `requireAuth`. */
 function userId(c: Context<AppEnv>): string {
@@ -64,7 +41,7 @@ settingsRoute.get("/generation", async (c) => {
 });
 
 settingsRoute.put("/generation", async (c) => {
-  const parsed = GenerationSchema.safeParse(
+  const parsed = GenerationSettingsSchema.safeParse(
     await c.req.json().catch(() => null)
   );
   if (!parsed.success) {
@@ -91,7 +68,9 @@ settingsRoute.get("/keys", async (c) => {
 });
 
 settingsRoute.put("/keys", async (c) => {
-  const parsed = KeySchema.safeParse(await c.req.json().catch(() => null));
+  const parsed = ProviderKeyInputSchema.safeParse(
+    await c.req.json().catch(() => null)
+  );
   if (!parsed.success) {
     throw new HTTPException(400, { message: "Invalid provider key" });
   }

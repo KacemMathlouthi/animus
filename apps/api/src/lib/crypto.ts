@@ -4,14 +4,14 @@
  * ciphertext so a single column round-trips. */
 
 import { createCipheriv, randomBytes } from "node:crypto";
-import { env } from "./env.ts";
+import { getServerEnv } from "@animus/core/env";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_BYTES = 12;
 const KEY_BYTES = 32;
 
 function getKey(): Buffer {
-  const raw = env.encryptionKey;
+  const raw = getServerEnv().encryptionKey;
   if (!raw) {
     throw new Error(
       "ENCRYPTION_KEY is not set — required to store provider keys. Generate one with `openssl rand -base64 32`."
