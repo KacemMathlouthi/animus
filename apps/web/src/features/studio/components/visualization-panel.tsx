@@ -1,9 +1,7 @@
-import { BellIcon, PlayIcon } from "lucide-react";
+import { BellIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MorphLogo } from "@/features/studio/components/morph-logo";
-
-type RenderStatus = "rendering" | "ready";
 
 function NotifyButton() {
 	const [permission, setPermission] = useState<
@@ -48,35 +46,24 @@ function RenderingStage() {
 	);
 }
 
-function VideoPreview() {
+function VideoPreview({ url }: { url: string }) {
 	return (
 		<div className="w-full max-w-3xl space-y-3">
-			<div className="group relative flex aspect-video items-center justify-center overflow-hidden rounded-xl border bg-gradient-to-br from-secondary to-muted shadow-sm">
-				<Button
-					aria-label="Play preview"
-					className="size-14 rounded-full"
-					size="icon-lg"
-				>
-					<PlayIcon className="size-6" />
-				</Button>
+			<div className="overflow-hidden rounded-xl border shadow-sm">
+				<video className="aspect-video w-full bg-black" controls src={url}>
+					<track kind="captions" />
+				</video>
 			</div>
-			<div className="flex items-center justify-between px-1">
-				<p className="font-medium text-sm">Untitled explainer</p>
-				<p className="text-muted-foreground text-xs">4 scenes · 0:42</p>
-			</div>
+			<p className="px-1 font-medium text-sm">Untitled explainer</p>
 		</div>
 	);
 }
 
-export function VisualizationPanel({
-	renderStatus,
-}: {
-	renderStatus: RenderStatus;
-}) {
+export function VisualizationPanel({ videoUrl }: { videoUrl?: string }) {
 	return (
 		<div className="flex h-full flex-col bg-muted/30">
 			<div className="flex flex-1 items-center justify-center overflow-auto p-6">
-				{renderStatus === "ready" ? <VideoPreview /> : <RenderingStage />}
+				{videoUrl ? <VideoPreview url={videoUrl} /> : <RenderingStage />}
 			</div>
 		</div>
 	);

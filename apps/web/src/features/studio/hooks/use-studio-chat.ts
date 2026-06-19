@@ -1,107 +1,74 @@
-import type { ChatStatus } from "ai";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-	createAssistantMessage,
-	createUserMessage,
-} from "@/features/studio/data";
-import type {
-	RenderStatus,
-	StudioMessage,
-	StudioPhase,
-} from "@/features/studio/types";
+import { useChat } from "@ai-sdk/react";
+import type { ChatStatus, UIMessage } from "ai";
+import { useCallback, useEffect, useRef } from "react";
+import type { StudioPhase } from "@/features/studio/types";
+import { chatTransport } from "@/lib/chat";
 
-type StudioChatOptions = {
-	/** Preloaded messages for an existing conversation (opens straight to chat). */
-	initialMessages?: StudioMessage[];
-	/** A prompt to auto-run on mount (a freshly created conversation). */
-	initialPrompt?: string;
+type StudioChat = {
+	messages: UIMessage[];
+	status: ChatStatus;
+	phase: StudioPhase;
+	/** Rendered explainer URL, once the render loop produces one. Undefined until
+	 * then — the side panel keeps animating while it's absent. */
+	videoUrl?: string;
+	send: (text: string) => void;
 };
 
-function resolveInitialPhase(options: StudioChatOptions): StudioPhase {
-	if (options.initialMessages) {
-		return "chat";
-	}
-	if (options.initialPrompt) {
-		return "loading";
-	}
-	return "idle";
-}
-
 /**
- * Local, mocked studio session. Models the phases of a real flow — boot the
- * workspace (loading), then chat while the first render runs — so the UI's
- * transitions and loading/ready states are exercised without a backend (v1).
+ * The studio's chat session, backed by the real streaming /api/chat endpoint.
+ * Keyed by chatId so each conversation has its own state; an optional initial
+ * prompt (a freshly created conversation) is sent once on mount.
+ *
+ * Derives the full-screen `loading` phase (a new conversation booting, before
+ * the first assistant token) from the chat lifecycle. `videoUrl` is the seam
+ * for the not-yet-built render loop; while it's undefined the side panel keeps
+ * its rendering animation running.
  */
-export function useStudioChat(options: StudioChatOptions = {}) {
-	const { initialMessages, initialPrompt } = options;
+export function useStudioChat({
+	chatId,
+	initialPrompt,
+}: {
+	chatId: string;
+	initialPrompt?: string;
+}): StudioChat {
+	const { messages, sendMessage, status } = useChat({
+		id: chatId,
+		transport: chatTransport,
+	});
 
-	const [phase, setPhase] = useState<StudioPhase>(() =>
-		resolveInitialPhase(options),
-	);
-	const [messages, setMessages] = useState<StudioMessage[]>(
-		initialMessages ?? [],
-	);
-	const [status, setStatus] = useState<ChatStatus>("ready");
-	const [renderStatus, setRenderStatus] = useState<RenderStatus>(
-		initialMessages ? "ready" : "rendering",
-	);
-	const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-	const phaseRef = useRef(phase);
-
+	// Auto-run the first prompt exactly once for a new conversation.
+	const autoSent = useRef(false);
 	useEffect(() => {
-		phaseRef.current = phase;
-	}, [phase]);
+		if (initialPrompt && !autoSent.current) {
+			autoSent.current = true;
+			void sendMessage({ text: initialPrompt });
+		}
+	}, [initialPrompt, sendMessage]);
 
-	useEffect(
-		() => () => {
-			for (const timer of timers.current) {
-				clearTimeout(timer);
-			}
+	const send = useCallback(
+		(text: string) => {
+			void sendMessage({ text });
 		},
-		[],
+		[sendMessage],
 	);
 
-	// Boot a freshly created conversation from its first prompt. Self-contained
-	// (owns its timers + cleanup) so it stays correct under StrictMode remounts.
-	useEffect(() => {
-		if (!initialPrompt) {
-			return;
-		}
-		setPhase("loading");
-		setRenderStatus("rendering");
-		const toChat = setTimeout(() => {
-			setMessages([
-				createUserMessage(initialPrompt),
-				createAssistantMessage(initialPrompt),
-			]);
-			setStatus("ready");
-			setPhase("chat");
-		}, 9000);
-		const toReady = setTimeout(() => setRenderStatus("ready"), 24_000);
-		return () => {
-			clearTimeout(toChat);
-			clearTimeout(toReady);
-		};
-	}, [initialPrompt]);
+	const hasMessages = messages.length > 0;
+	const hasAssistant = messages.some((message) => message.role === "assistant");
+	const working = status === "submitted" || status === "streaming";
 
-	// Follow-up message inside an active session.
-	const send = useCallback((text: string) => {
-		const value = text.trim();
-		if (!value || phaseRef.current !== "chat") {
-			return;
-		}
-		setMessages((prev) => [...prev, createUserMessage(value)]);
-		setStatus("submitted");
-		setRenderStatus("rendering");
-		timers.current.push(
-			setTimeout(() => {
-				setStatus("streaming");
-				setMessages((prev) => [...prev, createAssistantMessage(value)]);
-			}, 700),
-		);
-		timers.current.push(setTimeout(() => setStatus("ready"), 1700));
-		timers.current.push(setTimeout(() => setRenderStatus("ready"), 12_000));
-	}, []);
+	let phase: StudioPhase;
+	if (!hasAssistant && (working || (initialPrompt != null && !hasMessages))) {
+		// Booting a fresh conversation, before the first assistant token.
+		phase = "loading";
+	} else if (hasMessages) {
+		phase = "chat";
+	} else {
+		phase = "idle";
+	}
 
-	return { phase, messages, status, renderStatus, send };
+	// No render pipeline yet, so there's never a video — the side panel animates
+	// indefinitely. The render loop will populate this later.
+	const videoUrl: string | undefined = undefined;
+
+	return { messages, status, phase, videoUrl, send };
 }

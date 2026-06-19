@@ -1,25 +1,20 @@
-import type { ChatStatus } from "ai";
+import type { ChatStatus, UIMessage } from "ai";
 import { useEffect, useRef } from "react";
 import { StudioEmptyState } from "@/features/studio/components/studio-empty-state";
 import { StudioLoading } from "@/features/studio/components/studio-loading";
 import { StudioWorkspace } from "@/features/studio/components/studio-workspace";
-import type {
-	RenderStatus,
-	StudioMessage,
-	StudioPhase,
-} from "@/features/studio/types";
+import type { StudioPhase } from "@/features/studio/types";
 
 /**
- * Notify the user when a render finishes while they're on another tab —
- * the "leave and come back" promise from the render panel.
+ * Notify the user when the explainer finishes (a video URL appears) while
+ * they're on another tab — the "leave and come back" promise from the panel.
  */
-function useRenderNotification(renderStatus: RenderStatus) {
-	const previous = useRef(renderStatus);
+function useRenderNotification(videoUrl: string | undefined) {
+	const previous = useRef(videoUrl);
 
 	useEffect(() => {
-		const finished =
-			previous.current === "rendering" && renderStatus === "ready";
-		previous.current = renderStatus;
+		const finished = !previous.current && Boolean(videoUrl);
+		previous.current = videoUrl;
 
 		if (
 			finished &&
@@ -34,23 +29,23 @@ function useRenderNotification(renderStatus: RenderStatus) {
 			});
 			notification.onclick = () => window.focus();
 		}
-	}, [renderStatus]);
+	}, [videoUrl]);
 }
 
 export function StudioStage({
 	phase,
 	messages,
 	status,
-	renderStatus,
+	videoUrl,
 	onSubmit,
 }: {
 	phase: StudioPhase;
-	messages: StudioMessage[];
+	messages: UIMessage[];
 	status: ChatStatus;
-	renderStatus: RenderStatus;
+	videoUrl?: string;
 	onSubmit: (text: string) => void;
 }) {
-	useRenderNotification(renderStatus);
+	useRenderNotification(videoUrl);
 
 	return (
 		<>
@@ -62,8 +57,8 @@ export function StudioStage({
 				<StudioWorkspace
 					messages={messages}
 					onSubmit={onSubmit}
-					renderStatus={renderStatus}
 					status={status}
+					videoUrl={videoUrl}
 				/>
 			) : null}
 		</>

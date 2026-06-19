@@ -40,7 +40,7 @@ const ServerEnvSchema = z.object({
   RESEND_FROM: z.string().default("animus <onboarding@resend.dev>"),
   /** Amazon Bedrock inference-profile id for the agent's Claude model. AWS
    * credentials/region resolve from AWS_* env vars or the AWS credential chain. */
-  BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-8"),
+  BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-6-v1"),
 });
 
 export interface ServerEnv {

@@ -1,4 +1,4 @@
-import type { ChatStatus } from "ai";
+import type { ChatStatus, UIMessage } from "ai";
 import {
 	ResizableHandle,
 	ResizablePanel,
@@ -6,17 +6,16 @@ import {
 } from "@/components/ui/resizable";
 import { ChatPanel } from "@/features/studio/components/chat-panel";
 import { VisualizationPanel } from "@/features/studio/components/visualization-panel";
-import type { RenderStatus, StudioMessage } from "@/features/studio/types";
 
 export function StudioWorkspace({
 	messages,
 	status,
-	renderStatus,
+	videoUrl,
 	onSubmit,
 }: {
-	messages: StudioMessage[];
+	messages: UIMessage[];
 	status: ChatStatus;
-	renderStatus: RenderStatus;
+	videoUrl?: string;
 	onSubmit: (text: string) => void;
 }) {
 	return (
@@ -26,7 +25,7 @@ export function StudioWorkspace({
 			</ResizablePanel>
 			<ResizableHandle withHandle />
 			<ResizablePanel defaultSize="58%" minSize="20%">
-				<VisualizationPanel renderStatus={renderStatus} />
+				<VisualizationPanel videoUrl={videoUrl} />
 			</ResizablePanel>
 		</ResizablePanelGroup>
 	);
