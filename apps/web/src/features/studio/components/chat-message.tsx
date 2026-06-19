@@ -16,6 +16,22 @@ import { FinalizeVideoPlanTool } from "@/features/studio/components/tools/finali
 import type { AnimusUIMessage, RespondToTool } from "@/features/studio/types";
 import { useSession } from "@/lib/auth-client";
 
+/** New words fade in as they arrive, in order, at the provider's real stream
+ * speed (no server-side pacing). stagger:0 is the key: each word's delay would
+ * otherwise be index*stagger, which spreads a provider chunk's words across time
+ * and lets a later chunk overtake an earlier one's tail — the out-of-order pop.
+ * With stagger:0 every word in a chunk fades together, and chunks append in
+ * order, so the reveal tracks the stream as a soft trailing fade. The short
+ * duration keeps that fade from lingering once newer text lands.
+ * Requires `streamdown/styles.css` (imported in index.css) for the keyframes. */
+const STREAM_ANIMATION = {
+	animation: "blurIn",
+	duration: 200,
+	easing: "ease-out",
+	sep: "word",
+	stagger: 0,
+} as const;
+
 function AgentAvatar() {
 	return (
 		<div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-card">
@@ -92,6 +108,7 @@ export function ChatMessage({
 						return part.text ? (
 							<MessageContent key={key}>
 								<MessageResponse
+									animated={STREAM_ANIMATION}
 									isAnimating={isStreaming && part.state === "streaming"}
 								>
 									{part.text}
