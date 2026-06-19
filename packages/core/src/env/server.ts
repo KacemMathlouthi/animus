@@ -58,16 +58,13 @@ export interface ServerEnv {
   webOrigin: string;
 }
 
-let cached: ServerEnv | null = null;
-
-/** Parse and validate the server environment once, then memoize. Throws a
- * readable error listing every invalid/missing variable. */
-export function getServerEnv(): ServerEnv {
-  if (cached) {
-    return cached;
-  }
-
-  const parsed = ServerEnvSchema.safeParse(process.env);
+/** Pure validation + mapping of a raw environment. Throws a readable error
+ * listing every invalid/missing variable. Separated from the memoized singleton
+ * below so it is testable without touching the real process.env. */
+export function parseServerEnv(
+  source: Record<string, string | undefined>
+): ServerEnv {
+  const parsed = ServerEnvSchema.safeParse(source);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map(
@@ -78,7 +75,7 @@ export function getServerEnv(): ServerEnv {
   }
 
   const e = parsed.data;
-  cached = {
+  return {
     nodeEnv: e.NODE_ENV,
     port: e.PORT,
     webOrigin: e.WEB_ORIGIN,
@@ -95,5 +92,14 @@ export function getServerEnv(): ServerEnv {
     resendApiKey: e.RESEND_API_KEY,
     resendFrom: e.RESEND_FROM,
   };
+}
+
+let cached: ServerEnv | null = null;
+
+/** Parse and validate the real process environment once, then memoize. */
+export function getServerEnv(): ServerEnv {
+  if (!cached) {
+    cached = parseServerEnv(process.env);
+  }
   return cached;
 }
