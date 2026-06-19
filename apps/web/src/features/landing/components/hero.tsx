@@ -34,7 +34,7 @@ export function HeroSection() {
 				<a
 					className={cn(
 						"group mx-auto flex w-fit items-center gap-3 rounded-sm border bg-card p-1 shadow-xs",
-						"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards transition-all delay-500 duration-500 ease-out",
+						"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-500 duration-500 ease-snappy",
 					)}
 					href="#features"
 				>
@@ -44,14 +44,14 @@ export function HeroSection() {
 					<span className="text-xs">now in private beta</span>
 					<span className="block h-5 border-l" />
 					<div className="pr-1">
-						<ArrowRightIcon className="size-3 -translate-x-0.5 duration-150 ease-out group-hover:translate-x-0.5" />
+						<ArrowRightIcon className="size-3 -translate-x-0.5 transition-transform duration-150 ease-snappy group-hover:translate-x-0.5" />
 					</div>
 				</a>
 
 				<h1
 					className={cn(
 						"max-w-3xl text-balance text-center font-medium text-4xl text-foreground tracking-tight md:text-6xl lg:text-7xl",
-						"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-100 duration-500 ease-out",
+						"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-100 duration-500 ease-snappy",
 					)}
 				>
 					Explainers that animate themselves
@@ -60,14 +60,14 @@ export function HeroSection() {
 				<p
 					className={cn(
 						"max-w-xl text-balance text-center text-muted-foreground md:text-lg",
-						"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-out",
+						"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-snappy",
 					)}
 				>
 					animus researches your topic, storyboards it, and renders a narrated,
 					math-precise video — grounded in real sources and ready to share.
 				</p>
 
-				<div className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center gap-3 fill-mode-backwards pt-2 delay-300 duration-500 ease-out">
+				<div className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center gap-3 fill-mode-backwards pt-2 delay-300 duration-500 ease-snappy">
 					<Button asChild variant="outline">
 						<a href="#demo">
 							<PlayIcon data-icon="inline-start" /> Watch a demo

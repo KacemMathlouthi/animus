@@ -2,7 +2,8 @@ import { BellIcon, PlayIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MorphLogo } from "@/features/studio/components/morph-logo";
-import type { RenderStatus } from "@/features/studio/types";
+
+type RenderStatus = "rendering" | "ready";
 
 function NotifyButton() {
 	const [permission, setPermission] = useState<
