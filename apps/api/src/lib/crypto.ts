@@ -3,7 +3,7 @@
  * The output bundles the random IV and auth tag with the
  * ciphertext so a single column round-trips. */
 
-import { createCipheriv, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { getServerEnv } from "@animus/core/env";
 
 const ALGORITHM = "aes-256-gcm";
@@ -24,10 +24,6 @@ function getKey(): Buffer {
   return key;
 }
 
-// TODO: add `decryptSecret` when the agent needs the plaintext BYO key back for
-// model calls. Split the `iv.tag.ciphertext` payload, then createDecipheriv with
-// the same key + IV and setAuthTag(tag).
-
 /** Encrypts `plaintext` into a self-contained
  * `iv.tag.ciphertext` string (each part base64). */
 export function encryptSecret(plaintext: string): string {
@@ -43,4 +39,24 @@ export function encryptSecret(plaintext: string): string {
     tag.toString("base64"),
     ciphertext.toString("base64"),
   ].join(".");
+}
+
+/** Reverses {@link encryptSecret}: splits the payload, then decrypts with the
+ * same key + IV and verifies the auth tag. Throws if the payload is malformed
+ * or the tag fails (tampering / wrong key). */
+export function decryptSecret(payload: string): string {
+  const [ivPart, tagPart, ctPart] = payload.split(".");
+  if (!(ivPart && tagPart && ctPart)) {
+    throw new Error("Malformed encrypted secret.");
+  }
+  const decipher = createDecipheriv(
+    ALGORITHM,
+    getKey(),
+    Buffer.from(ivPart, "base64")
+  );
+  decipher.setAuthTag(Buffer.from(tagPart, "base64"));
+  return Buffer.concat([
+    decipher.update(Buffer.from(ctPart, "base64")),
+    decipher.final(),
+  ]).toString("utf8");
 }
