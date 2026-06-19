@@ -55,4 +55,7 @@ logger.info(`animus-api listening on http://localhost:${env.port}`);
 export default {
   port: env.port,
   fetch: app.fetch,
+  // Agent turns stream over many seconds; the default 10s idle timeout would cut
+  // them off (time-to-first-token + gaps between chunks). 240s is the headroom.
+  idleTimeout: 240,
 };
