@@ -4,11 +4,19 @@ import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AppEnv } from "../types.ts";
 
-// Mocks (mock-prefixed names so vitest allows them inside the hoisted factories).
-const mockFindUserSettings = vi.fn();
-const mockFindProviderKey = vi.fn();
-const mockInsertOnConflict = vi.fn().mockResolvedValue(undefined);
-const mockDeleteWhere = vi.fn().mockResolvedValue(undefined);
+// Hoisted so the vi.mock factory below can reference them safely (the factory is
+// hoisted above the imports; vi.hoisted keeps these in the same scope).
+const {
+  mockFindUserSettings,
+  mockFindProviderKey,
+  mockInsertOnConflict,
+  mockDeleteWhere,
+} = vi.hoisted(() => ({
+  mockFindUserSettings: vi.fn(),
+  mockFindProviderKey: vi.fn(),
+  mockInsertOnConflict: vi.fn(),
+  mockDeleteWhere: vi.fn(),
+}));
 
 vi.mock("@animus/db", () => ({
   db: {

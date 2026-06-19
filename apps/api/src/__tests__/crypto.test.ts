@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the shared env so the crypto unit test only depends on the encryption
-// key, not the whole backend environment. (`mock`-prefixed name is required for
-// vitest to allow referencing it inside the hoisted factory.)
-let mockEncryptionKey: string | undefined;
+// key, not the whole backend environment. vi.hoisted keeps the mutable holder in
+// scope for the hoisted vi.mock factory.
+const env = vi.hoisted(() => ({
+  encryptionKey: undefined as string | undefined,
+}));
 vi.mock("@animus/core/env", () => ({
-  getServerEnv: () => ({ encryptionKey: mockEncryptionKey }),
+  getServerEnv: () => ({ encryptionKey: env.encryptionKey }),
 }));
 
 const { decryptSecret, encryptSecret } = await import("../lib/crypto.ts");
@@ -13,7 +15,7 @@ const { decryptSecret, encryptSecret } = await import("../lib/crypto.ts");
 const VALID_KEY = Buffer.alloc(32).toString("base64");
 
 beforeEach(() => {
-  mockEncryptionKey = VALID_KEY;
+  env.encryptionKey = VALID_KEY;
 });
 
 describe("encryptSecret / decryptSecret", () => {
@@ -46,12 +48,12 @@ describe("encryptSecret / decryptSecret", () => {
   });
 
   it("throws when no encryption key is configured", () => {
-    mockEncryptionKey = undefined;
+    env.encryptionKey = undefined;
     expect(() => encryptSecret("x")).toThrow("ENCRYPTION_KEY");
   });
 
   it("throws when the key is the wrong length", () => {
-    mockEncryptionKey = Buffer.alloc(16).toString("base64");
+    env.encryptionKey = Buffer.alloc(16).toString("base64");
     expect(() => encryptSecret("x")).toThrow("32 bytes");
   });
 });

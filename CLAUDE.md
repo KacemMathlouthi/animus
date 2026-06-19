@@ -153,8 +153,10 @@ round-trip), the agent runner pipeline, and the sandbox/render loop.
 - Use `vitest` (not `bun test`). Run: `bunx vitest run`.
 - Keep tests close to source in `__tests__/` folders.
 - Shared helpers in `src/__tests__/helpers/` (mock-logger, mock-fetch, fixtures).
-- Use the AI SDK mock providers (`MockLanguageModelV3`, `simulateReadableStream`,
-  `mockId`) from `ai/test` for deterministic LLM behavior in agent tests.
+- For deterministic LLM behavior in agent tests, use the mock providers from
+  `ai/test` (`MockLanguageModelV3`, `mockId`) together with
+  `simulateReadableStream` from `ai` (it now lives in the main entry — the
+  `ai/test` re-export is deprecated).
 
 ### Mandatory test policy
 - **Every bug fix must include a test** that reproduces the bug and verifies the fix.
@@ -214,6 +216,9 @@ assume — confirm.
   Server env is behind `@animus/core/env` — **never import it from the web**
   (enforced by a Biome `noRestrictedImports` rule in `apps/web`).
 - **Env:** loaded by the runtime (Bun `--env-file`, Vite for web), validated by
-  Zod in `@animus/core/env`. Never read `process.env` directly outside there.
+  Zod in `@animus/core/env`. Never read `process.env` directly in **runtime
+  app/server code** — import from `@animus/core/env`. Build-time tooling configs
+  (e.g. `drizzle.config.ts`) are the exception: they run via `--env-file`, need
+  only `DATABASE_URL`, and must not pull in the full server-env schema.
 - **Commits:** Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`,
   `chore:`). No AI attribution / `Co-Authored-By` lines.
