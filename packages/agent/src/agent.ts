@@ -8,7 +8,7 @@ import { getModel } from "./config/index.ts";
 import { MANIM_SYSTEM_PROMPT } from "./prompts/index.ts";
 import { tools } from "./tools/index.ts";
 
-export function createManimAgent(): ToolLoopAgent {
+export function createManimAgent(): ToolLoopAgent<never, typeof tools, never> {
   return new ToolLoopAgent({
     model: getModel(),
     instructions: MANIM_SYSTEM_PROMPT,
