@@ -14,11 +14,13 @@ export function ChatPanel({
 	status,
 	respondToTool,
 	onSubmit,
+	onStop,
 }: {
 	messages: AnimusUIMessage[];
 	status: ChatStatus;
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
+	onStop: () => void;
 }) {
 	const lastIndex = messages.length - 1;
 	return (
@@ -46,6 +48,7 @@ export function ChatPanel({
 			<div className="shrink-0 border-t p-3">
 				<div className="mx-auto w-full max-w-2xl">
 					<StudioPrompt
+						onStop={onStop}
 						onSubmit={onSubmit}
 						placeholder="Ask for a change, or describe the next scene…"
 						status={status}

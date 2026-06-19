@@ -19,6 +19,7 @@ type StudioChat = {
 	 * then — the side panel keeps animating while it's absent. */
 	videoUrl?: string;
 	send: (text: string) => void;
+	stop: () => void;
 	respondToTool: RespondToTool;
 };
 
@@ -38,7 +39,7 @@ export function useStudioChat({
 	chatId: string;
 	initialPrompt?: string;
 }): StudioChat {
-	const { messages, sendMessage, status, addToolOutput } =
+	const { messages, sendMessage, status, addToolOutput, stop } =
 		useChat<AnimusUIMessage>({
 			id: chatId,
 			transport: chatTransport,
@@ -88,5 +89,5 @@ export function useStudioChat({
 	// indefinitely. The render loop will populate this later.
 	const videoUrl: string | undefined = undefined;
 
-	return { messages, status, phase, videoUrl, send, respondToTool };
+	return { messages, status, phase, videoUrl, send, stop, respondToTool };
 }

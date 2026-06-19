@@ -43,6 +43,7 @@ export function StudioStage({
 	videoUrl,
 	respondToTool,
 	onSubmit,
+	onStop,
 }: {
 	phase: StudioPhase;
 	messages: AnimusUIMessage[];
@@ -50,6 +51,7 @@ export function StudioStage({
 	videoUrl?: string;
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
+	onStop: () => void;
 }) {
 	useRenderNotification(videoUrl);
 
@@ -62,6 +64,7 @@ export function StudioStage({
 			{phase === "chat" ? (
 				<StudioWorkspace
 					messages={messages}
+					onStop={onStop}
 					onSubmit={onSubmit}
 					respondToTool={respondToTool}
 					status={status}

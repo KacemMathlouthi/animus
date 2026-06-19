@@ -14,18 +14,21 @@ export function StudioWorkspace({
 	videoUrl,
 	respondToTool,
 	onSubmit,
+	onStop,
 }: {
 	messages: AnimusUIMessage[];
 	status: ChatStatus;
 	videoUrl?: string;
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
+	onStop: () => void;
 }) {
 	return (
 		<ResizablePanelGroup className="min-h-0 flex-1" orientation="horizontal">
 			<ResizablePanel defaultSize="42%" minSize="20%">
 				<ChatPanel
 					messages={messages}
+					onStop={onStop}
 					onSubmit={onSubmit}
 					respondToTool={respondToTool}
 					status={status}
