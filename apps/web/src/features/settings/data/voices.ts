@@ -83,5 +83,3 @@ export const VOICES: ElevenLabs.Voice[] = [
 			"https://storage.googleapis.com/eleven-public-prod/premade/voices/pFZP5JQG7iQjIQuC4Bku/89b68b35-b3dd-4348-a84a-a3c13a3c2b30.mp3",
 	},
 ];
-
-export const DEFAULT_VOICE_ID = VOICES[0].voiceId;

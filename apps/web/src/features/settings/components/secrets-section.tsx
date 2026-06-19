@@ -1,15 +1,6 @@
+import type { ProviderKeyPreview } from "@animus/core";
 import { ChevronsUpDownIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-import { useState } from "react";
-import {
-	EnvironmentVariable,
-	EnvironmentVariableCopyButton,
-	EnvironmentVariableName,
-	EnvironmentVariables,
-	EnvironmentVariablesContent,
-	EnvironmentVariablesHeader,
-	EnvironmentVariablesToggle,
-	EnvironmentVariableValue,
-} from "@/components/ai-elements/environment-variables";
+import { useEffect, useState } from "react";
 import {
 	ModelSelector,
 	ModelSelectorContent,
@@ -23,37 +14,88 @@ import {
 } from "@/components/ai-elements/model-selector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiFetch } from "@/lib/api";
 import { PROVIDERS } from "../data/providers";
 import { SectionHeading, SettingsSaveBar } from "./settings-ui";
-
-interface SavedKey {
-	providerId: string;
-	key: string;
-}
-
-const EMPTY: SavedKey = { providerId: PROVIDERS[0].id, key: "" };
 
 export function SecretsSection() {
 	const [providerId, setProviderId] = useState(PROVIDERS[0].id);
 	const [keyInput, setKeyInput] = useState("");
 	const [reveal, setReveal] = useState(false);
 	const [pickerOpen, setPickerOpen] = useState(false);
-	const [saved, setSaved] = useState<SavedKey>(EMPTY);
+	const [saved, setSaved] = useState<ProviderKeyPreview | null>(null);
+	const [saving, setSaving] = useState(false);
+
+	// Load the current key's masked preview (if any).
+	useEffect(() => {
+		let active = true;
+		apiFetch<{ key: ProviderKeyPreview | null }>("/settings/keys")
+			.then((data) => {
+				if (!(active && data.key)) {
+					return;
+				}
+				setSaved(data.key);
+				setProviderId(data.key.provider);
+			})
+			.catch(() => {
+				// No key yet, or offline — leave the form empty.
+			});
+		return () => {
+			active = false;
+		};
+	}, []);
 
 	const provider = PROVIDERS.find((p) => p.id === providerId) ?? PROVIDERS[0];
 	const ProviderIcon = provider.icon;
-	const savedProvider = PROVIDERS.find((p) => p.id === saved.providerId);
+	const savedProvider = saved
+		? PROVIDERS.find((p) => p.id === saved.provider)
+		: undefined;
+	const SavedIcon = savedProvider?.icon;
 
-	const dirty = providerId !== saved.providerId || keyInput !== saved.key;
+	// A key must be entered to save — provider-specific, so we never reuse an old one.
+	const dirty = keyInput.trim().length > 0;
 
-	function handleSave() {
-		setSaved({ providerId, key: keyInput.trim() });
-		setReveal(false);
+	async function handleSave() {
+		const key = keyInput.trim();
+		if (!key) {
+			return;
+		}
+		setSaving(true);
+		try {
+			const data = await apiFetch<{ key: ProviderKeyPreview }>(
+				"/settings/keys",
+				{
+					method: "PUT",
+					body: JSON.stringify({ provider: providerId, key }),
+				},
+			);
+			setSaved(data.key);
+			setKeyInput("");
+			setReveal(false);
+		} catch {
+			// Leave the input so the user can retry.
+		} finally {
+			setSaving(false);
+		}
+	}
+
+	async function handleRemove() {
+		setSaving(true);
+		try {
+			await apiFetch("/settings/keys", { method: "DELETE" });
+			setSaved(null);
+			setKeyInput("");
+			setReveal(false);
+		} catch {
+			// Ignore; the key stays until the next attempt.
+		} finally {
+			setSaving(false);
+		}
 	}
 
 	function handleReset() {
-		setProviderId(saved.providerId);
-		setKeyInput(saved.key);
+		setProviderId(saved?.provider ?? PROVIDERS[0].id);
+		setKeyInput("");
 		setReveal(false);
 	}
 
@@ -147,32 +189,38 @@ export function SecretsSection() {
 					</a>
 				</div>
 
-				{saved.key && savedProvider ? (
-					<EnvironmentVariables>
-						<EnvironmentVariablesHeader>
-							<span className="font-medium text-sm">Saved key</span>
-							<EnvironmentVariablesToggle />
-						</EnvironmentVariablesHeader>
-						<EnvironmentVariablesContent>
-							<EnvironmentVariable
-								name={savedProvider.envKey}
-								value={saved.key}
-							>
-								<EnvironmentVariableName />
-								<div className="flex items-center gap-2">
-									<EnvironmentVariableValue />
-									<EnvironmentVariableCopyButton />
-								</div>
-							</EnvironmentVariable>
-						</EnvironmentVariablesContent>
-					</EnvironmentVariables>
+				{saved ? (
+					<div className="flex items-center justify-between rounded-lg border p-3">
+						<div className="flex items-center gap-2 text-sm">
+							{SavedIcon ? <SavedIcon size={16} /> : null}
+							<span className="font-medium">
+								{savedProvider?.name ?? saved.provider}
+							</span>
+							<span className="font-mono text-muted-foreground">
+								••••{saved.last4}
+							</span>
+						</div>
+						<Button
+							disabled={saving}
+							onClick={() => {
+								void handleRemove();
+							}}
+							size="sm"
+							variant="ghost"
+						>
+							Remove
+						</Button>
+					</div>
 				) : null}
 			</div>
 
 			<SettingsSaveBar
 				dirty={dirty}
 				onReset={handleReset}
-				onSave={handleSave}
+				onSave={() => {
+					void handleSave();
+				}}
+				saving={saving}
 			/>
 		</div>
 	);

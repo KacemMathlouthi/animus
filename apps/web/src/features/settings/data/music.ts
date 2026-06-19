@@ -33,5 +33,3 @@ export const MUSIC_TRACKS: MusicTrack[] = [
 		preview: `${CDN}/02.mp3`,
 	},
 ];
-
-export const DEFAULT_TRACK_ID = MUSIC_TRACKS[0].id;

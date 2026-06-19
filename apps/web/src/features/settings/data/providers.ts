@@ -1,7 +1,9 @@
-/** AI providers a user can bring their own API key for. Logos come from
- * @lobehub/icons (a dedicated AI/LLM brand-icon package), so adding a provider
- * is a single entry — no hand-maintained SVGs, and it scales to dozens. */
+/** Web view of the shared provider registry: the framework-agnostic data lives
+ * in @animus/core; here we attach each provider's brand logo from
+ * @lobehub/icons (a web-only concern). Adding a provider is still a single
+ * entry in core — just map its icon here. */
 
+import { PROVIDERS as PROVIDER_INFO, type ProviderId } from "@animus/core";
 import {
 	Anthropic,
 	Gemini,
@@ -12,62 +14,25 @@ import {
 	OpenAI,
 } from "@lobehub/icons";
 
+const ICONS: Record<ProviderId, IconType> = {
+	openai: OpenAI,
+	anthropic: Anthropic,
+	google: Gemini,
+	mistral: Mistral,
+	groq: Groq,
+	xai: Grok,
+};
+
 export interface Provider {
-	id: string;
+	id: ProviderId;
 	name: string;
-	icon: IconType;
 	envKey: string;
 	placeholder: string;
 	docsUrl: string;
+	icon: IconType;
 }
 
-export const PROVIDERS: Provider[] = [
-	{
-		id: "openai",
-		name: "OpenAI",
-		icon: OpenAI,
-		envKey: "OPENAI_API_KEY",
-		placeholder: "sk-...",
-		docsUrl: "https://platform.openai.com/api-keys",
-	},
-	{
-		id: "anthropic",
-		name: "Anthropic",
-		icon: Anthropic,
-		envKey: "ANTHROPIC_API_KEY",
-		placeholder: "sk-ant-...",
-		docsUrl: "https://console.anthropic.com/settings/keys",
-	},
-	{
-		id: "google",
-		name: "Google Gemini",
-		icon: Gemini,
-		envKey: "GEMINI_API_KEY",
-		placeholder: "AIza...",
-		docsUrl: "https://aistudio.google.com/app/apikey",
-	},
-	{
-		id: "mistral",
-		name: "Mistral",
-		icon: Mistral,
-		envKey: "MISTRAL_API_KEY",
-		placeholder: "...",
-		docsUrl: "https://console.mistral.ai/api-keys",
-	},
-	{
-		id: "groq",
-		name: "Groq",
-		icon: Groq,
-		envKey: "GROQ_API_KEY",
-		placeholder: "gsk_...",
-		docsUrl: "https://console.groq.com/keys",
-	},
-	{
-		id: "xai",
-		name: "xAI Grok",
-		icon: Grok,
-		envKey: "XAI_API_KEY",
-		placeholder: "xai-...",
-		docsUrl: "https://console.x.ai",
-	},
-];
+export const PROVIDERS: Provider[] = PROVIDER_INFO.map((provider) => ({
+	...provider,
+	icon: ICONS[provider.id],
+}));

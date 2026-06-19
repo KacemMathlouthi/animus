@@ -2,11 +2,12 @@
  * RESEND_API_KEY is unset or a send fails, so local dev is never blocked. */
 
 import { readFile } from "node:fs/promises";
+import { getServerEnv } from "@animus/core/env";
 import { Resend } from "resend";
 
-const apiKey = process.env.RESEND_API_KEY;
-const from = process.env.RESEND_FROM ?? "animus <onboarding@resend.dev>";
-const resend = apiKey ? new Resend(apiKey) : null;
+const env = getServerEnv();
+const from = env.resendFrom;
+const resend = env.resendApiKey ? new Resend(env.resendApiKey) : null;
 
 const FONT_STACK =
   "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";

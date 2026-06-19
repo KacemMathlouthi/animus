@@ -6,5 +6,19 @@
 		"parser": {
 			"tailwindDirectives": true
 		}
+	},
+	"linter": {
+		"rules": {
+			"style": {
+				"noRestrictedImports": {
+					"level": "error",
+					"options": {
+						"paths": {
+							"@animus/core/env": "Server-only env must never be imported in the web app — it carries secrets and reads process.env. Import domain types/schemas from '@animus/core' instead."
+						}
+					}
+				}
+			}
+		}
 	}
 }

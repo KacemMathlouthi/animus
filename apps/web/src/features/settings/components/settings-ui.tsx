@@ -70,20 +70,23 @@ export function SettingsSaveBar({
 	dirty,
 	onSave,
 	onReset,
+	saving = false,
 }: {
 	dirty: boolean;
 	onSave: () => void;
 	onReset: () => void;
+	/** Disable the controls and show a pending label while a save is in flight. */
+	saving?: boolean;
 }) {
 	return (
 		<div className="mt-2 flex items-center justify-end gap-2 border-t pt-5">
 			{dirty ? (
-				<Button onClick={onReset} variant="ghost">
+				<Button disabled={saving} onClick={onReset} variant="ghost">
 					Reset
 				</Button>
 			) : null}
-			<Button disabled={!dirty} onClick={onSave}>
-				Save changes
+			<Button disabled={!dirty || saving} onClick={onSave}>
+				{saving ? "Saving…" : "Save changes"}
 			</Button>
 		</div>
 	);

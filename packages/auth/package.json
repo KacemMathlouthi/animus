@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@animus/core": "workspace:*",
     "@animus/db": "workspace:*",
     "@better-auth/infra": "^0.2.14",
     "better-auth": "^1.6.19",
