@@ -23,16 +23,18 @@ function NewStudio() {
 function StudioChat({ chatId }: { chatId: string }) {
 	const location = useLocation();
 	const prompt = (location.state as { prompt?: string } | null)?.prompt;
-	const { messages, status, phase, videoUrl, send } = useStudioChat({
-		chatId,
-		initialPrompt: prompt,
-	});
+	const { messages, status, phase, videoUrl, respondToTool, send } =
+		useStudioChat({
+			chatId,
+			initialPrompt: prompt,
+		});
 
 	return (
 		<StudioStage
 			messages={messages}
 			onSubmit={send}
 			phase={phase}
+			respondToTool={respondToTool}
 			status={status}
 			videoUrl={videoUrl}
 		/>

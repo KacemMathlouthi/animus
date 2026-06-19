@@ -1,17 +1,25 @@
 import { useChat } from "@ai-sdk/react";
-import type { ChatStatus, UIMessage } from "ai";
+import {
+	type ChatStatus,
+	lastAssistantMessageIsCompleteWithToolCalls,
+} from "ai";
 import { useCallback, useEffect, useRef } from "react";
-import type { StudioPhase } from "@/features/studio/types";
+import type {
+	AnimusUIMessage,
+	RespondToTool,
+	StudioPhase,
+} from "@/features/studio/types";
 import { chatTransport } from "@/lib/chat";
 
 type StudioChat = {
-	messages: UIMessage[];
+	messages: AnimusUIMessage[];
 	status: ChatStatus;
 	phase: StudioPhase;
 	/** Rendered explainer URL, once the render loop produces one. Undefined until
 	 * then — the side panel keeps animating while it's absent. */
 	videoUrl?: string;
 	send: (text: string) => void;
+	respondToTool: RespondToTool;
 };
 
 /**
@@ -19,10 +27,9 @@ type StudioChat = {
  * Keyed by chatId so each conversation has its own state; an optional initial
  * prompt (a freshly created conversation) is sent once on mount.
  *
- * Derives the full-screen `loading` phase (a new conversation booting, before
- * the first assistant token) from the chat lifecycle. `videoUrl` is the seam
- * for the not-yet-built render loop; while it's undefined the side panel keeps
- * its rendering animation running.
+ * Interactive (human-in-the-loop) tool calls pause the agent until the user
+ * answers in the UI; `respondToTool` sends the answer back, and
+ * `sendAutomaticallyWhen` resubmits so the agent continues.
  */
 export function useStudioChat({
 	chatId,
@@ -31,10 +38,12 @@ export function useStudioChat({
 	chatId: string;
 	initialPrompt?: string;
 }): StudioChat {
-	const { messages, sendMessage, status } = useChat({
-		id: chatId,
-		transport: chatTransport,
-	});
+	const { messages, sendMessage, status, addToolOutput } =
+		useChat<AnimusUIMessage>({
+			id: chatId,
+			transport: chatTransport,
+			sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+		});
 
 	// Auto-run the first prompt exactly once for a new conversation.
 	const autoSent = useRef(false);
@@ -50,6 +59,15 @@ export function useStudioChat({
 			void sendMessage({ text });
 		},
 		[sendMessage],
+	);
+
+	const respondToTool = useCallback<RespondToTool>(
+		(tool, toolCallId, output) => {
+			// tool ↔ output correspond at every call site; the union widening here is
+			// the only thing the typed signature can't prove.
+			addToolOutput({ tool, toolCallId, output } as never);
+		},
+		[addToolOutput],
 	);
 
 	const hasMessages = messages.length > 0;
@@ -70,5 +88,5 @@ export function useStudioChat({
 	// indefinitely. The render loop will populate this later.
 	const videoUrl: string | undefined = undefined;
 
-	return { messages, status, phase, videoUrl, send };
+	return { messages, status, phase, videoUrl, send, respondToTool };
 }

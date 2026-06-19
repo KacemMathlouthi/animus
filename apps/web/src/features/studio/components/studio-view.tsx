@@ -1,9 +1,13 @@
-import type { ChatStatus, UIMessage } from "ai";
+import type { ChatStatus } from "ai";
 import { useEffect, useRef } from "react";
 import { StudioEmptyState } from "@/features/studio/components/studio-empty-state";
 import { StudioLoading } from "@/features/studio/components/studio-loading";
 import { StudioWorkspace } from "@/features/studio/components/studio-workspace";
-import type { StudioPhase } from "@/features/studio/types";
+import type {
+	AnimusUIMessage,
+	RespondToTool,
+	StudioPhase,
+} from "@/features/studio/types";
 
 /**
  * Notify the user when the explainer finishes (a video URL appears) while
@@ -37,12 +41,14 @@ export function StudioStage({
 	messages,
 	status,
 	videoUrl,
+	respondToTool,
 	onSubmit,
 }: {
 	phase: StudioPhase;
-	messages: UIMessage[];
+	messages: AnimusUIMessage[];
 	status: ChatStatus;
 	videoUrl?: string;
+	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 }) {
 	useRenderNotification(videoUrl);
@@ -57,6 +63,7 @@ export function StudioStage({
 				<StudioWorkspace
 					messages={messages}
 					onSubmit={onSubmit}
+					respondToTool={respondToTool}
 					status={status}
 					videoUrl={videoUrl}
 				/>

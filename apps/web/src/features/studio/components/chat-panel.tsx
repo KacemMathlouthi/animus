@@ -1,4 +1,4 @@
-import type { ChatStatus, UIMessage } from "ai";
+import type { ChatStatus } from "ai";
 import {
 	Conversation,
 	ConversationContent,
@@ -7,14 +7,17 @@ import {
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { ChatMessage } from "@/features/studio/components/chat-message";
 import { StudioPrompt } from "@/features/studio/components/studio-prompt";
+import type { AnimusUIMessage, RespondToTool } from "@/features/studio/types";
 
 export function ChatPanel({
 	messages,
 	status,
+	respondToTool,
 	onSubmit,
 }: {
-	messages: UIMessage[];
+	messages: AnimusUIMessage[];
 	status: ChatStatus;
+	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 }) {
 	const lastIndex = messages.length - 1;
@@ -31,6 +34,7 @@ export function ChatPanel({
 							}
 							key={message.id}
 							message={message}
+							respondToTool={respondToTool}
 						/>
 					))}
 					{status === "submitted" ? (

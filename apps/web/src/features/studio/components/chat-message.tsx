@@ -1,4 +1,3 @@
-import type { UIMessage } from "ai";
 import {
 	Message,
 	MessageContent,
@@ -9,8 +8,12 @@ import {
 	ReasoningContent,
 	ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
+import { Shimmer } from "@/components/ai-elements/shimmer";
 import { LogoMark } from "@/components/brand/logo-mark";
 import { UserAvatar } from "@/components/user-avatar";
+import { AskUserQuestionTool } from "@/features/studio/components/tools/ask-user-question";
+import { FinalizeVideoPlanTool } from "@/features/studio/components/tools/finalize-video-plan";
+import type { AnimusUIMessage, RespondToTool } from "@/features/studio/types";
 import { useSession } from "@/lib/auth-client";
 
 function AgentAvatar() {
@@ -35,11 +38,11 @@ function MessageUserAvatar() {
 	);
 }
 
-/** Concatenate all parts of a given kind into a single string. */
-function partsOf(message: UIMessage, kind: "text" | "reasoning"): string {
+/** Concatenate all text parts (used for the plain user bubble). */
+function textOf(message: AnimusUIMessage): string {
 	let out = "";
 	for (const part of message.parts) {
-		if (part.type === kind) {
+		if (part.type === "text") {
 			out += part.text;
 		}
 	}
@@ -49,38 +52,94 @@ function partsOf(message: UIMessage, kind: "text" | "reasoning"): string {
 export function ChatMessage({
 	message,
 	isStreaming = false,
+	respondToTool,
 }: {
-	message: UIMessage;
+	message: AnimusUIMessage;
 	isStreaming?: boolean;
+	respondToTool: RespondToTool;
 }) {
-	const text = partsOf(message, "text");
-
 	if (message.role === "user") {
 		return (
 			<div className="flex items-start justify-end gap-3">
 				<Message className="ml-0 max-w-[80%]" from="user">
-					<MessageContent>{text}</MessageContent>
+					<MessageContent>{textOf(message)}</MessageContent>
 				</Message>
 				<MessageUserAvatar />
 			</div>
 		);
 	}
 
-	const reasoning = partsOf(message, "reasoning");
-
+	// Render parts in their original order so text and interactive tools stay
+	// interleaved exactly as the agent produced them.
 	return (
 		<div className="flex items-start gap-3">
 			<AgentAvatar />
 			<Message className="max-w-[80%] flex-1" from="assistant">
-				{reasoning ? (
-					<Reasoning>
-						<ReasoningTrigger />
-						<ReasoningContent>{reasoning}</ReasoningContent>
-					</Reasoning>
-				) : null}
-				<MessageContent>
-					<MessageResponse isAnimating={isStreaming}>{text}</MessageResponse>
-				</MessageContent>
+				{message.parts.map((part, index) => {
+					// Append-only parts: index keys are stable here (parts never reorder).
+					const key = `${message.id}-${index}`;
+
+					if (part.type === "reasoning") {
+						return part.text ? (
+							<Reasoning key={key}>
+								<ReasoningTrigger />
+								<ReasoningContent>{part.text}</ReasoningContent>
+							</Reasoning>
+						) : null;
+					}
+
+					if (part.type === "text") {
+						return part.text ? (
+							<MessageContent key={key}>
+								<MessageResponse
+									isAnimating={isStreaming && part.state === "streaming"}
+								>
+									{part.text}
+								</MessageResponse>
+							</MessageContent>
+						) : null;
+					}
+
+					if (part.type === "tool-askUserQuestion") {
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<AskUserQuestionTool
+									input={part.input}
+									key={part.toolCallId}
+									onRespond={(output) =>
+										respondToTool("askUserQuestion", part.toolCallId, output)
+									}
+									output={
+										part.state === "output-available" ? part.output : undefined
+									}
+								/>
+							);
+						}
+						return (
+							<Shimmer key={part.toolCallId}>Preparing a question…</Shimmer>
+						);
+					}
+
+					if (part.type === "tool-finalizeVideoPlan") {
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<FinalizeVideoPlanTool
+									input={part.input}
+									key={part.toolCallId}
+									onRespond={(output) =>
+										respondToTool("finalizeVideoPlan", part.toolCallId, output)
+									}
+									output={
+										part.state === "output-available" ? part.output : undefined
+									}
+								/>
+							);
+						}
+						return <Shimmer key={part.toolCallId}>Drafting a plan…</Shimmer>;
+					}
+
+					return null;
+				})}
 			</Message>
 		</div>
 	);
