@@ -4,10 +4,10 @@
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
-	schema: "./src/schema/*.ts",
-	out: "./drizzle",
-	dialect: "postgresql",
-	// Supplied via --env-file in this package's scripts; drizzle-kit reports a
-	// clear error if it is missing when a command actually runs.
-	dbCredentials: { url: process.env.DATABASE_URL ?? "" },
+  schema: "./src/schema/*.ts",
+  out: "./drizzle",
+  dialect: "postgresql",
+  // Supplied via --env-file in this package's scripts; drizzle-kit reports a
+  // clear error if it is missing when a command actually runs.
+  dbCredentials: { url: process.env.DATABASE_URL ?? "" },
 });

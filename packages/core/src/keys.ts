@@ -7,7 +7,9 @@ import { type ProviderId, ProviderIdSchema } from "./providers.ts";
 
 export const ProviderKeyInputSchema = z.object({
   provider: ProviderIdSchema,
-  key: z.string().min(1).max(512),
+  // Trim first so whitespace-only keys are rejected, and require a real length
+  // so the stored `last4` preview can never reveal a whole (too-short) key.
+  key: z.string().trim().min(8).max(512),
 });
 export type ProviderKeyInput = z.infer<typeof ProviderKeyInputSchema>;
 

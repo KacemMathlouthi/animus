@@ -15,7 +15,7 @@ animus is an **interactive coding agent for Manim videos** — think Claude Code
 
 ## Architecture decisions (locked)
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full decision record and rationale.
+See [`CLAUDE.md`](CLAUDE.md) for the full decision record, stack, and contributor guide.
 
 - **Interactive agent loop, not a batch pipeline.** Each user turn runs an AI SDK tool-calling loop (`streamText` + Manim tools + `stopWhen`), streaming tokens and tool calls to the browser over SSE, fully interruptible. The persistent state is the **sandbox**, not a durable run. (Durable execution / Workflow SDK is parked for a later non-interactive "autonomous render" mode.)
 - **Sandbox: Daytona**, one per conversation, suspended between turns and resumed (~sub-second) on the next message via snapshots. Behind a thin adapter so E2B / Vercel Sandbox can slot in later. Pre-bake a `manim` + LaTeX snapshot to avoid per-turn cold installs.
