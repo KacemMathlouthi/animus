@@ -1,6 +1,12 @@
+import {
+	FONT_OPTIONS,
+	GENERATION_DEFAULTS,
+	type GenerationSettings,
+	VIDEO_THEMES,
+} from "@animus/core";
 import type { ElevenLabs } from "@elevenlabs/elevenlabs-js";
 import { LockIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Select,
@@ -11,33 +17,11 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { VoicePicker } from "@/components/ui/voice-picker";
+import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { DEFAULT_TRACK_ID, MUSIC_TRACKS } from "../data/music";
-import { DEFAULT_VOICE_ID, VOICES } from "../data/voices";
+import { MUSIC_TRACKS } from "../data/music";
+import { VOICES } from "../data/voices";
 import { SectionHeading, SettingRow, SettingsSaveBar } from "./settings-ui";
-
-interface GenerationConfig {
-	videoTheme: "light" | "dark";
-	backgroundMusic: boolean;
-	musicTrack: string;
-	voiceId: string;
-	font: string;
-}
-
-const DEFAULT_CONFIG: GenerationConfig = {
-	videoTheme: "dark",
-	backgroundMusic: true,
-	musicTrack: DEFAULT_TRACK_ID,
-	voiceId: DEFAULT_VOICE_ID,
-	font: "geist",
-};
-
-const FONTS = [
-	{ value: "geist", label: "Geist" },
-	{ value: "inter", label: "Inter" },
-	{ value: "serif", label: "Source Serif" },
-	{ value: "mono", label: "JetBrains Mono" },
-];
 
 // Reuse the voice picker for music by describing tracks in the same shape.
 const MUSIC_OPTIONS: ElevenLabs.Voice[] = MUSIC_TRACKS.map((track) => ({
@@ -48,14 +32,49 @@ const MUSIC_OPTIONS: ElevenLabs.Voice[] = MUSIC_TRACKS.map((track) => ({
 }));
 
 export function GenerationSection() {
-	const [config, setConfig] = useState<GenerationConfig>(DEFAULT_CONFIG);
+	const [config, setConfig] = useState<GenerationSettings>(GENERATION_DEFAULTS);
 	const [savedConfig, setSavedConfig] =
-		useState<GenerationConfig>(DEFAULT_CONFIG);
+		useState<GenerationSettings>(GENERATION_DEFAULTS);
+	const [saving, setSaving] = useState(false);
+
+	// Load the user's saved settings; fall back to defaults if none exist yet.
+	useEffect(() => {
+		let active = true;
+		apiFetch<{ settings: GenerationSettings | null }>("/settings/generation")
+			.then((data) => {
+				if (!(active && data.settings)) {
+					return;
+				}
+				setConfig(data.settings);
+				setSavedConfig(data.settings);
+			})
+			.catch(() => {
+				// Keep defaults if the request fails (e.g. offline).
+			});
+		return () => {
+			active = false;
+		};
+	}, []);
 
 	const dirty = JSON.stringify(config) !== JSON.stringify(savedConfig);
 
-	function update(patch: Partial<GenerationConfig>) {
+	function update(patch: Partial<GenerationSettings>) {
 		setConfig((prev) => ({ ...prev, ...patch }));
+	}
+
+	async function handleSave() {
+		setSaving(true);
+		try {
+			await apiFetch("/settings/generation", {
+				method: "PUT",
+				body: JSON.stringify(config),
+			});
+			setSavedConfig(config);
+		} catch {
+			// Leave the form dirty so the user can retry.
+		} finally {
+			setSaving(false);
+		}
 	}
 
 	return (
@@ -71,7 +90,7 @@ export function GenerationSection() {
 					title="Video theme"
 				>
 					<div className="flex gap-1 rounded-lg border p-0.5">
-						{(["light", "dark"] as const).map((option) => (
+						{VIDEO_THEMES.map((option) => (
 							<button
 								className={cn(
 									"rounded-md px-3 py-1 text-sm capitalize transition-colors",
@@ -145,14 +164,16 @@ export function GenerationSection() {
 					title="Font"
 				>
 					<Select
-						onValueChange={(value) => update({ font: value })}
+						onValueChange={(value) =>
+							update({ font: value as GenerationSettings["font"] })
+						}
 						value={config.font}
 					>
 						<SelectTrigger className="w-44">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							{FONTS.map((font) => (
+							{FONT_OPTIONS.map((font) => (
 								<SelectItem key={font.value} value={font.value}>
 									{font.label}
 								</SelectItem>
@@ -177,7 +198,10 @@ export function GenerationSection() {
 			<SettingsSaveBar
 				dirty={dirty}
 				onReset={() => setConfig(savedConfig)}
-				onSave={() => setSavedConfig(config)}
+				onSave={() => {
+					void handleSave();
+				}}
+				saving={saving}
 			/>
 		</div>
 	);
