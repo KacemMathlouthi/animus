@@ -190,7 +190,7 @@ export function SecretsSection() {
 				</div>
 
 				{saved ? (
-					<div className="flex items-center justify-between rounded-lg border p-3">
+					<div className="flex animate-in items-center justify-between rounded-lg border p-3 fade-in slide-in-from-top-1 duration-200 ease-snappy">
 						<div className="flex items-center gap-2 text-sm">
 							{SavedIcon ? <SavedIcon size={16} /> : null}
 							<span className="font-medium">

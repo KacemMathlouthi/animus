@@ -38,15 +38,13 @@ const ServerEnvSchema = z.object({
   /** Optional — magic links log to the console when unset. */
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM: z.string().default("animus <onboarding@resend.dev>"),
-  /** Anthropic key powering the free-tier agent. Required only to run the agent. */
-  ANTHROPIC_API_KEY: z.string().optional(),
-  /** Default Claude model for the agent. */
-  ANTHROPIC_MODEL: z.string().default("claude-opus-4-8"),
+  /** Amazon Bedrock inference-profile id for the agent's Claude model. AWS
+   * credentials/region resolve from AWS_* env vars or the AWS credential chain. */
+  BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-8"),
 });
 
 export interface ServerEnv {
-  anthropicApiKey?: string;
-  anthropicModel: string;
+  bedrockModel: string;
   betterAuthApiKey?: string;
   betterAuthSecret: string;
   betterAuthUrl: string;
@@ -97,8 +95,7 @@ export function parseServerEnv(
     googleClientSecret: e.GOOGLE_CLIENT_SECRET,
     resendApiKey: e.RESEND_API_KEY,
     resendFrom: e.RESEND_FROM,
-    anthropicApiKey: e.ANTHROPIC_API_KEY,
-    anthropicModel: e.ANTHROPIC_MODEL,
+    bedrockModel: e.BEDROCK_MODEL,
   };
 }
 

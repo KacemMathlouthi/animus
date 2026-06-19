@@ -13,7 +13,7 @@ export function StudioEmptyState({
 	return (
 		<div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-6 px-4 py-10">
 			<MorphLogo className="h-32" />
-			<div className="space-y-2 text-center">
+			<div className="animate-in space-y-2 text-center fade-in slide-in-from-bottom-2 fill-mode-backwards delay-75 duration-500 ease-snappy">
 				<h1 className="font-medium text-2xl tracking-tight">
 					What do you want to explain?
 				</h1>
@@ -23,12 +23,14 @@ export function StudioEmptyState({
 				</p>
 			</div>
 			<StudioPrompt
-				className="w-full"
+				className="w-full animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards delay-150 duration-500 ease-snappy"
 				onSubmit={onSubmit}
 				placeholder="Explain how…"
 				status={status}
 			/>
-			<PromptSuggestions onSelect={onSubmit} />
+			<div className="w-full animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards delay-200 duration-500 ease-snappy">
+				<PromptSuggestions onSelect={onSubmit} />
+			</div>
 		</div>
 	);
 }

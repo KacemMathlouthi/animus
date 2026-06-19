@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.0",
+    "@ai-sdk/amazon-bedrock": "^4.0.0",
     "@animus/core": "workspace:*",
     "ai": "^6.0.206"
   }
