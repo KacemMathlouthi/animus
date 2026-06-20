@@ -59,7 +59,11 @@ describe("WebFetchInputSchema", () => {
 
   it("rejects non-http urls", () => {
     const result = WebFetchInputSchema.safeParse({
-      urls: ["javascript:alert(1)", "file:///etc/passwd", "mailto:test@example.com"],
+      urls: [
+        "javascript:alert(1)",
+        "file:///etc/passwd",
+        "mailto:test@example.com",
+      ],
     });
 
     expect(result.success).toBe(false);
