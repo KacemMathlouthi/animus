@@ -18,6 +18,7 @@ export type WebFetchInput = z.infer<typeof WebFetchInputSchema>;
 
 export interface WebResult {
   author?: string;
+  favicon?: string;
   highlights?: string[];
   publishedDate?: string;
   score?: number;

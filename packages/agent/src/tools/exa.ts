@@ -75,6 +75,7 @@ function normalizeResults(
       url: result.url,
       publishedDate: result.publishedDate,
       author: result.author,
+      favicon: result.favicon,
       score: result.score,
       text: readString(record, "text"),
       highlights: readStringArray(record, "highlights"),
