@@ -13,6 +13,22 @@ import {
 } from "lucide-react";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 
+const resultCardClassName =
+	"block w-full min-w-0 rounded-md border bg-background/70 py-1.5 pr-3 pl-2 transition-colors hover:bg-muted/60";
+
+function httpUrl(url: string): string | undefined {
+	try {
+		const parsed = new URL(url);
+		if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+			return parsed.href;
+		}
+	} catch {
+		return undefined;
+	}
+
+	return undefined;
+}
+
 function hostname(url: string): string {
 	try {
 		return new URL(url).hostname.replace(/^www\./, "");
@@ -27,8 +43,11 @@ function faviconUrl(result: WebResult): string | undefined {
 	}
 
 	try {
-		const url = new URL(result.url);
-		return `${url.origin}/favicon.ico`;
+		const url = httpUrl(result.url);
+		if (!url) {
+			return undefined;
+		}
+		return `${new URL(url).origin}/favicon.ico`;
 	} catch {
 		return undefined;
 	}
@@ -54,35 +73,53 @@ function Favicon({ result }: { result: WebResult }) {
 }
 
 function ResultList({ results }: { results: WebResult[] }) {
+	const seenKeys = new Map<string, number>();
+
 	return (
 		<ul className="grid w-full min-w-0 gap-1.5 overflow-hidden px-2">
-			{results.slice(0, 5).map((result) => (
-				<li className="min-w-0" key={result.url}>
-					<a
-						className="block w-full min-w-0 rounded-md border bg-background/70 py-1.5 pr-3 pl-2 transition-colors hover:bg-muted/60"
-						href={result.url}
-						rel="noreferrer"
-						target="_blank"
-					>
-						<div className="flex min-w-0 items-center gap-2">
-							<div className="shrink-0">
-								<Favicon result={result} />
-							</div>
-							<div className="min-w-0 flex-1">
-								<div className="flex min-w-0 items-center gap-2">
-									<p className="min-w-0 flex-1 truncate font-medium text-sm">
-										{result.title}
-									</p>
-									<ExternalLinkIcon className="size-3.5 shrink-0 text-muted-foreground" />
-								</div>
-								<p className="truncate text-muted-foreground text-xs">
-									{hostname(result.url)}
-								</p>
-							</div>
+			{results.slice(0, 5).map((result) => {
+				const href = httpUrl(result.url);
+				const keyBase = `${result.url}:${result.title}`;
+				const seenCount = seenKeys.get(keyBase) ?? 0;
+				seenKeys.set(keyBase, seenCount + 1);
+				const content = (
+					<div className="flex min-w-0 items-center gap-2">
+						<div className="shrink-0">
+							<Favicon result={result} />
 						</div>
-					</a>
-				</li>
-			))}
+						<div className="min-w-0 flex-1">
+							<div className="flex min-w-0 items-center gap-2">
+								<p className="min-w-0 flex-1 truncate font-medium text-sm">
+									{result.title}
+								</p>
+								{href ? (
+									<ExternalLinkIcon className="size-3.5 shrink-0 text-muted-foreground" />
+								) : null}
+							</div>
+							<p className="truncate text-muted-foreground text-xs">
+								{hostname(result.url)}
+							</p>
+						</div>
+					</div>
+				);
+
+				return (
+					<li className="min-w-0" key={`${keyBase}:${seenCount}`}>
+						{href ? (
+							<a
+								className={resultCardClassName}
+								href={href}
+								rel="noreferrer"
+								target="_blank"
+							>
+								{content}
+							</a>
+						) : (
+							<div className={resultCardClassName}>{content}</div>
+						)}
+					</li>
+				);
+			})}
 		</ul>
 	);
 }

@@ -11,7 +11,7 @@ export type WebSearchInput = z.infer<typeof WebSearchInputSchema>;
 /** webFetch — fetch readable content from known URLs through Exa. */
 export const WebFetchInputSchema = z
   .object({
-    urls: z.array(z.url()).min(1).max(5),
+    urls: z.array(z.httpUrl()).min(1).max(5),
   })
   .strict();
 export type WebFetchInput = z.infer<typeof WebFetchInputSchema>;
