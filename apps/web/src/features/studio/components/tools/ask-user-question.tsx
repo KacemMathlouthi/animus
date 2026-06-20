@@ -23,7 +23,7 @@ export function AskUserQuestionTool({
 			answer.push(output.freeText);
 		}
 		return (
-			<div className="rounded-lg border bg-muted/40 p-3 text-sm">
+			<div className="tool-enter rounded-lg border bg-muted/40 p-3 text-sm">
 				<p className="text-muted-foreground">{input.question}</p>
 				<p className="mt-1 font-medium">{answer.join(", ") || "—"}</p>
 			</div>
@@ -44,7 +44,7 @@ export function AskUserQuestionTool({
 	const canSend = selected.length > 0 || freeText.trim().length > 0;
 
 	return (
-		<div className="space-y-3 rounded-lg border bg-card p-3">
+		<div className="tool-enter space-y-3 rounded-lg border bg-card p-3">
 			<p className="font-medium text-sm">{input.question}</p>
 			<div className="flex flex-col gap-1.5">
 				{input.options.map((option) => (

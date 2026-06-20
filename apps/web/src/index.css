@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+/* Streamdown's per-word streaming animation: @keyframes sd-* + [data-sd-animate]. */
+@import "streamdown/styles.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -263,5 +265,27 @@
 	80%,
 	100% {
 		transform: translate(0, 0);
+	}
+}
+
+/* Entrance for interactive tool cards — a soft rise + de-blur as they appear
+   (replacing the "preparing…" shimmer). Values from the transitions-dev motion
+   tokens: smooth ease-out, 8px rise, 2px blur. */
+/* Mirrors Streamdown's blurIn (blur 4px → 0, fade) so tool cards enter with the
+ * same feel as streamed text. */
+@keyframes tool-in {
+	from {
+		opacity: 0;
+		filter: blur(4px);
+	}
+	to {
+		opacity: 1;
+		filter: blur(0);
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.tool-enter {
+		animation: tool-in 200ms ease-out both;
 	}
 }

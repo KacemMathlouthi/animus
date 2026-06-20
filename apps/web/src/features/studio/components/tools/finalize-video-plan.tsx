@@ -17,7 +17,7 @@ export function FinalizeVideoPlanTool({
 	// Already decided — show the outcome read-only.
 	if (output) {
 		return (
-			<div className="rounded-lg border bg-muted/40 p-3 text-sm">
+			<div className="tool-enter rounded-lg border bg-muted/40 p-3 text-sm">
 				<p className="font-medium">
 					{output.approved ? "Plan approved" : "Changes requested"}
 				</p>
@@ -29,7 +29,7 @@ export function FinalizeVideoPlanTool({
 	}
 
 	return (
-		<div className="space-y-3 rounded-lg border bg-card p-3">
+		<div className="tool-enter space-y-3 rounded-lg border bg-card p-3">
 			<p className="font-medium text-sm">{input.title}</p>
 			<ol className="space-y-2">
 				{input.scenes.map((scene, index) => (
