@@ -3,7 +3,7 @@ import type {
 	AskUserQuestionOutput,
 	FinalizeVideoPlanOutput,
 	VideoPlan,
-} from "@animus/core";
+} from "@animus/core/tools";
 import type { UIDataTypes, UIMessage } from "ai";
 
 /** Studio session view-state, shared by the chat hook and the stage. */

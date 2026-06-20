@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   AskUserQuestionInputSchema,
   AskUserQuestionOutputSchema,
-} from "../agent-tools.ts";
+} from "../hitl.ts";
 
 describe("AskUserQuestionInputSchema", () => {
   it("accepts unique option labels", () => {

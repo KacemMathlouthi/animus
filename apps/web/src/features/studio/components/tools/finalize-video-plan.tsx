@@ -1,4 +1,4 @@
-import type { FinalizeVideoPlanOutput, VideoPlan } from "@animus/core";
+import type { FinalizeVideoPlanOutput, VideoPlan } from "@animus/core/tools";
 import {
 	CheckCircle2,
 	ListOrdered,
