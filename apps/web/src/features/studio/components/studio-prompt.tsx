@@ -1,5 +1,4 @@
 import type { ChatStatus } from "ai";
-import { GlobeIcon } from "lucide-react";
 import { useState } from "react";
 import {
 	PromptInput,
@@ -8,7 +7,6 @@ import {
 	PromptInputActionMenuContent,
 	PromptInputActionMenuTrigger,
 	PromptInputBody,
-	PromptInputButton,
 	PromptInputFooter,
 	type PromptInputMessage,
 	PromptInputSubmit,
@@ -30,7 +28,6 @@ export function StudioPrompt({
 	className?: string;
 }) {
 	const [text, setText] = useState("");
-	const [research, setResearch] = useState(true);
 
 	const isGenerating = status === "submitted" || status === "streaming";
 
@@ -65,17 +62,10 @@ export function StudioPrompt({
 				<PromptInputTools>
 					<PromptInputActionMenu>
 						<PromptInputActionMenuTrigger />
-						<PromptInputActionMenuContent>
-							<PromptInputActionAddAttachments />
+						<PromptInputActionMenuContent className="w-max overflow-x-visible">
+							<PromptInputActionAddAttachments className="whitespace-nowrap" />
 						</PromptInputActionMenuContent>
 					</PromptInputActionMenu>
-					<PromptInputButton
-						onClick={() => setResearch((value) => !value)}
-						variant={research ? "default" : "ghost"}
-					>
-						<GlobeIcon />
-						<span>Research</span>
-					</PromptInputButton>
 				</PromptInputTools>
 				<PromptInputSubmit
 					disabled={!(isGenerating || text.trim())}
