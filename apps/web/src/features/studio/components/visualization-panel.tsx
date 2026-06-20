@@ -37,8 +37,8 @@ function RenderingStage() {
 			<div className="space-y-1.5">
 				<p className="font-medium">Rendering your explainer</p>
 				<p className="text-muted-foreground text-sm">
-					This might take a few minutes. Feel free to leave and come back —
-					we'll keep working and have it ready for you.
+					Once the video is ready, it will appear here. You can enable
+					notifications to get an instant alert when it's time to watch.
 				</p>
 			</div>
 			<NotifyButton />
