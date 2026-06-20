@@ -36,8 +36,8 @@ export function StudioPrompt({
 		if (isGenerating) {
 			return;
 		}
-		const value = message.text.trim();
-		if (!value) {
+		const value = message.text.replace(/(?:\r?\n)+$/u, "");
+		if (!value.trim()) {
 			return;
 		}
 		onSubmit(value);
