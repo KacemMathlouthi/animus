@@ -3,6 +3,10 @@ import type {
 	AskUserQuestionOutput,
 	FinalizeVideoPlanOutput,
 	VideoPlan,
+	WebFetchInput,
+	WebFetchOutput,
+	WebSearchInput,
+	WebSearchOutput,
 } from "@animus/core/tools";
 import type { UIDataTypes, UIMessage } from "ai";
 
@@ -17,6 +21,8 @@ type AnimusTools = {
 		output: AskUserQuestionOutput;
 	};
 	finalizeVideoPlan: { input: VideoPlan; output: FinalizeVideoPlanOutput };
+	webFetch: { input: WebFetchInput; output: WebFetchOutput };
+	webSearch: { input: WebSearchInput; output: WebSearchOutput };
 };
 
 export type AnimusUIMessage = UIMessage<never, UIDataTypes, AnimusTools>;
