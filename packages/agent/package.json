@@ -7,11 +7,16 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^4.0.0",
     "@animus/core": "workspace:*",
-    "ai": "^6.0.206"
+    "ai": "^6.0.206",
+    "exa-js": "^2.14.0"
+  },
+  "devDependencies": {
+    "vitest": "^3"
   }
 }
