@@ -81,7 +81,12 @@ export function SettingsSaveBar({
 	return (
 		<div className="mt-2 flex items-center justify-end gap-2 border-t pt-5">
 			{dirty ? (
-				<Button disabled={saving} onClick={onReset} variant="ghost">
+				<Button
+					className="animate-in fade-in slide-in-from-right-1 duration-150 ease-snappy"
+					disabled={saving}
+					onClick={onReset}
+					variant="ghost"
+				>
 					Reset
 				</Button>
 			) : null}

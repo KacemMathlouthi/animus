@@ -4,22 +4,21 @@ import { StudioEmptyState } from "@/features/studio/components/studio-empty-stat
 import { StudioLoading } from "@/features/studio/components/studio-loading";
 import { StudioWorkspace } from "@/features/studio/components/studio-workspace";
 import type {
-	RenderStatus,
-	StudioMessage,
+	AnimusUIMessage,
+	RespondToTool,
 	StudioPhase,
 } from "@/features/studio/types";
 
 /**
- * Notify the user when a render finishes while they're on another tab —
- * the "leave and come back" promise from the render panel.
+ * Notify the user when the explainer finishes (a video URL appears) while
+ * they're on another tab — the "leave and come back" promise from the panel.
  */
-function useRenderNotification(renderStatus: RenderStatus) {
-	const previous = useRef(renderStatus);
+function useRenderNotification(videoUrl: string | undefined) {
+	const previous = useRef(videoUrl);
 
 	useEffect(() => {
-		const finished =
-			previous.current === "rendering" && renderStatus === "ready";
-		previous.current = renderStatus;
+		const finished = !previous.current && Boolean(videoUrl);
+		previous.current = videoUrl;
 
 		if (
 			finished &&
@@ -34,23 +33,27 @@ function useRenderNotification(renderStatus: RenderStatus) {
 			});
 			notification.onclick = () => window.focus();
 		}
-	}, [renderStatus]);
+	}, [videoUrl]);
 }
 
 export function StudioStage({
 	phase,
 	messages,
 	status,
-	renderStatus,
+	videoUrl,
+	respondToTool,
 	onSubmit,
+	onStop,
 }: {
 	phase: StudioPhase;
-	messages: StudioMessage[];
+	messages: AnimusUIMessage[];
 	status: ChatStatus;
-	renderStatus: RenderStatus;
+	videoUrl?: string;
+	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
+	onStop: () => void;
 }) {
-	useRenderNotification(renderStatus);
+	useRenderNotification(videoUrl);
 
 	return (
 		<>
@@ -61,9 +64,11 @@ export function StudioStage({
 			{phase === "chat" ? (
 				<StudioWorkspace
 					messages={messages}
+					onStop={onStop}
 					onSubmit={onSubmit}
-					renderStatus={renderStatus}
+					respondToTool={respondToTool}
 					status={status}
+					videoUrl={videoUrl}
 				/>
 			) : null}
 		</>

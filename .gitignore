@@ -30,3 +30,6 @@ npm-debug.log*
 
 # mcp (playwright/chrome devtools) generated artifacts
 .playwright-mcp/
+
+# agent skills (local tooling); skills-lock.json stays tracked
+.agents/

@@ -5,7 +5,6 @@ import { AppShell } from "@/components/layout/app-shell";
 import { findConversation } from "@/entities/conversation";
 import { StudioEmptyState } from "@/features/studio/components/studio-empty-state";
 import { StudioStage } from "@/features/studio/components/studio-view";
-import { createConversationMessages } from "@/features/studio/data";
 import { useStudioChat } from "@/features/studio/hooks/use-studio-chat";
 
 function NewStudio() {
@@ -24,23 +23,21 @@ function NewStudio() {
 function StudioChat({ chatId }: { chatId: string }) {
 	const location = useLocation();
 	const prompt = (location.state as { prompt?: string } | null)?.prompt;
-	const conversation = findConversation(chatId);
-	const initialMessages =
-		!prompt && conversation
-			? createConversationMessages(conversation.title)
-			: undefined;
-	const { phase, messages, status, renderStatus, send } = useStudioChat({
-		initialMessages,
-		initialPrompt: prompt,
-	});
+	const { messages, status, phase, videoUrl, respondToTool, send, stop } =
+		useStudioChat({
+			chatId,
+			initialPrompt: prompt,
+		});
 
 	return (
 		<StudioStage
 			messages={messages}
+			onStop={stop}
 			onSubmit={send}
 			phase={phase}
-			renderStatus={renderStatus}
+			respondToTool={respondToTool}
 			status={status}
+			videoUrl={videoUrl}
 		/>
 	);
 }

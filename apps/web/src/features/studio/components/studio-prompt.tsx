@@ -19,18 +19,26 @@ import {
 export function StudioPrompt({
 	status,
 	onSubmit,
+	onStop,
 	placeholder = "Describe what you want to explain…",
 	className,
 }: {
 	status?: ChatStatus;
 	onSubmit: (text: string) => void;
+	onStop?: () => void;
 	placeholder?: string;
 	className?: string;
 }) {
 	const [text, setText] = useState("");
 	const [research, setResearch] = useState(true);
 
+	const isGenerating = status === "submitted" || status === "streaming";
+
 	const handleSubmit = (message: PromptInputMessage) => {
+		// Don't send a new message while a response is still streaming.
+		if (isGenerating) {
+			return;
+		}
 		const value = message.text.trim();
 		if (!value) {
 			return;
@@ -69,7 +77,11 @@ export function StudioPrompt({
 						<span>Research</span>
 					</PromptInputButton>
 				</PromptInputTools>
-				<PromptInputSubmit disabled={!text.trim()} status={status} />
+				<PromptInputSubmit
+					disabled={!(isGenerating || text.trim())}
+					onStop={onStop}
+					status={status}
+				/>
 			</PromptInputFooter>
 		</PromptInput>
 	);

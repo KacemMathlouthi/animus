@@ -1,0 +1,17 @@
+{
+  "name": "@animus/agent",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^4.0.0",
+    "@animus/core": "workspace:*",
+    "ai": "^6.0.206"
+  }
+}

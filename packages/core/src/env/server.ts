@@ -38,9 +38,13 @@ const ServerEnvSchema = z.object({
   /** Optional — magic links log to the console when unset. */
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM: z.string().default("animus <onboarding@resend.dev>"),
+  /** Amazon Bedrock inference-profile id for the agent's Claude model. AWS
+   * credentials/region resolve from AWS_* env vars or the AWS credential chain. */
+  BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-6-v1"),
 });
 
 export interface ServerEnv {
+  bedrockModel: string;
   betterAuthApiKey?: string;
   betterAuthSecret: string;
   betterAuthUrl: string;
@@ -91,6 +95,7 @@ export function parseServerEnv(
     googleClientSecret: e.GOOGLE_CLIENT_SECRET,
     resendApiKey: e.RESEND_API_KEY,
     resendFrom: e.RESEND_FROM,
+    bedrockModel: e.BEDROCK_MODEL,
   };
 }
 

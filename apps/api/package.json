@@ -10,9 +10,11 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@animus/agent": "workspace:*",
     "@animus/auth": "workspace:*",
     "@animus/core": "workspace:*",
     "@animus/db": "workspace:*",
+    "ai": "^6.0.206",
     "hono": "^4.12.25",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3"
