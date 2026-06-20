@@ -3,7 +3,11 @@ import type {
 	AskUserQuestionOutput,
 	FinalizeVideoPlanOutput,
 	VideoPlan,
-} from "@animus/core";
+	WebFetchInput,
+	WebFetchOutput,
+	WebSearchInput,
+	WebSearchOutput,
+} from "@animus/core/tools";
 import type { UIDataTypes, UIMessage } from "ai";
 
 /** Studio session view-state, shared by the chat hook and the stage. */
@@ -17,6 +21,8 @@ type AnimusTools = {
 		output: AskUserQuestionOutput;
 	};
 	finalizeVideoPlan: { input: VideoPlan; output: FinalizeVideoPlanOutput };
+	webFetch: { input: WebFetchInput; output: WebFetchOutput };
+	webSearch: { input: WebSearchInput; output: WebSearchOutput };
 };
 
 export type AnimusUIMessage = UIMessage<never, UIDataTypes, AnimusTools>;

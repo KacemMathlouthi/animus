@@ -1,9 +1,3 @@
-/** Contracts for the agent's interactive (human-in-the-loop) tools. These tools
- * have no server `execute` — the agent emits the tool call, the web renders
- * custom UI, and the user's answer is sent back as the tool output. The agent
- * defines the tools from these input schemas; the web renders + validates from
- * the same shapes, so both sides agree. */
-
 import { z } from "zod";
 
 /** askUserQuestion — ask the user to pick option(s) and/or answer free-form. */

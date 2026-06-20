@@ -13,6 +13,10 @@ import { LogoMark } from "@/components/brand/logo-mark";
 import { UserAvatar } from "@/components/user-avatar";
 import { AskUserQuestionTool } from "@/features/studio/components/tools/ask-user-question";
 import { FinalizeVideoPlanTool } from "@/features/studio/components/tools/finalize-video-plan";
+import {
+	WebFetchTool,
+	WebSearchTool,
+} from "@/features/studio/components/tools/web-research";
 import type { AnimusUIMessage, RespondToTool } from "@/features/studio/types";
 import { useSession } from "@/lib/auth-client";
 
@@ -78,7 +82,9 @@ export function ChatMessage({
 		return (
 			<div className="flex items-start justify-end gap-3">
 				<Message className="ml-0 max-w-[80%]" from="user">
-					<MessageContent>{textOf(message)}</MessageContent>
+					<MessageContent className="whitespace-pre-wrap break-words">
+						{textOf(message)}
+					</MessageContent>
 				</Message>
 				<MessageUserAvatar />
 			</div>
@@ -153,6 +159,36 @@ export function ChatMessage({
 							);
 						}
 						return <Shimmer key={part.toolCallId}>Drafting a plan…</Shimmer>;
+					}
+
+					if (part.type === "tool-webSearch") {
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<WebSearchTool
+									input={part.input}
+									key={part.toolCallId}
+									output={
+										part.state === "output-available" ? part.output : undefined
+									}
+								/>
+							);
+						}
+						return <Shimmer key={part.toolCallId}>Searching the web…</Shimmer>;
+					}
+
+					if (part.type === "tool-webFetch") {
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<WebFetchTool
+									input={part.input}
+									key={part.toolCallId}
+									output={
+										part.state === "output-available" ? part.output : undefined
+									}
+								/>
+							);
+						}
+						return <Shimmer key={part.toolCallId}>Reading pages…</Shimmer>;
 					}
 
 					return null;
