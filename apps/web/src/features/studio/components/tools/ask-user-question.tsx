@@ -1,5 +1,5 @@
 import type { AskUserQuestionInput, AskUserQuestionOutput } from "@animus/core";
-import { useState } from "react";
+import { type JSX, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -12,23 +12,15 @@ export function AskUserQuestionTool({
 	input: AskUserQuestionInput;
 	output?: AskUserQuestionOutput;
 	onRespond: (output: AskUserQuestionOutput) => void;
-}) {
+}): JSX.Element {
 	const [selected, setSelected] = useState<string[]>([]);
 	const [freeText, setFreeText] = useState("");
-
-	// Already answered — show the answer read-only.
-	if (output) {
-		const answer = [...output.selected];
-		if (output.freeText) {
-			answer.push(output.freeText);
-		}
-		return (
-			<div className="tool-enter rounded-lg border bg-muted/40 p-3 text-sm">
-				<p className="text-muted-foreground">{input.question}</p>
-				<p className="mt-1 font-medium">{answer.join(", ") || "—"}</p>
-			</div>
-		);
-	}
+	const isAnswered = output != null;
+	const selectedLabels = output?.selected ?? selected;
+	const selectedLabelSet = new Set(selectedLabels);
+	const visibleOptions = output
+		? input.options.filter((option) => output.selected.includes(option.label))
+		: input.options;
 
 	const toggle = (label: string) => {
 		setSelected((current) => {
@@ -42,51 +34,60 @@ export function AskUserQuestionTool({
 	};
 
 	const canSend = selected.length > 0 || freeText.trim().length > 0;
+	const sendAnswer = () =>
+		onRespond({
+			selected,
+			freeText: freeText.trim() || undefined,
+		});
 
 	return (
 		<div className="tool-enter space-y-3 rounded-lg border bg-card p-3">
 			<p className="font-medium text-sm">{input.question}</p>
+
 			<div className="flex flex-col gap-1.5">
-				{input.options.map((option) => (
-					<button
-						className={cn(
-							"rounded-md border px-3 py-2 text-left text-sm transition-colors",
-							selected.includes(option.label)
-								? "border-primary bg-primary/10"
-								: "hover:bg-muted",
-						)}
-						key={option.label}
-						onClick={() => toggle(option.label)}
-						type="button"
-					>
-						<span className="font-medium">{option.label}</span>
-						{option.description ? (
-							<span className="block text-muted-foreground text-xs">
-								{option.description}
-							</span>
-						) : null}
-					</button>
-				))}
+				{visibleOptions.map((option) => {
+					const isSelected = selectedLabelSet.has(option.label);
+					return (
+						<button
+							className={cn(
+								"rounded-md border px-3 py-2 text-left text-sm transition-colors",
+								isSelected ? "border-primary bg-primary/10" : "hover:bg-muted",
+							)}
+							disabled={isAnswered}
+							key={option.label}
+							onClick={isAnswered ? undefined : () => toggle(option.label)}
+							type="button"
+						>
+							<span className="font-medium">{option.label}</span>
+							{option.description ? (
+								<span className="block text-muted-foreground text-xs">
+									{option.description}
+								</span>
+							) : null}
+						</button>
+					);
+				})}
 			</div>
-			{input.allowFreeText === false ? null : (
-				<Textarea
-					onChange={(event) => setFreeText(event.target.value)}
-					placeholder="Or type your own answer…"
-					value={freeText}
-				/>
+			{isAnswered ? null : (
+				<div className="space-y-3" key="controls">
+					{input.allowFreeText === false ? null : (
+						<Textarea
+							onChange={(event) => setFreeText(event.target.value)}
+							placeholder="Or type your own answer…"
+							value={freeText}
+						/>
+					)}
+					<Button disabled={!canSend} onClick={sendAnswer} size="sm">
+						Send answer
+					</Button>
+				</div>
 			)}
-			<Button
-				disabled={!canSend}
-				onClick={() =>
-					onRespond({
-						selected,
-						freeText: freeText.trim() || undefined,
-					})
-				}
-				size="sm"
-			>
-				Send answer
-			</Button>
+
+			{output?.freeText ? (
+				<p className="text-muted-foreground text-sm" key="free-text">
+					{output.freeText}
+				</p>
+			) : null}
 		</div>
 	);
 }
