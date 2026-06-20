@@ -41,6 +41,8 @@ const ServerEnvSchema = z.object({
   /** Amazon Bedrock inference-profile id for the agent's Claude model. AWS
    * credentials/region resolve from AWS_* env vars or the AWS credential chain. */
   BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-6-v1"),
+  /** Exa API key used by the agent's web search and fetch tools. */
+  EXA_API_KEY: z.string().optional(),
 });
 
 export interface ServerEnv {
@@ -50,6 +52,7 @@ export interface ServerEnv {
   betterAuthUrl: string;
   databaseUrl: string;
   encryptionKey?: string;
+  exaApiKey?: string;
   githubClientId?: string;
   githubClientSecret?: string;
   googleClientId?: string;
@@ -85,6 +88,7 @@ export function parseServerEnv(
     webOrigin: e.WEB_ORIGIN,
     databaseUrl: e.DATABASE_URL,
     encryptionKey: e.ENCRYPTION_KEY,
+    exaApiKey: e.EXA_API_KEY,
     logLevel: e.LOG_LEVEL,
     betterAuthSecret: e.BETTER_AUTH_SECRET,
     betterAuthUrl: e.BETTER_AUTH_URL,

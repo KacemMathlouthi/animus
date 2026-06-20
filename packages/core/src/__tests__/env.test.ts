@@ -37,9 +37,11 @@ describe("parseServerEnv", () => {
     const env = parseServerEnv({
       ...MINIMAL,
       ENCRYPTION_KEY: "some-key",
+      EXA_API_KEY: "exa-key",
       GITHUB_CLIENT_ID: "gh-id",
     });
     expect(env.encryptionKey).toBe("some-key");
+    expect(env.exaApiKey).toBe("exa-key");
     expect(env.githubClientId).toBe("gh-id");
   });
 
