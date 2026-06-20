@@ -25,6 +25,7 @@ chatRoute.post("/", async (c) => {
 
   const agent = createManimAgent();
   const result = await agent.stream({
+    abortSignal: c.req.raw.signal,
     prompt: await convertToModelMessages(body.messages),
   });
 

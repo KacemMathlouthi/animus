@@ -50,9 +50,8 @@ function VideoPreview({ url }: { url: string }) {
 	return (
 		<div className="w-full max-w-3xl space-y-3">
 			<div className="overflow-hidden rounded-xl border shadow-sm">
-				<video className="aspect-video w-full bg-black" controls src={url}>
-					<track kind="captions" />
-				</video>
+				{/* biome-ignore lint/a11y/useMediaCaption: Captions will be wired once the render pipeline produces a captions file. */}
+				<video className="aspect-video w-full bg-black" controls src={url} />
 			</div>
 			<p className="px-1 font-medium text-sm">Untitled explainer</p>
 		</div>

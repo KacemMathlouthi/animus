@@ -54,8 +54,13 @@ logger.info(`animus-api listening on http://localhost:${env.port}`);
 
 export default {
   port: env.port,
-  fetch: app.fetch,
-  // Agent turns stream over many seconds; the default 10s idle timeout would cut
-  // them off (time-to-first-token + gaps between chunks). 240s is the headroom.
-  idleTimeout: 240,
+  fetch(
+    request: Request,
+    server: Bun.Server<unknown>
+  ): Response | Promise<Response> {
+    if (new URL(request.url).pathname.startsWith("/api/chat")) {
+      server.timeout(request, 0);
+    }
+    return app.fetch(request);
+  },
 };

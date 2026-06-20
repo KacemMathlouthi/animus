@@ -15,6 +15,10 @@ function sceneCountLabel(count: number): string {
 	return `${count} ${count === 1 ? "scene" : "scenes"}`;
 }
 
+function sceneKey(scene: VideoPlan["scenes"][number]): string {
+	return `${scene.title}\n${scene.description}`;
+}
+
 function PlanHeader({
 	input,
 	label,
@@ -55,7 +59,7 @@ function SceneList({
 			{scenes.map((scene, index) => (
 				<li
 					className="flex gap-3 border-b p-3 last:border-b-0"
-					key={scene.title}
+					key={sceneKey(scene)}
 				>
 					<span
 						className={cn(
@@ -140,6 +144,7 @@ export function FinalizeVideoPlanTool({
 			/>
 			<SceneList scenes={input.scenes} variant="pending" />
 			<Textarea
+				aria-label="Requested plan changes"
 				onChange={(event) => setFeedback(event.target.value)}
 				placeholder="Optional: what to change…"
 				value={feedback}

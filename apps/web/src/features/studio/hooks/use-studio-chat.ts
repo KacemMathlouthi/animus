@@ -3,7 +3,7 @@ import {
 	type ChatStatus,
 	lastAssistantMessageIsCompleteWithToolCalls,
 } from "ai";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
 	AnimusUIMessage,
 	RespondToTool,
@@ -48,10 +48,15 @@ export function useStudioChat({
 
 	// Auto-run the first prompt exactly once for a new conversation.
 	const autoSent = useRef(false);
+	const [initialSendFailed, setInitialSendFailed] = useState(false);
 	useEffect(() => {
 		if (initialPrompt && !autoSent.current) {
 			autoSent.current = true;
-			void sendMessage({ text: initialPrompt });
+			setInitialSendFailed(false);
+			void sendMessage({ text: initialPrompt }).catch(() => {
+				autoSent.current = false;
+				setInitialSendFailed(true);
+			});
 		}
 	}, [initialPrompt, sendMessage]);
 
@@ -76,7 +81,10 @@ export function useStudioChat({
 	const working = status === "submitted" || status === "streaming";
 
 	let phase: StudioPhase;
-	if (!hasAssistant && (working || (initialPrompt != null && !hasMessages))) {
+	if (
+		!hasAssistant &&
+		(working || (initialPrompt != null && !hasMessages && !initialSendFailed))
+	) {
 		// Booting a fresh conversation, before the first assistant token.
 		phase = "loading";
 	} else if (hasMessages) {

@@ -11,7 +11,12 @@ export const AskUserQuestionInputSchema = z.object({
   question: z.string(),
   options: z
     .array(z.object({ label: z.string(), description: z.string().optional() }))
-    .min(1),
+    .min(1)
+    .refine(
+      (options) =>
+        new Set(options.map((option) => option.label)).size === options.length,
+      "Option labels must be unique"
+    ),
   /** Allow selecting more than one option. */
   allowMultiple: z.boolean().optional(),
   /** Allow a free-form written answer in addition to the options. */
