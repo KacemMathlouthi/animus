@@ -42,3 +42,14 @@ export const CreateConversationResponseSchema = z.object({
 export type CreateConversationResponse = z.infer<
   typeof CreateConversationResponseSchema
 >;
+
+export const GeneratedConversationTitleSchema = z.object({
+  title: z
+    .string()
+    .min(1)
+    .max(80)
+    .describe("A specific, concise title for the conversation."),
+});
+export type GeneratedConversationTitle = z.infer<
+  typeof GeneratedConversationTitleSchema
+>;
