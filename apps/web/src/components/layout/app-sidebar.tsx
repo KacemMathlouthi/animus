@@ -1,4 +1,5 @@
 import { PlusIcon } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ConversationList } from "@/components/layout/conversation-list";
@@ -13,6 +14,8 @@ import {
 import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
+	const [search, setSearch] = useState("");
+
 	return (
 		<Sidebar
 			className={cn(
@@ -39,9 +42,9 @@ export function AppSidebar() {
 							New video
 						</Link>
 					</Button>
-					<SidebarSearch />
+					<SidebarSearch onChange={setSearch} value={search} />
 				</SidebarGroup>
-				<ConversationList />
+				<ConversationList search={search} />
 			</SidebarContent>
 		</Sidebar>
 	);
