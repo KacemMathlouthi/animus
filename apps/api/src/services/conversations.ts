@@ -53,29 +53,48 @@ function listOffset(offset?: number) {
   return Math.trunc(offset);
 }
 
-/** Match the search term against the conversation title or any of its messages'
+const LIKE_WILDCARD = /[\\%_]/g;
+const WHITESPACE = /\s+/;
+
+/** Escape LIKE wildcards so a literal `%` or `_` in the query is matched
+ * verbatim (Postgres ILIKE treats backslash as the escape character). */
+function likePattern(token: string) {
+  return `%${token.replace(LIKE_WILDCARD, "\\$&")}%`;
+}
+
+/** Match the search query against the conversation title or any of its messages'
  * persisted text, pushed into SQL so Postgres uses the `text_content` index
- * instead of us scanning rows in memory. */
+ * instead of us scanning rows in memory.
+ *
+ * Each whitespace-separated term is matched independently (all must hit, in the
+ * title or some message). Per-term matching — rather than one contiguous
+ * substring — keeps search resilient to the markdown markers and punctuation in
+ * the stored text: "mechanics of learning" still matches text persisted as
+ * "the *mechanics* of learning". */
 function searchFilter(query?: string) {
-  const trimmed = query?.trim();
-  if (!trimmed) {
+  const tokens = (query ?? "").trim().split(WHITESPACE).filter(Boolean);
+  if (tokens.length === 0) {
     return;
   }
 
-  const pattern = `%${trimmed}%`;
-  return or(
-    ilike(conversation.title, pattern),
-    exists(
-      db
-        .select()
-        .from(conversationMessage)
-        .where(
-          and(
-            eq(conversationMessage.conversationId, conversation.id),
-            ilike(conversationMessage.textContent, pattern)
-          )
+  return and(
+    ...tokens.map((token) => {
+      const pattern = likePattern(token);
+      return or(
+        ilike(conversation.title, pattern),
+        exists(
+          db
+            .select()
+            .from(conversationMessage)
+            .where(
+              and(
+                eq(conversationMessage.conversationId, conversation.id),
+                ilike(conversationMessage.textContent, pattern)
+              )
+            )
         )
-    )
+      );
+    })
   );
 }
 

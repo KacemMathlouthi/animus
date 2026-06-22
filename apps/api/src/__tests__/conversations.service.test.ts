@@ -226,6 +226,26 @@ describe("conversation service", () => {
     );
   });
 
+  it("matches each search term independently of the others", async () => {
+    mockFindMany.mockResolvedValue([row()]);
+    mockCount.mockResolvedValue(1);
+
+    await listConversations({
+      userId: "user-1",
+      query: "  mechanics of learning  ",
+    });
+
+    // Per-term matching survives markdown/punctuation between words in the
+    // stored text, where a single contiguous-substring match would fail.
+    for (const token of ["mechanics", "of", "learning"]) {
+      expect(ilike).toHaveBeenCalledWith("conversation.title", `%${token}%`);
+      expect(ilike).toHaveBeenCalledWith(
+        "conversation_message.text_content",
+        `%${token}%`
+      );
+    }
+  });
+
   it("loads owned conversations with ordered UI messages", async () => {
     mockFindFirst.mockResolvedValue({
       ...row(),
