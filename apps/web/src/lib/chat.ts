@@ -9,4 +9,12 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 export const chatTransport = new DefaultChatTransport({
 	api: `${API_URL}/api/chat`,
 	credentials: "include",
+	prepareSendMessagesRequest({ id, messages }) {
+		return {
+			body: {
+				id,
+				message: messages.at(-1),
+			},
+		};
+	},
 });

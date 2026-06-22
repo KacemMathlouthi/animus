@@ -35,15 +35,23 @@ type StudioChat = {
 export function useStudioChat({
 	chatId,
 	initialPrompt,
+	initialMessages,
+	onConversationUpdated,
 }: {
 	chatId: string;
 	initialPrompt?: string;
+	initialMessages?: AnimusUIMessage[];
+	onConversationUpdated?: () => void;
 }): StudioChat {
 	const { messages, sendMessage, status, addToolOutput, stop } =
 		useChat<AnimusUIMessage>({
 			id: chatId,
+			messages: initialMessages,
 			transport: chatTransport,
 			sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+			onFinish: () => {
+				onConversationUpdated?.();
+			},
 		});
 
 	// Auto-run the first prompt exactly once for a new conversation.
