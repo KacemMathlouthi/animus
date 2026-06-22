@@ -31,7 +31,9 @@ export function ConversationList({ search }: { search: string }) {
 	const { groups, query, loading, loadingMore, error, hasMore, loadMoreRef } =
 		useConversationList(search);
 
-	if (loading) {
+	// Skeletons only when there's nothing to show yet (first load). Background
+	// refreshes and search re-queries update in place so the list never flashes.
+	if (loading && groups.length === 0) {
 		return <SkeletonRows count={SKELETON_KEYS.length} />;
 	}
 

@@ -43,8 +43,13 @@ export function useConversationList(search: string): ConversationListState {
 
 	useEffect(() => {
 		let cancelled = false;
-		const load = () => {
-			setLoading(true);
+		// `silent` refreshes (fired on every message via conversations-changed)
+		// update the list in place without flipping to the loading skeleton, which
+		// would otherwise flash the whole sidebar on each turn.
+		const load = (silent = false) => {
+			if (!silent) {
+				setLoading(true);
+			}
 			setError(false);
 			void listConversations({ limit: PAGE_SIZE, query })
 				.then((response) => {
@@ -59,17 +64,18 @@ export function useConversationList(search: string): ConversationListState {
 					}
 				})
 				.finally(() => {
-					if (!cancelled) {
+					if (!(silent || cancelled)) {
 						setLoading(false);
 					}
 				});
 		};
 
 		load();
-		window.addEventListener("animus:conversations-changed", load);
+		const refresh = () => load(true);
+		window.addEventListener("animus:conversations-changed", refresh);
 		return () => {
 			cancelled = true;
-			window.removeEventListener("animus:conversations-changed", load);
+			window.removeEventListener("animus:conversations-changed", refresh);
 		};
 	}, [query]);
 
