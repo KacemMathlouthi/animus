@@ -6,13 +6,18 @@ import {
   db,
   desc,
   eq,
+  exists,
   ilike,
   or,
-  querySql,
 } from "@animus/db";
 import type { UIMessage } from "ai";
 
-export function serializeConversation(row: typeof conversation.$inferSelect) {
+const DEFAULT_CONVERSATION_LIMIT = 30;
+const MAX_CONVERSATION_LIMIT = 100;
+
+type ConversationRow = typeof conversation.$inferSelect;
+
+export function serializeConversation(row: ConversationRow) {
   return {
     id: row.id,
     title: row.title,
@@ -23,11 +28,55 @@ export function serializeConversation(row: typeof conversation.$inferSelect) {
   };
 }
 
+/** The plain visible text of a message — its text parts joined. Used both for
+ * the persisted `text_content` search column and for title generation, so the
+ * two always agree on what "the message said". */
 export function textOf(message: UIMessage): string {
   return message.parts
     .map((part) => (part.type === "text" ? part.text : ""))
-    .join("")
+    .join(" ")
+    .replace(/\s+/g, " ")
     .trim();
+}
+
+function listLimit(limit?: number) {
+  if (!limit) {
+    return DEFAULT_CONVERSATION_LIMIT;
+  }
+  return Math.min(Math.max(Math.trunc(limit), 1), MAX_CONVERSATION_LIMIT);
+}
+
+function listOffset(offset?: number) {
+  if (!offset || offset < 0) {
+    return 0;
+  }
+  return Math.trunc(offset);
+}
+
+/** Match the search term against the conversation title or any of its messages'
+ * persisted text, pushed into SQL so Postgres uses the `text_content` index
+ * instead of us scanning rows in memory. */
+function searchFilter(query?: string) {
+  const trimmed = query?.trim();
+  if (!trimmed) {
+    return;
+  }
+
+  const pattern = `%${trimmed}%`;
+  return or(
+    ilike(conversation.title, pattern),
+    exists(
+      db
+        .select()
+        .from(conversationMessage)
+        .where(
+          and(
+            eq(conversationMessage.conversationId, conversation.id),
+            ilike(conversationMessage.textContent, pattern)
+          )
+        )
+    )
+  );
 }
 
 export function isUIMessage(value: unknown): value is UIMessage {
@@ -77,31 +126,26 @@ export async function createConversation(userId: string) {
 export async function listConversations({
   userId,
   query,
+  limit,
+  offset,
 }: {
   userId: string;
   query?: string;
+  limit?: number;
+  offset?: number;
 }) {
-  const search = query?.trim() ? `%${query.trim()}%` : null;
-  const rows = await db.query.conversation.findMany({
-    where: search
-      ? and(
-          eq(conversation.userId, userId),
-          or(
-            ilike(conversation.title, search),
-            querySql`exists (
-              select 1
-              from conversation_message
-              where conversation_message.conversation_id = ${conversation.id}
-                and conversation_message.text_content ilike ${search}
-            )`
-          )
-        )
-      : eq(conversation.userId, userId),
-    orderBy: [desc(conversation.updatedAt)],
-    limit: 100,
-  });
+  const where = and(eq(conversation.userId, userId), searchFilter(query));
+  const [rows, total] = await Promise.all([
+    db.query.conversation.findMany({
+      where,
+      orderBy: [desc(conversation.updatedAt)],
+      limit: listLimit(limit),
+      offset: listOffset(offset),
+    }),
+    db.$count(conversation, where),
+  ]);
 
-  return rows.map(serializeConversation);
+  return { conversations: rows.map(serializeConversation), total };
 }
 
 export async function loadOwnedConversation({

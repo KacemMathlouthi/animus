@@ -28,12 +28,15 @@ conversationsRoute.post("/", async (c) => {
 });
 
 conversationsRoute.get("/", async (c) => {
-  const conversations = await listConversations({
+  const limit = Number(c.req.query("limit"));
+  const offset = Number(c.req.query("offset"));
+  const response = await listConversations({
     userId: userId(c),
     query: c.req.query("q"),
+    limit: Number.isFinite(limit) ? limit : undefined,
+    offset: Number.isFinite(offset) ? offset : undefined,
   });
-  const response = ConversationListResponseSchema.parse({ conversations });
-  return c.json(response);
+  return c.json(ConversationListResponseSchema.parse(response));
 });
 
 conversationsRoute.get("/:id", async (c) => {

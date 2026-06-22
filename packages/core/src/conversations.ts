@@ -24,6 +24,7 @@ export type ConversationSummary = z.infer<typeof ConversationSummarySchema>;
 
 export const ConversationListResponseSchema = z.object({
   conversations: z.array(ConversationSummarySchema),
+  total: z.number().int().nonnegative(),
 });
 export type ConversationListResponse = z.infer<
   typeof ConversationListResponseSchema

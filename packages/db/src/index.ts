@@ -9,7 +9,6 @@ export {
   exists,
   ilike,
   or,
-  sql as querySql,
 } from "drizzle-orm";
 export { type Database, db, schema, sql } from "./client.ts";
 export {

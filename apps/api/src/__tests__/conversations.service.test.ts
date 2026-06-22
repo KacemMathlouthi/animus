@@ -1,9 +1,11 @@
+import { ilike } from "@animus/db";
 import type { UIMessage } from "ai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   mockFindMany,
   mockFindFirst,
+  mockCount,
   mockInsertValues,
   mockTransaction,
   mockTxDeleteWhere,
@@ -14,6 +16,7 @@ const {
 } = vi.hoisted(() => ({
   mockFindMany: vi.fn(),
   mockFindFirst: vi.fn(),
+  mockCount: vi.fn(),
   mockInsertValues: vi.fn(),
   mockTransaction: vi.fn(),
   mockTxDeleteWhere: vi.fn(),
@@ -38,6 +41,7 @@ vi.mock("@animus/db", () => ({
     textContent: "conversation_message.text_content",
   },
   db: {
+    $count: mockCount,
     query: {
       conversation: {
         findMany: mockFindMany,
@@ -45,6 +49,7 @@ vi.mock("@animus/db", () => ({
       },
     },
     insert: () => ({ values: mockInsertValues }),
+    select: () => ({ from: () => ({ where: () => ({ subquery: true }) }) }),
     transaction: mockTransaction,
     update: () => ({
       set: () => ({ where: () => ({ returning: mockUpdateReturning }) }),
@@ -53,9 +58,9 @@ vi.mock("@animus/db", () => ({
   },
   desc: vi.fn((value) => ({ desc: value })),
   eq: vi.fn((left, right) => ({ eq: [left, right] })),
+  exists: vi.fn((subquery) => ({ exists: subquery })),
   ilike: vi.fn((left, right) => ({ ilike: [left, right] })),
   or: vi.fn((...args) => ({ or: args })),
-  querySql: vi.fn(() => ({ sql: true })),
 }));
 
 const {
@@ -98,6 +103,7 @@ function row(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockCount.mockResolvedValue(0);
   mockInsertValues.mockResolvedValue(undefined);
   mockTransaction.mockImplementation(async (callback) => {
     const tx = {
@@ -123,7 +129,7 @@ describe("conversation service helpers", () => {
     });
   });
 
-  it("extracts searchable text from text parts only", () => {
+  it("extracts visible text from text parts and skips reasoning", () => {
     expect(
       textOf({
         id: "msg",
@@ -166,15 +172,57 @@ describe("conversation service", () => {
     );
   });
 
-  it("lists conversations with optional search", async () => {
+  it("lists conversations with the default page and total count", async () => {
     mockFindMany.mockResolvedValue([row()]);
+    mockCount.mockResolvedValue(1);
+
+    await expect(listConversations({ userId: "user-1" })).resolves.toEqual({
+      conversations: [serializeConversation(row())],
+      total: 1,
+    });
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 30, offset: 0 })
+    );
+  });
+
+  it("applies limit and offset for a later page", async () => {
+    const second = row({ id: "conversation-2" });
+    mockFindMany.mockResolvedValue([second]);
+    mockCount.mockResolvedValue(5);
+
+    await expect(
+      listConversations({ userId: "user-1", limit: 1, offset: 1 })
+    ).resolves.toEqual({
+      conversations: [serializeConversation(second)],
+      total: 5,
+    });
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 1, offset: 1 })
+    );
+  });
+
+  it("searches conversations with a sql filter on title and message content", async () => {
+    mockFindMany.mockResolvedValue([row()]);
+    mockCount.mockResolvedValue(1);
 
     await expect(
       listConversations({ userId: "user-1", query: " eigen " })
-    ).resolves.toEqual([serializeConversation(row())]);
+    ).resolves.toEqual({
+      conversations: [serializeConversation(row())],
+      total: 1,
+    });
 
+    // The term is pushed into SQL (title + a message text_content subquery)
+    // rather than scanned in memory, and the same filter feeds the count.
+    expect(ilike).toHaveBeenCalledWith("conversation.title", "%eigen%");
+    expect(ilike).toHaveBeenCalledWith(
+      "conversation_message.text_content",
+      "%eigen%"
+    );
     expect(mockFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ limit: 100 })
+      expect.objectContaining({ limit: 30, offset: 0 })
     );
   });
 
