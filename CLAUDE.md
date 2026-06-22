@@ -35,13 +35,13 @@ state** (the Manim project files live across turns).
 
 ```
 apps/
-  web/    # React 19 + Vite SPA — landing, auth, studio, settings, legal
-  api/    # Hono/Bun — auth surface + (soon) the streaming agent loop. Long-running.
+  web/    # React 19 + Vite SPA — landing, auth, studio (chat + conversation sidebar), settings, legal
+  api/    # Hono/Bun — auth, settings, conversations, and the streaming agent loop (/api/chat). Long-running.
 packages/
   core/   # shared contracts: zod schemas, types, constants (pure root) + server env (/env subpath)
   auth/   # Better Auth (magic link via Resend, GitHub + Google OAuth, sessions)
   db/     # Drizzle + Postgres (schema, client, migrations)
-  agent/  # the loop + Manim tools + sandbox adapter — lands with generation work (not built yet)
+  agent/  # the AI SDK agent loop + tools (HITL + Exa web research) + prompts; Manim/sandbox tools land with generation work
 ```
 
 Packages are **source-first**: no per-package build step. `apps/api` and the
@@ -65,16 +65,22 @@ Cross-package "does it compile" = `bun run typecheck`.
 - **Runtime:** `apps/api` (Hono/Bun) hosts the loop as a **long-running
   container** (streaming + live sandbox handles need a persistent process — not
   serverless). No separate worker/queue in v1.
-- **Persistence:** Drizzle + managed Postgres. Generation settings are global
-  per-user.
+- **Persistence:** Drizzle + managed Postgres. Conversations and their message
+  snapshots are persisted — the DB is authoritative: the client sends only the
+  newest message and the completed turn is saved on finish, with titles
+  generated asynchronously (Haiku). Generation settings are global per-user.
 - **Storage:** Cloudflare R2 (S3-compatible) for rendered videos. Multi-cloud
   posture (managed Postgres + container host, no single-cloud lock-in).
 - **Narration:** ElevenLabs directly, word-level timestamps, ffmpeg mux at assembly.
 
-**Roadmap:** finish the shell (settings backend ✓, tests) → real streaming chat
-(`/api/chat` → `useChat` + Streamdown, kills the mocked `use-studio-chat`) →
-first Manim scene end-to-end via Daytona → generalize the render/repair loop +
-narration + R2 + playback → later: quota/billing, autonomous mode.
+**Roadmap:** shell ✓ (settings backend; conversation persistence with generated
+titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` →
+`useChat` + Streamdown, real agent loop with HITL + Exa web-research tools) →
+**next:** first Manim scene end-to-end via Daytona → generalize the
+render/repair loop + narration + R2 + playback → later: quota/billing,
+autonomous mode. (Outstanding before the chat phase fully closes: HTTP-level
+route tests for `conversations` + the `/api/chat` sync contract, and an atomic
+title-generation claim.)
 
 ---
 
