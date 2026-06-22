@@ -15,6 +15,13 @@
       "when": 1781737665647,
       "tag": "0001_wealthy_spencer_smythe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782081600000,
+      "tag": "0002_conversation_persistence",
+      "breakpoints": true
     }
   ]
 }

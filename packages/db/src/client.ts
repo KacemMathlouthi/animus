@@ -12,6 +12,12 @@ import {
   userRelations,
   verification,
 } from "./schema/auth.ts";
+import {
+  conversation,
+  conversationMessage,
+  conversationMessageRelations,
+  conversationRelations,
+} from "./schema/conversations.ts";
 import { providerKey, userSettings } from "./schema/settings.ts";
 
 /** Every table + relation, in one object — passed to Drizzle (for `db.query.*`)
@@ -23,9 +29,13 @@ export const schema = {
   verification,
   userSettings,
   providerKey,
+  conversation,
+  conversationMessage,
   accountRelations,
   sessionRelations,
   userRelations,
+  conversationRelations,
+  conversationMessageRelations,
 };
 
 const connectionString = process.env.DATABASE_URL;

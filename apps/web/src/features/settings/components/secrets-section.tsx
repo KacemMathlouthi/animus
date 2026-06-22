@@ -29,7 +29,7 @@ export function SecretsSection() {
 	// Load the current key's masked preview (if any).
 	useEffect(() => {
 		let active = true;
-		apiFetch<{ key: ProviderKeyPreview | null }>("/settings/keys")
+		apiFetch<{ key: ProviderKeyPreview | null }>("/api/settings/keys")
 			.then((data) => {
 				if (!(active && data.key)) {
 					return;
@@ -63,7 +63,7 @@ export function SecretsSection() {
 		setSaving(true);
 		try {
 			const data = await apiFetch<{ key: ProviderKeyPreview }>(
-				"/settings/keys",
+				"/api/settings/keys",
 				{
 					method: "PUT",
 					body: JSON.stringify({ provider: providerId, key }),
@@ -82,7 +82,7 @@ export function SecretsSection() {
 	async function handleRemove() {
 		setSaving(true);
 		try {
-			await apiFetch("/settings/keys", { method: "DELETE" });
+			await apiFetch("/api/settings/keys", { method: "DELETE" });
 			setSaved(null);
 			setKeyInput("");
 			setReveal(false);

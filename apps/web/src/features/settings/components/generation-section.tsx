@@ -40,7 +40,9 @@ export function GenerationSection() {
 	// Load the user's saved settings; fall back to defaults if none exist yet.
 	useEffect(() => {
 		let active = true;
-		apiFetch<{ settings: GenerationSettings | null }>("/settings/generation")
+		apiFetch<{ settings: GenerationSettings | null }>(
+			"/api/settings/generation",
+		)
 			.then((data) => {
 				if (!(active && data.settings)) {
 					return;
@@ -65,7 +67,7 @@ export function GenerationSection() {
 	async function handleSave() {
 		setSaving(true);
 		try {
-			await apiFetch("/settings/generation", {
+			await apiFetch("/api/settings/generation", {
 				method: "PUT",
 				body: JSON.stringify(config),
 			});

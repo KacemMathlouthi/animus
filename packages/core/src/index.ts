@@ -5,6 +5,7 @@
  * the web must never import. */
 
 // biome-ignore lint/performance/noBarrelFile: this is the package's public entry, not an internal re-export
+export * from "./conversations.ts";
 export * from "./generation.ts";
 export * from "./keys.ts";
 export * from "./providers.ts";

@@ -10,6 +10,7 @@ import { sessionMiddleware } from "./middleware/auth.ts";
 import { onError, onNotFound } from "./middleware/error.ts";
 import { requestLogger } from "./middleware/logger.ts";
 import { chatRoute } from "./routes/chat.ts";
+import { conversationsRoute } from "./routes/conversations.ts";
 import { healthRoute } from "./routes/health.ts";
 import { settingsRoute } from "./routes/settings.ts";
 import type { AppEnv } from "./types.ts";
@@ -45,7 +46,8 @@ app.notFound(onNotFound);
 app.get("/", (c) => c.json({ name: "animus-api", status: "ok" }));
 
 app.route("/health", healthRoute);
-app.route("/settings", settingsRoute);
+app.route("/api/settings", settingsRoute);
+app.route("/api/conversations", conversationsRoute);
 app.route("/api/chat", chatRoute);
 
 export type AppType = typeof app;
