@@ -1,9 +1,4 @@
-import {
-	FileCode2Icon,
-	FilesIcon,
-	FileTextIcon,
-	TerminalIcon,
-} from "lucide-react";
+import { FileCode2Icon, FilesIcon, FileTextIcon } from "lucide-react";
 import {
 	Message,
 	MessageContent,
@@ -22,6 +17,7 @@ import { FinalizeVideoPlanTool } from "@/features/studio/components/tools/finali
 import {
 	ManimStep,
 	RenderSceneTool,
+	RunCommandTool,
 } from "@/features/studio/components/tools/manim-tools";
 import {
 	WebFetchTool,
@@ -83,10 +79,12 @@ export function ChatMessage({
 	message,
 	isStreaming = false,
 	respondToTool,
+	onOpenVideo,
 }: {
 	message: AnimusUIMessage;
 	isStreaming?: boolean;
 	respondToTool: RespondToTool;
+	onOpenVideo?: (url: string) => void;
 }) {
 	if (message.role === "user") {
 		return (
@@ -246,11 +244,12 @@ export function ChatMessage({
 					if (part.type === "tool-runCommand") {
 						if (part.state !== "input-streaming" && part.input) {
 							return (
-								<ManimStep
-									detail={part.input.command}
-									icon={<TerminalIcon className="size-3.5" />}
+								<RunCommandTool
+									input={part.input}
 									key={part.toolCallId}
-									title="Ran command"
+									output={
+										part.state === "output-available" ? part.output : undefined
+									}
 								/>
 							);
 						}
@@ -263,6 +262,7 @@ export function ChatMessage({
 								<RenderSceneTool
 									input={part.input}
 									key={part.toolCallId}
+									onOpen={onOpenVideo}
 									output={part.output}
 								/>
 							);
