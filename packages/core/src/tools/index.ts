@@ -4,3 +4,4 @@
 // biome-ignore lint/performance/noBarrelFile: this is the tool contracts public entry
 export * from "./exa.ts";
 export * from "./hitl.ts";
+export * from "./manim.ts";
