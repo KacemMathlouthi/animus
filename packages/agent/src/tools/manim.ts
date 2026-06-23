@@ -118,7 +118,10 @@ export function createManimTools(deps: {
         "Render a Manim Scene to an mp4. Provide the Python file and the Scene subclass name. On failure, read the returned logs and fix the code, then render again.",
       inputSchema: RenderSceneInputSchema,
       execute: async ({ file, scene, quality }): Promise<RenderSceneOutput> => {
-        const command = `manim render ${QUALITY_FLAG[quality]} --format=mp4 --media_dir ${PROJECT_DIR}/media ${file} ${scene} 2>&1`;
+        // Invoke via `python3 -m manim` so it works regardless of whether the
+        // manim console script is on PATH (pip --user installs land in
+        // ~/.local/bin, which non-login shells often don't include).
+        const command = `python3 -m manim render ${QUALITY_FLAG[quality]} --format=mp4 --media_dir ${PROJECT_DIR}/media ${file} ${scene} 2>&1`;
         const res = await sandbox.process.executeCommand(
           command,
           PROJECT_DIR,
