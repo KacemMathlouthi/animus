@@ -41,6 +41,7 @@ export function StudioStage({
 	messages,
 	status,
 	videoUrl,
+	title,
 	respondToTool,
 	onSubmit,
 	onStop,
@@ -49,6 +50,7 @@ export function StudioStage({
 	messages: AnimusUIMessage[];
 	status: ChatStatus;
 	videoUrl?: string;
+	title: string;
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 	onStop: () => void;
@@ -68,6 +70,7 @@ export function StudioStage({
 					onSubmit={onSubmit}
 					respondToTool={respondToTool}
 					status={status}
+					title={title}
 					videoUrl={videoUrl}
 				/>
 			) : null}

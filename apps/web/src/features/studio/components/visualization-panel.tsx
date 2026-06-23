@@ -1,5 +1,5 @@
 import { BellIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MorphLogo } from "@/features/studio/components/morph-logo";
 
@@ -46,23 +46,60 @@ function RenderingStage() {
 	);
 }
 
-function VideoPreview({ url }: { url: string }) {
+function VideoPreview({
+	url,
+	title,
+	playToken,
+}: {
+	url: string;
+	title: string;
+	playToken: number;
+}) {
+	const videoRef = useRef<HTMLVideoElement>(null);
+
+	// Autoplay when the user opens a video from a chat card (playToken bumps on
+	// each click). Skip the initial mount so the panel doesn't autoplay on load.
+	useEffect(() => {
+		if (playToken > 0) {
+			videoRef.current?.play().catch(() => {
+				// Autoplay can be blocked; the controls let the user start it.
+			});
+		}
+	}, [playToken]);
+
 	return (
 		<div className="w-full max-w-3xl space-y-3">
 			<div className="overflow-hidden rounded-xl border shadow-sm">
 				{/* biome-ignore lint/a11y/useMediaCaption: Captions will be wired once the render pipeline produces a captions file. */}
-				<video className="aspect-video w-full bg-black" controls src={url} />
+				<video
+					className="aspect-video w-full bg-black"
+					controls
+					ref={videoRef}
+					src={url}
+				/>
 			</div>
-			<p className="px-1 font-medium text-sm">Untitled explainer</p>
+			<p className="px-1 font-medium text-sm">{title}</p>
 		</div>
 	);
 }
 
-export function VisualizationPanel({ videoUrl }: { videoUrl?: string }) {
+export function VisualizationPanel({
+	videoUrl,
+	title,
+	playToken = 0,
+}: {
+	videoUrl?: string;
+	title: string;
+	playToken?: number;
+}) {
 	return (
 		<div className="flex h-full flex-col bg-muted/30">
 			<div className="flex flex-1 items-center justify-center overflow-auto p-6">
-				{videoUrl ? <VideoPreview url={videoUrl} /> : <RenderingStage />}
+				{videoUrl ? (
+					<VideoPreview playToken={playToken} title={title} url={videoUrl} />
+				) : (
+					<RenderingStage />
+				)}
 			</div>
 		</div>
 	);

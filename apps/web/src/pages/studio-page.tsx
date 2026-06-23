@@ -79,6 +79,7 @@ function LoadedStudioChat({
 			phase={phase}
 			respondToTool={respondToTool}
 			status={status}
+			title={detail.conversation.title}
 			videoUrl={videoUrl}
 		/>
 	);
