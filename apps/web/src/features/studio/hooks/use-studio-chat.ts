@@ -101,9 +101,20 @@ export function useStudioChat({
 		phase = "idle";
 	}
 
-	// No render pipeline yet, so there's never a video — the side panel animates
-	// indefinitely. The render loop will populate this later.
-	const videoUrl: string | undefined = undefined;
+	// The latest successfully rendered scene drives the side panel's player.
+	let videoUrl: string | undefined;
+	for (const message of messages) {
+		for (const part of message.parts) {
+			if (
+				part.type === "tool-renderScene" &&
+				part.state === "output-available" &&
+				part.output.ok &&
+				part.output.videoUrl
+			) {
+				videoUrl = part.output.videoUrl;
+			}
+		}
+	}
 
 	return { messages, status, phase, videoUrl, send, stop, respondToTool };
 }

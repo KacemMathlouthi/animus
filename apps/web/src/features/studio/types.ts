@@ -2,11 +2,21 @@ import type {
 	AskUserQuestionInput,
 	AskUserQuestionOutput,
 	FinalizeVideoPlanOutput,
+	ListFilesInput,
+	ListFilesOutput,
+	ReadFileInput,
+	ReadFileOutput,
+	RenderSceneInput,
+	RenderSceneOutput,
+	RunCommandInput,
+	RunCommandOutput,
 	VideoPlan,
 	WebFetchInput,
 	WebFetchOutput,
 	WebSearchInput,
 	WebSearchOutput,
+	WriteFileInput,
+	WriteFileOutput,
 } from "@animus/core/tools";
 import type { UIDataTypes, UIMessage } from "ai";
 
@@ -23,6 +33,11 @@ type AnimusTools = {
 	finalizeVideoPlan: { input: VideoPlan; output: FinalizeVideoPlanOutput };
 	webFetch: { input: WebFetchInput; output: WebFetchOutput };
 	webSearch: { input: WebSearchInput; output: WebSearchOutput };
+	writeFile: { input: WriteFileInput; output: WriteFileOutput };
+	readFile: { input: ReadFileInput; output: ReadFileOutput };
+	listFiles: { input: ListFilesInput; output: ListFilesOutput };
+	runCommand: { input: RunCommandInput; output: RunCommandOutput };
+	renderScene: { input: RenderSceneInput; output: RenderSceneOutput };
 };
 
 export type AnimusUIMessage = UIMessage<never, UIDataTypes, AnimusTools>;
