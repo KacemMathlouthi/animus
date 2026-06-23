@@ -13,6 +13,7 @@
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^4.0.0",
     "@animus/core": "workspace:*",
+    "@daytonaio/sdk": "^0.189.0",
     "ai": "^6.0.206",
     "exa-js": "^2.14.0"
   },

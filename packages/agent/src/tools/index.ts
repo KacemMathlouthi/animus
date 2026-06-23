@@ -3,7 +3,8 @@
  * Interactive tools have NO `execute`: when the agent calls one, the loop
  * pauses and the call is streamed to the web, which renders custom UI and sends
  * the user's answer back as the tool output (human-in-the-loop). Web research
- * tools execute on the server through Exa. Render tools land here next. */
+ * tools execute on the server through Exa. Manim tools (write/read/render) act
+ * on the conversation's sandbox and are only present when one is provided. */
 
 import {
   AskUserQuestionInputSchema,
@@ -13,17 +14,22 @@ import {
   WebSearchInputSchema,
   type WebSearchOutput,
 } from "@animus/core/tools";
+import type { Sandbox } from "@daytonaio/sdk";
 import { type ToolSet, tool } from "ai";
 import { type ExaClient, fetchWeb, getExaClient, searchWeb } from "./exa.ts";
+import { createManimTools, type SaveVideo } from "./manim.ts";
 
 interface ToolDependencies {
   getExaClient?: () => ExaClient;
+  /** When present, the agent gets the Manim sandbox tools bound to this turn. */
+  manim?: { sandbox: Sandbox; conversationId: string; saveVideo: SaveVideo };
 }
 
 export function createTools(dependencies: ToolDependencies = {}): ToolSet {
   const resolveExaClient = dependencies.getExaClient ?? getExaClient;
 
   return {
+    ...(dependencies.manim ? createManimTools(dependencies.manim) : {}),
     askUserQuestion: tool({
       description:
         "Ask the user a question with selectable options before continuing. Use this to get a decision or resolve ambiguity. The user picks one or more options and may also type a free-form answer. Prefer this over guessing.",
@@ -50,5 +56,3 @@ export function createTools(dependencies: ToolDependencies = {}): ToolSet {
     }),
   } satisfies ToolSet;
 }
-
-export const tools = createTools();
