@@ -107,7 +107,7 @@ export function StudioWorkspace({
 				<div className="relative h-full">
 					<Button
 						aria-label="Hide video panel"
-						className="absolute top-3 left-3 z-20 shadow-sm"
+						className="absolute top-3 right-3 z-20 shadow-sm"
 						onClick={toggleVideoPanel}
 						size="sm"
 						variant="outline"
