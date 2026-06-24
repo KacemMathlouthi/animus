@@ -1,0 +1,37 @@
+/** Always-on Manim craft rules — the highest-value, every-render guidance
+ * synthesized from the bundled manim-video skill (SKILL.md +
+ * production-quality.md + visual-design.md), rewritten for animus's flow (one
+ * Scene rendered once via renderScene, no audio). The skill's long-tail
+ * references stay in the sandbox for on-demand reading; this is the core that
+ * must apply to every render, so it lives in the system prompt rather than
+ * behind a tool the model might not consult. */
+
+export const MANIM_CRAFT = `## Visual craft — apply on every render; this is what makes a video look finished instead of broken
+
+This is educational cinema: every frame should teach. Before coding, decide the visual story — what each section builds toward and what the key "aha" is. Show geometry before algebra: the shape first, the equation second, so the formula feels earned.
+
+IMPORTANT: a full Manim craft skill is bundled in the sandbox at /home/daytona/skill — it goes far deeper than this summary, and it is your authoritative reference. Consult it ACTIVELY with readFile (see "Required reading" at the end); do not build scenes from memory alone. The rules below are the always-apply core; the skill is the detail.
+
+Frame & layout — the #1 cause of broken-looking output is content off-screen or overlapping. The visible frame is about 14.2 wide x 8.0 tall. Stay inside a safe area:
+- Usable: x in [-6.5, 6.5], y in [-3.5, 3.5]. Title zone y in [2.5, 3.5]; bottom-note zone y in [-3.5, -2.5]; main content y in [-2.5, 2.5], x in [-6.0, 6.0].
+- Size and place relative to config.frame_width / config.frame_height; never hard-code coordinates that assume a larger frame.
+- Clamp anything that might be wide: if m.width > config.frame_width - 1.0, call m.set_width(config.frame_width - 1.0) (use set_height for tall content).
+- Position with layout helpers, not eyeballed coordinates: VGroup(...).arrange(DOWN, buff=0.5), next_to(other, RIGHT, buff=0.5), to_edge(UP, buff=0.5). Keep buff >= 0.5 near edges so text never clips.
+- Fill the frame without crowding it: aim to leave ~15% empty. A lone small object looks unfinished (add a dim title, axes, or citation); a packed frame is unreadable.
+
+Element budget & cleanup — keep at most ~6 things visible at once, or the viewer can't track it. When a section is done, clear its space before the next one:
+- FadeOut what is finished, e.g. self.play(FadeOut(Group(*self.mobjects))), before reusing the same area. Use Group (not VGroup) when any Text() is included, or it raises a TypeError.
+- Replace in place with ReplacementTransform(old, new) — never Write() new text over existing text; that is the overlap to avoid.
+
+Pacing — rushed, too-short videos come from missing pauses. Put self.wait() after every reveal so the eye can land. Rough budget:
+- Title appear ~1.5s then wait ~1.0s; key reveal/equation ~2.0s then ~2.0s; transform ~1.5s then ~1.5s; small label ~0.8s then ~0.5s; "aha" moment ~2.5s then ~3.0s; FadeOut ~0.5s then ~0.3s.
+- Shape the whole video slow -> medium -> fast (climax) -> slow (conclusion). A 2s pause after the key moment is never wasted.
+
+Hierarchy, type & color — direct attention with opacity, not clutter: primary elements at 1.0, context at 0.4, structure (axes/grids) at 0.15.
+- Text must be monospace (Manim's Pango renderer breaks kerning on proportional fonts). Define MONO = "Menlo" once; titles ~48, body ~30, labels ~24, never below font_size=18. For typeset math use MathTex with raw strings, e.g. MathTex(r"\\frac{1}{2}"). For LaTeX-styled prose use Text(..., font="Latin Modern Roman").
+- Choose a small palette on a dark background and keep each color's meaning for the entire video. On #1C1C1C, bright saturated colors read best (#58C4DD blue, #83C167 green, #FFFF00 yellow, #FF6B6B red). Set self.camera.background_color once.
+
+Required reading — the bundled skill at /home/daytona/skill/references/ goes well beyond this summary. Consulting it is not optional; a scene built from memory alone will miss these rules and look broken. Use readFile proactively, not as a last resort:
+- At the START of every video, read scene-planning.md, production-quality.md, and visual-design.md — they cover layout, spacing, frame-safety, element budget and pacing in full.
+- Before using any specialized construct, open its reference FIRST: equations.md (Tex/MathTex, derivations), graphs-and-data.md (axes, charts, algorithm viz), camera-and-3d.md (3D, moving camera), updaters-and-trackers.md (ValueTracker, always_redraw), decorations.md (braces, arrows, SurroundingRectangle), mobjects.md (text/shapes/positioning), animations.md (rate functions, composition), troubleshooting.md (whenever a render errors).
+- These are technique references: apply their Manim code, but IGNORE any workflow that conflicts with animus — we render ONE Scene ONCE via renderScene: no per-scene files, no ffmpeg stitching, no voiceover/subtitles/add_subcaption.`;
