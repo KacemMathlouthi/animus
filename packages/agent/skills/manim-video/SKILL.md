@@ -7,6 +7,15 @@ platforms: [linux, macos, windows]
 
 # Manim Video Production Pipeline
 
+> **animus adaptation — read this first.** animus uses this skill for its *craft*
+> (visual design, layout, frame-safety, pacing, color, typography), NOT its
+> pipeline. In animus the whole video is ONE Scene rendered ONCE via the
+> `renderScene` tool. Ignore everything in this skill about multiple scene
+> classes, `manim`/`ffmpeg` stitching, `plan.md`/`script.py`/`concat.txt`
+> project structure, voiceover/TTS, and `add_subcaption`/subtitles — none of
+> that applies here. Use the design rules and the `references/` files as
+> technique references only.
+
 ## When to use
 
 Use when users request: animated explanations, math animations, concept visualizations, algorithm walkthroughs, technical explainers, 3Blue1Brown style videos, or any programmatic animation with geometric/mathematical content. Creates 3Blue1Brown-style explainer videos, algorithm visualizations, equation derivations, architecture diagrams, and data stories using Manim Community Edition.
