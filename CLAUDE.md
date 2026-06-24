@@ -56,8 +56,13 @@ Cross-package "does it compile" = `bun run typecheck`.
   tool-calling loop (`streamText` + Manim tools + `stopWhen`), streamed over SSE
   and interruptible. Durable execution (Vercel Workflow SDK) is **parked** for a
   future non-interactive "autonomous render" mode — it fights interactive streams.
-- **Sandbox: Daytona**, one per conversation, suspended between turns and resumed
-  via snapshots; prebaked Manim + LaTeX image; behind a thin swappable adapter.
+- **Sandbox: Daytona**, one per conversation, suspended between turns and resumed.
+  Sandboxes boot from a **prebaked snapshot** with Manim + ffmpeg + LaTeX already
+  installed (no per-turn bootstrap). The snapshot is built from
+  `packages/agent/snapshot/Dockerfile` via `bun run snapshot:build` (registers it
+  as `animus-manim:<tag>`). The lifecycle lives in `packages/agent/src/sandbox`
+  as plain functions (`ensureSandbox`/`destroySandbox`) returning the Daytona
+  handle directly — the tools call the SDK natively (no wrapper adapter).
 - **Models: Anthropic (Claude) default**, via the AI SDK (provider-agnostic).
   Free tier on our keys with a per-user quota → then pay or **bring your own key
   (BYOK)**. BYO keys stored AES-256-GCM-encrypted in Postgres, never returned to
@@ -122,6 +127,12 @@ Database (`packages/db`):
 bun run db:generate    # create a migration from schema changes
 bun run db:migrate     # apply migrations
 bun run db:studio      # Drizzle Studio
+```
+
+Sandbox snapshot (`packages/agent`):
+
+```bash
+bun run snapshot:build # build/refresh the prebaked Manim+LaTeX Daytona snapshot
 ```
 
 **Before committing, the change must pass:** `bun run typecheck`,
