@@ -94,6 +94,7 @@ function row(overrides: Record<string, unknown> = {}) {
     userId: "user-1",
     title: "Explaining Eigenvectors",
     titleStatus: "generated",
+    sandboxId: null,
     createdAt: NOW,
     updatedAt: NOW,
     lastMessageAt: NOW,
@@ -324,15 +325,15 @@ describe("conversation service", () => {
     ).resolves.toBeNull();
   });
 
-  it("returns whether delete removed a row", async () => {
-    mockDeleteReturning.mockResolvedValueOnce([{ id: "conversation-1" }]);
+  it("returns the deleted conversation's sandbox id (or null when absent)", async () => {
+    mockDeleteReturning.mockResolvedValueOnce([{ sandboxId: "sandbox-1" }]);
     await expect(
       deleteConversation({ conversationId: "conversation-1", userId: "user-1" })
-    ).resolves.toBe(true);
+    ).resolves.toEqual({ sandboxId: "sandbox-1" });
 
     mockDeleteReturning.mockResolvedValueOnce([]);
     await expect(
       deleteConversation({ conversationId: "missing", userId: "user-1" })
-    ).resolves.toBe(false);
+    ).resolves.toBeNull();
   });
 });

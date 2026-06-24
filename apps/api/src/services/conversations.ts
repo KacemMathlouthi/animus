@@ -253,19 +253,31 @@ export async function renameConversation({
   return updated[0] ? serializeConversation(updated[0]) : null;
 }
 
+export async function setConversationSandboxId(
+  conversationId: string,
+  sandboxId: string
+): Promise<void> {
+  await db
+    .update(conversation)
+    .set({ sandboxId })
+    .where(eq(conversation.id, conversationId));
+}
+
+/** Deletes the conversation (messages cascade) and returns its sandbox id so the
+ * caller can tear the sandbox down. Null when no row was deleted. */
 export async function deleteConversation({
   conversationId,
   userId,
 }: {
   conversationId: string;
   userId: string;
-}) {
+}): Promise<{ sandboxId: string | null } | null> {
   const deleted = await db
     .delete(conversation)
     .where(
       and(eq(conversation.id, conversationId), eq(conversation.userId, userId))
     )
-    .returning({ id: conversation.id });
+    .returning({ sandboxId: conversation.sandboxId });
 
-  return Boolean(deleted[0]);
+  return deleted[0] ?? null;
 }

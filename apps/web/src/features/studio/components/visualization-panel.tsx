@@ -2,6 +2,7 @@ import { BellIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MorphLogo } from "@/features/studio/components/morph-logo";
+import { VideoPlayer } from "@/features/studio/components/video-player";
 
 function NotifyButton() {
 	const [permission, setPermission] = useState<
@@ -46,24 +47,24 @@ function RenderingStage() {
 	);
 }
 
-function VideoPreview({ url }: { url: string }) {
-	return (
-		<div className="w-full max-w-3xl space-y-3">
-			<div className="overflow-hidden rounded-xl border shadow-sm">
-				{/* biome-ignore lint/a11y/useMediaCaption: Captions will be wired once the render pipeline produces a captions file. */}
-				<video className="aspect-video w-full bg-black" controls src={url} />
-			</div>
-			<p className="px-1 font-medium text-sm">Untitled explainer</p>
-		</div>
-	);
-}
-
-export function VisualizationPanel({ videoUrl }: { videoUrl?: string }) {
+export function VisualizationPanel({
+	videoUrl,
+	title,
+	playToken = 0,
+}: {
+	videoUrl?: string;
+	title: string;
+	playToken?: number;
+}) {
 	return (
 		<div className="flex h-full flex-col bg-muted/30">
-			<div className="flex flex-1 items-center justify-center overflow-auto p-6">
-				{videoUrl ? <VideoPreview url={videoUrl} /> : <RenderingStage />}
-			</div>
+			{videoUrl ? (
+				<VideoPlayer playToken={playToken} title={title} url={videoUrl} />
+			) : (
+				<div className="flex flex-1 items-center justify-center overflow-auto p-6">
+					<RenderingStage />
+				</div>
+			)}
 		</div>
 	);
 }

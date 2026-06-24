@@ -1,3 +1,4 @@
+import { destroySandbox } from "@animus/agent";
 import {
   ConversationListResponseSchema,
   CreateConversationResponseSchema,
@@ -5,6 +6,7 @@ import {
 } from "@animus/core";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { logger } from "../lib/logger.ts";
 import { userId } from "../lib/user.ts";
 import { requireAuth } from "../middleware/auth.ts";
 import {
@@ -84,6 +86,15 @@ conversationsRoute.delete("/:id", async (c) => {
 
   if (!deleted) {
     throw new HTTPException(404, { message: "Conversation not found" });
+  }
+
+  // TODO: THIS IS A TEMPORARY DESIGN TO WORK ON OTHER STUFF, THIS MAKES NO SENSE AT ALL, THANK YOU.
+  // Tear the sandbox down out-of-band — the delete shouldn't block on (or fail because of) the provider.
+  if (deleted.sandboxId) {
+    const sandboxId = deleted.sandboxId;
+    destroySandbox(sandboxId).catch((error) =>
+      logger.warn({ err: error, sandboxId }, "sandbox destroy failed")
+    );
   }
 
   return c.json({ ok: true });

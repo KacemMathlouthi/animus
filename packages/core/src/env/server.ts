@@ -43,14 +43,26 @@ const ServerEnvSchema = z.object({
   BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-6-v1"),
   /** Exa API key used by the agent's web search and fetch tools. */
   EXA_API_KEY: z.string().optional(),
+  /** Daytona API key for the sandbox the agent renders Manim in. Optional at
+   * boot; required only when a turn actually needs the sandbox. */
+  DAYTONA_API_KEY: z.string().optional(),
+  /** Optional Daytona region/target (e.g. "us", "eu"). */
+  DAYTONA_TARGET: z.string().optional(),
+  /** Public base URL of this API, used to build absolute URLs for served media. (TEMP)
+   * TODO: TO BE REPLACED WITH PROPER STORAGE SOLUTION LATER ON ...
+   */
+  API_PUBLIC_URL: z.url().default("http://localhost:8787"),
 });
 
 export interface ServerEnv {
+  apiPublicUrl: string;
   bedrockModel: string;
   betterAuthApiKey?: string;
   betterAuthSecret: string;
   betterAuthUrl: string;
   databaseUrl: string;
+  daytonaApiKey?: string;
+  daytonaTarget?: string;
   encryptionKey?: string;
   exaApiKey?: string;
   githubClientId?: string;
@@ -89,6 +101,9 @@ export function parseServerEnv(
     databaseUrl: e.DATABASE_URL,
     encryptionKey: e.ENCRYPTION_KEY,
     exaApiKey: e.EXA_API_KEY,
+    daytonaApiKey: e.DAYTONA_API_KEY,
+    daytonaTarget: e.DAYTONA_TARGET,
+    apiPublicUrl: e.API_PUBLIC_URL,
     logLevel: e.LOG_LEVEL,
     betterAuthSecret: e.BETTER_AUTH_SECRET,
     betterAuthUrl: e.BETTER_AUTH_URL,

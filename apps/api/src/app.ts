@@ -12,6 +12,7 @@ import { requestLogger } from "./middleware/logger.ts";
 import { chatRoute } from "./routes/chat.ts";
 import { conversationsRoute } from "./routes/conversations.ts";
 import { healthRoute } from "./routes/health.ts";
+import { mediaRoute } from "./routes/media.ts";
 import { settingsRoute } from "./routes/settings.ts";
 import type { AppEnv } from "./types.ts";
 
@@ -49,6 +50,7 @@ app.route("/health", healthRoute);
 app.route("/api/settings", settingsRoute);
 app.route("/api/conversations", conversationsRoute);
 app.route("/api/chat", chatRoute);
+app.route("/api/media", mediaRoute);
 
 export type AppType = typeof app;
 

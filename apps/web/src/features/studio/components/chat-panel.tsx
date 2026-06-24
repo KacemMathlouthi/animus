@@ -15,12 +15,14 @@ export function ChatPanel({
 	respondToTool,
 	onSubmit,
 	onStop,
+	onOpenVideo,
 }: {
 	messages: AnimusUIMessage[];
 	status: ChatStatus;
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 	onStop: () => void;
+	onOpenVideo?: (url: string) => void;
 }) {
 	const lastIndex = messages.length - 1;
 	return (
@@ -36,6 +38,7 @@ export function ChatPanel({
 							}
 							key={message.id}
 							message={message}
+							onOpenVideo={onOpenVideo}
 							respondToTool={respondToTool}
 						/>
 					))}

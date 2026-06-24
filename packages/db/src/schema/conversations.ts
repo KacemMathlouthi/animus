@@ -19,6 +19,8 @@ export const conversation = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     title: text("title").default("Untitled video").notNull(),
     titleStatus: text("title_status").default("pending").notNull(),
+    /** Sandbox id backing this conversation's workspace, set lazily. Null until then. */
+    sandboxId: text("sandbox_id"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

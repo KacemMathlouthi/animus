@@ -1,3 +1,4 @@
+import { FileCode2Icon, FilesIcon, FileTextIcon } from "lucide-react";
 import {
 	Message,
 	MessageContent,
@@ -13,6 +14,11 @@ import { LogoMark } from "@/components/brand/logo-mark";
 import { UserAvatar } from "@/components/user-avatar";
 import { AskUserQuestionTool } from "@/features/studio/components/tools/ask-user-question";
 import { FinalizeVideoPlanTool } from "@/features/studio/components/tools/finalize-video-plan";
+import {
+	ManimStep,
+	RenderSceneTool,
+	RunCommandTool,
+} from "@/features/studio/components/tools/manim-tools";
 import {
 	WebFetchTool,
 	WebSearchTool,
@@ -73,10 +79,12 @@ export function ChatMessage({
 	message,
 	isStreaming = false,
 	respondToTool,
+	onOpenVideo,
 }: {
 	message: AnimusUIMessage;
 	isStreaming?: boolean;
 	respondToTool: RespondToTool;
+	onOpenVideo?: (url: string) => void;
 }) {
 	if (message.role === "user") {
 		return (
@@ -189,6 +197,84 @@ export function ChatMessage({
 							);
 						}
 						return <Shimmer key={part.toolCallId}>Reading pages…</Shimmer>;
+					}
+
+					if (part.type === "tool-writeFile") {
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<ManimStep
+									detail={part.input.path}
+									icon={<FileCode2Icon className="size-3.5" />}
+									key={part.toolCallId}
+									title="Wrote file"
+								/>
+							);
+						}
+						return <Shimmer key={part.toolCallId}>Writing a scene…</Shimmer>;
+					}
+
+					if (part.type === "tool-readFile") {
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<ManimStep
+									detail={part.input.path}
+									icon={<FileTextIcon className="size-3.5" />}
+									key={part.toolCallId}
+									title="Read file"
+								/>
+							);
+						}
+						return <Shimmer key={part.toolCallId}>Reading a file…</Shimmer>;
+					}
+
+					if (part.type === "tool-listFiles") {
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<ManimStep
+									detail={part.input.path}
+									icon={<FilesIcon className="size-3.5" />}
+									key={part.toolCallId}
+									title="Listed files"
+								/>
+							);
+						}
+						return <Shimmer key={part.toolCallId}>Listing files…</Shimmer>;
+					}
+
+					if (part.type === "tool-runCommand") {
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<RunCommandTool
+									input={part.input}
+									key={part.toolCallId}
+									output={
+										part.state === "output-available" ? part.output : undefined
+									}
+								/>
+							);
+						}
+						return <Shimmer key={part.toolCallId}>Running a command…</Shimmer>;
+					}
+
+					if (part.type === "tool-renderScene") {
+						if (part.state === "output-available" && part.input) {
+							return (
+								<RenderSceneTool
+									input={part.input}
+									key={part.toolCallId}
+									onOpen={onOpenVideo}
+									output={part.output}
+								/>
+							);
+						}
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<Shimmer key={part.toolCallId}>
+									{`Rendering ${part.input.scene}…`}
+								</Shimmer>
+							);
+						}
+						return <Shimmer key={part.toolCallId}>Preparing render…</Shimmer>;
 					}
 
 					return null;

@@ -4,10 +4,11 @@
  * newest changed UI message, and the completed stream snapshot is persisted
  * once the turn finishes. */
 
-import { createManimAgent } from "@animus/agent";
+import { createManimAgent, ensureSandbox } from "@animus/agent";
 import { convertToModelMessages, createIdGenerator } from "ai";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { saveVideo } from "../lib/media.ts";
 import { userId } from "../lib/user.ts";
 import { requireAuth } from "../middleware/auth.ts";
 import { maybeGenerateConversationTitle } from "../services/conversation-titles.ts";
@@ -16,6 +17,7 @@ import {
   loadOwnedConversation,
   mergeIncomingMessage,
   saveConversationMessages,
+  setConversationSandboxId,
 } from "../services/conversations.ts";
 import type { AppEnv } from "../types.ts";
 
@@ -44,7 +46,18 @@ chatRoute.post("/", async (c) => {
   }
 
   const messages = mergeIncomingMessage(found.messages, body.message);
-  const agent = createManimAgent();
+
+  // Create-or-resume this conversation's sandbox and bind the Manim tools to it.
+  // First creation bootstraps the toolchain and can take a few minutes.
+  const sandbox = await ensureSandbox({
+    conversationId,
+    sandboxId: found.conversation.sandboxId,
+  });
+  if (sandbox.id !== found.conversation.sandboxId) {
+    await setConversationSandboxId(conversationId, sandbox.id);
+  }
+
+  const agent = createManimAgent({ sandbox, conversationId, saveVideo });
   const result = await agent.stream({
     abortSignal: c.req.raw.signal,
     prompt: await convertToModelMessages(messages),
