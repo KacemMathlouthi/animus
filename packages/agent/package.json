@@ -7,6 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "snapshot:build": "bun --env-file=../../.env scripts/build-snapshot.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
