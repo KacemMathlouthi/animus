@@ -35,7 +35,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --upgrade pip && pip install manim
 
 # Project directory the agent's tools write into. World-writable so it works
-# whatever user Daytona runs the sandbox as.
+# whatever user Daytona runs the sandbox as. The Manim craft skill is added to
+# the image separately (see ../scripts/build-snapshot.ts) so it can live outside
+# this build context.
 RUN mkdir -p /home/daytona/project && chmod -R 777 /home/daytona
 
 WORKDIR /home/daytona/project
