@@ -25,7 +25,16 @@ const daytona = new Daytona({ apiKey, target: process.env.DAYTONA_TARGET });
 const dockerfilePath = fileURLToPath(
   new URL("../snapshot/Dockerfile", import.meta.url)
 );
-const image = Image.fromDockerfile(dockerfilePath);
+// The craft skill lives outside the Dockerfile's build context, so bake it in
+// here rather than via a COPY. The agent reads /home/daytona/skill/references
+// on demand; the always-on core is in the system prompt.
+const skillDir = fileURLToPath(
+  new URL("../skills/manim-video", import.meta.url)
+);
+const image = Image.fromDockerfile(dockerfilePath).addLocalDir(
+  skillDir,
+  "/home/daytona/skill"
+);
 
 process.stdout.write(`Building snapshot ${SNAPSHOT_NAME} …\n`);
 await daytona.snapshot.create(
