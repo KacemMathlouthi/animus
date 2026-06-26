@@ -29,6 +29,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       texlive-fonts-extra \
       texlive-science \
       tipa \
+      fontconfig \
+      fonts-lmodern \
+    && fc-cache -f \
     && rm -rf /var/lib/apt/lists/*
 
 # Manim itself.
