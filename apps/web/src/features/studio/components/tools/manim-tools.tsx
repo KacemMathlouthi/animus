@@ -1,4 +1,5 @@
 import type {
+	EditFileInput,
 	RenderSceneInput,
 	RenderSceneOutput,
 	RunCommandInput,
@@ -6,6 +7,7 @@ import type {
 } from "@animus/core/tools";
 import {
 	ChevronDownIcon,
+	FilePenIcon,
 	PlayIcon,
 	TerminalIcon,
 	TriangleAlertIcon,
@@ -90,6 +92,37 @@ export function RunCommandTool({
 				) : null}
 			</CollapsibleContent>
 		</Collapsible>
+	);
+}
+
+/** A surgical edit, shown as a compact one-liner with the file path — like the
+ * other sandbox steps. On failure it takes the destructive treatment the render
+ * tool uses, no before/after snippet. */
+export function EditFileTool({
+	input,
+	failed,
+}: {
+	input: EditFileInput;
+	failed: boolean;
+}) {
+	if (failed) {
+		return (
+			<div className="my-1.5 flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-2.5 py-1.5">
+				<TriangleAlertIcon className="size-3.5 shrink-0 text-destructive" />
+				<span className="shrink-0 font-medium text-sm">Edit failed</span>
+				<code className="min-w-0 flex-1 truncate font-mono text-muted-foreground text-xs">
+					{input.path}
+				</code>
+			</div>
+		);
+	}
+
+	return (
+		<ManimStep
+			detail={input.path}
+			icon={<FilePenIcon className="size-3.5" />}
+			title="Edited file"
+		/>
 	);
 }
 
