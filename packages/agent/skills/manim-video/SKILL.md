@@ -8,13 +8,22 @@ platforms: [linux, macos, windows]
 # Manim Video Production Pipeline
 
 > **animus adaptation — read this first.** animus uses this skill for its *craft*
-> (visual design, layout, frame-safety, pacing, color, typography), NOT its
+> (visual design, layout, frame-safety, pacing, typography), NOT its
 > pipeline. In animus the whole video is ONE Scene rendered ONCE via the
 > `renderScene` tool. Ignore everything in this skill about multiple scene
 > classes, `manim`/`ffmpeg` stitching, `plan.md`/`script.py`/`concat.txt`
 > project structure, voiceover/TTS, and `add_subcaption`/subtitles — none of
 > that applies here. Use the design rules and the `references/` files as
 > technique references only.
+>
+> Two overrides that supersede anything in this skill or its references:
+> 1. **Background:** keep Manim's default (black). Do NOT set
+>    `self.camera.background_color`, and ignore every `#1C1C1C` / `#0D1117`
+>    dark-grey recommendation — they make the video look off.
+> 2. **Font:** use `"Latin Modern Roman"` (the LaTeX serif), not `"Menlo"`.
+>    Menlo is not installed in this sandbox and silently falls back to an ugly
+>    default. Define `FONT = "Latin Modern Roman"` and pass it to every `Text`.
+>    Math via `Tex`/`MathTex` already uses the LaTeX font.
 
 ## When to use
 
