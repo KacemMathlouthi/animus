@@ -218,6 +218,9 @@ export function ChatMessage({
 						if (part.state !== "input-streaming" && part.input) {
 							return (
 								<EditFileTool
+									errorText={
+										part.state === "output-error" ? part.errorText : undefined
+									}
 									failed={part.state === "output-error"}
 									input={part.input}
 									key={part.toolCallId}

@@ -97,22 +97,29 @@ export function RunCommandTool({
 
 /** A surgical edit, shown as a compact one-liner with the file path — like the
  * other sandbox steps. On failure it takes the destructive treatment the render
- * tool uses, no before/after snippet. */
+ * tool uses and surfaces the server's reason, but never the before/after snippet. */
 export function EditFileTool({
 	input,
 	failed,
+	errorText,
 }: {
 	input: EditFileInput;
 	failed: boolean;
+	errorText?: string;
 }) {
 	if (failed) {
 		return (
-			<div className="my-1.5 flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-2.5 py-1.5">
-				<TriangleAlertIcon className="size-3.5 shrink-0 text-destructive" />
-				<span className="shrink-0 font-medium text-sm">Edit failed</span>
-				<code className="min-w-0 flex-1 truncate font-mono text-muted-foreground text-xs">
-					{input.path}
-				</code>
+			<div className="my-1.5 rounded-md border border-destructive/40 bg-destructive/5 px-2.5 py-1.5">
+				<div className="flex items-center gap-2">
+					<TriangleAlertIcon className="size-3.5 shrink-0 text-destructive" />
+					<span className="shrink-0 font-medium text-sm">Edit failed</span>
+					<code className="min-w-0 flex-1 truncate font-mono text-muted-foreground text-xs">
+						{input.path}
+					</code>
+				</div>
+				{errorText ? (
+					<p className="mt-1 pl-5 text-destructive text-xs">{errorText}</p>
+				) : null}
 			</div>
 		);
 	}
