@@ -80,8 +80,9 @@ export const RenderSceneInputSchema = z
     file: z.string().min(1),
     /** The Scene subclass name to render. */
     scene: z.string().min(1),
-    /** Render quality — "low" is fast (480p15) for iteration. */
-    quality: z.enum(RENDER_QUALITIES).default("low"),
+    /** Render quality — "high" (1080p60) is the default for final delivery;
+     * "low" (480p15) is for fast iteration via test renders. */
+    quality: z.enum(RENDER_QUALITIES).default("high"),
   })
   .strict();
 export type RenderSceneInput = z.infer<typeof RenderSceneInputSchema>;
