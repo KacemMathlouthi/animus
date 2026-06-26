@@ -7,7 +7,10 @@ const EXEC_CTX = { messages: [], toolCallId: "call-1" };
 /** A fake Daytona sandbox holding a single in-memory file, exposing only the
  * fs methods editFile touches. replaceInFiles mimics Daytona's server-side
  * replace-all behaviour so the tool's own validation is what's under test. */
-function createFakeSandbox(initial: Record<string, string>): {
+function createFakeSandbox(
+  initial: Record<string, string>,
+  commandOut = ""
+): {
   sandbox: Sandbox;
   files: Record<string, string>;
   replaceCalls: Array<{ files: string[]; pattern: string; newValue: string }>;
@@ -20,6 +23,11 @@ function createFakeSandbox(initial: Record<string, string>): {
   }> = [];
 
   const sandbox = {
+    process: {
+      executeCommand: vi.fn(() =>
+        Promise.resolve({ exitCode: 0, result: commandOut })
+      ),
+    },
     fs: {
       downloadFile: vi.fn((remotePath: string) => {
         const content = files[remotePath];
@@ -59,10 +67,26 @@ function editTool(initial: Record<string, string>) {
   return { execute: edit.execute, state };
 }
 
+function runTool(commandOut: string) {
+  const state = createFakeSandbox({}, commandOut);
+  const tools = createManimTools({
+    sandbox: state.sandbox,
+    conversationId: "conv-1",
+    saveVideo: vi.fn(() => Promise.resolve("https://example.com/v.mp4")),
+  });
+  const run = tools.runCommand;
+  if (!run?.execute) {
+    throw new Error("runCommand tool is not executable");
+  }
+  return run.execute;
+}
+
 const ABS = "/home/daytona/project/scene.py";
 const NOT_FOUND = /was not found/;
 const AMBIGUOUS = /matches 2 times/;
 const IDENTICAL = /identical/;
+const TRUNCATED = /^\[\.\.\. truncated \d+ earlier characters \.\.\.\]\n/;
+const MAX_LOG_CHARS = 16_000;
 
 describe("editFile tool", () => {
   it("replaces a unique snippet in place via replaceInFiles", async () => {
@@ -153,5 +177,27 @@ describe("editFile tool", () => {
       )
     ).rejects.toThrow(IDENTICAL);
     expect(state.replaceCalls).toEqual([]);
+  });
+});
+
+describe("runCommand log truncation", () => {
+  it("returns short output unchanged", async () => {
+    const execute = runTool("all good\n");
+
+    const output = await execute({ command: "echo hi" }, EXEC_CTX);
+
+    expect(output.output).toBe("all good\n");
+  });
+
+  it("keeps the tail and prefixes a marker when output is too long", async () => {
+    const long = "x".repeat(MAX_LOG_CHARS + 500);
+    const execute = runTool(long);
+
+    const output = await execute({ command: "pip install manim" }, EXEC_CTX);
+
+    expect(output.output).toMatch(TRUNCATED);
+    expect(output.output).toContain("truncated 500 earlier characters");
+    // The marker plus exactly the last MAX_LOG_CHARS of the original output.
+    expect(output.output.endsWith("x".repeat(MAX_LOG_CHARS))).toBe(true);
   });
 });

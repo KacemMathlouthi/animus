@@ -16,7 +16,7 @@ import type { Sandbox } from "@daytonaio/sdk";
 import { type ToolSet, tool } from "ai";
 import { commandOutput, PROJECT_DIR } from "../sandbox/index.ts";
 
-const MAX_LOG_CHARS = 6000;
+const MAX_LOG_CHARS = 16_000;
 const RENDER_TIMEOUT_SEC = 600;
 const COMMAND_TIMEOUT_SEC = 300;
 const QUALITY_FLAG = { low: "-ql", high: "-qh" } as const;
@@ -52,9 +52,15 @@ function countOccurrences(haystack: string, needle: string): number {
   }
 }
 
-/** Keep the tail — manim's error and the "File ready" line are both at the end. */
+/** Keep the tail — manim's error and the "File ready" line are both at the end.
+ * Prefix a marker when truncated so the model knows earlier output was dropped
+ * rather than treating the log as complete. */
 function tailLog(output: string): string {
-  return output.length > MAX_LOG_CHARS ? output.slice(-MAX_LOG_CHARS) : output;
+  if (output.length <= MAX_LOG_CHARS) {
+    return output;
+  }
+  const dropped = output.length - MAX_LOG_CHARS;
+  return `[... truncated ${dropped} earlier characters ...]\n${output.slice(-MAX_LOG_CHARS)}`;
 }
 
 function outputPath(
