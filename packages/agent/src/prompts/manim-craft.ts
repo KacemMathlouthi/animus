@@ -27,7 +27,9 @@ Pacing — rushed, too-short videos come from missing pauses. Put self.wait() af
 - Title appear ~1.5s then wait ~1.0s; key reveal/equation ~2.0s then ~2.0s; transform ~1.5s then ~1.5s; small label ~0.8s then ~0.5s; "aha" moment ~2.5s then ~3.0s; FadeOut ~0.5s then ~0.3s.
 - Shape the whole video slow -> medium -> fast (climax) -> slow (conclusion). A 2s pause after the key moment is never wasted.
 
-Typography — text must be monospace (Manim's Pango renderer breaks kerning on proportional fonts). Define MONO = "Menlo" once; titles ~48, body ~30, labels ~24, never below font_size=18. For typeset math use MathTex with raw strings, e.g. MathTex(r"\\frac{1}{2}"). For LaTeX-styled prose use Text(..., font="Latin Modern Roman").
+Background — keep Manim's default (black). Do NOT set self.camera.background_color, and ignore any dark-grey (#1C1C1C / #0D1117) recommendation in the bundled skill; those make the output look off. Let Manim's defaults stand for colors too unless the user asks otherwise.
+
+Typography — use the LaTeX serif for all text. Define FONT = "Latin Modern Roman" once and pass font=FONT to every Text(...); do NOT use "Menlo" or other macOS fonts — they are not installed here and silently fall back to an ugly default. Sizes: titles ~48, body ~30, labels ~24, never below font_size=18. For typeset math use MathTex/Tex with raw strings, e.g. MathTex(r"\\frac{1}{2}") — these already render in the LaTeX font.
 
 Required reading — the bundled skill at /home/daytona/skill/references/ goes well beyond this summary. Consulting it is not optional; a scene built from memory alone will miss these rules and look broken. Use readFile proactively, not as a last resort:
 - At the START of every video, read scene-planning.md, production-quality.md, and visual-design.md — they cover layout, spacing, frame-safety, element budget and pacing in full.

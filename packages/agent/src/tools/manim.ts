@@ -1,4 +1,6 @@
 import {
+  EditFileInputSchema,
+  type EditFileOutput,
   ListFilesInputSchema,
   type ListFilesOutput,
   ReadFileInputSchema,
@@ -14,7 +16,7 @@ import type { Sandbox } from "@daytonaio/sdk";
 import { type ToolSet, tool } from "ai";
 import { commandOutput, PROJECT_DIR } from "../sandbox/index.ts";
 
-const MAX_LOG_CHARS = 6000;
+const MAX_LOG_CHARS = 16_000;
 const RENDER_TIMEOUT_SEC = 600;
 const COMMAND_TIMEOUT_SEC = 300;
 const QUALITY_FLAG = { low: "-ql", high: "-qh" } as const;
@@ -36,9 +38,29 @@ function resolvePath(path: string): string {
   return path.startsWith("/") ? path : `${PROJECT_DIR}/${path}`;
 }
 
-/** Keep the tail — manim's error and the "File ready" line are both at the end. */
+/** Count non-overlapping literal occurrences of `needle` in `haystack`. */
+function countOccurrences(haystack: string, needle: string): number {
+  let count = 0;
+  let from = 0;
+  for (;;) {
+    const at = haystack.indexOf(needle, from);
+    if (at === -1) {
+      return count;
+    }
+    count++;
+    from = at + needle.length;
+  }
+}
+
+/** Keep the tail — manim's error and the "File ready" line are both at the end.
+ * Prefix a marker when truncated so the model knows earlier output was dropped
+ * rather than treating the log as complete. */
 function tailLog(output: string): string {
-  return output.length > MAX_LOG_CHARS ? output.slice(-MAX_LOG_CHARS) : output;
+  if (output.length <= MAX_LOG_CHARS) {
+    return output;
+  }
+  const dropped = output.length - MAX_LOG_CHARS;
+  return `[... truncated ${dropped} earlier characters ...]\n${output.slice(-MAX_LOG_CHARS)}`;
 }
 
 function outputPath(
@@ -76,6 +98,40 @@ export function createManimTools(deps: {
           },
         ]);
         return { path, bytes: Buffer.byteLength(content, "utf8") };
+      },
+    }),
+    editFile: tool({
+      description:
+        "Make a surgical edit to an existing file by replacing an exact snippet — prefer this over rewriting the whole file for small fixes. `oldString` is matched literally (copy it verbatim from the file, including indentation) and must be unique unless `replaceAll` is true. Returns an error if it is not found or is ambiguous.",
+      inputSchema: EditFileInputSchema,
+      execute: async ({
+        path,
+        oldString,
+        newString,
+        replaceAll,
+      }): Promise<EditFileOutput> => {
+        if (oldString === newString) {
+          throw new Error(
+            "oldString and newString are identical — nothing to change."
+          );
+        }
+        const resolved = resolvePath(path);
+        const buffer = await sandbox.fs.downloadFile(resolved);
+        const count = countOccurrences(buffer.toString("utf8"), oldString);
+        if (count === 0) {
+          throw new Error(
+            `oldString was not found in ${path}. Read the file and copy the exact text (including indentation) you want to replace.`
+          );
+        }
+        if (count > 1 && !replaceAll) {
+          throw new Error(
+            `oldString matches ${count} times in ${path}. Add surrounding context to make it unique, or pass replaceAll: true to change every occurrence.`
+          );
+        }
+        // Daytona applies the replacement in-sandbox (no download/upload of the
+        // edited content); the read above is only to validate the match.
+        await sandbox.fs.replaceInFiles([resolved], oldString, newString);
+        return { path, replacements: count };
       },
     }),
     readFile: tool({

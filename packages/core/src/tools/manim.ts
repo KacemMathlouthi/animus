@@ -22,6 +22,26 @@ export interface WriteFileOutput {
   path: string;
 }
 
+export const EditFileInputSchema = z
+  .object({
+    /** Path relative to the project root, e.g. "scene.py". */
+    path: z.string().min(1),
+    /** Exact text to find — copied verbatim from the file, matched literally. */
+    oldString: z.string().min(1),
+    /** Replacement text. Must differ from oldString. */
+    newString: z.string(),
+    /** Replace every occurrence. When false (default) oldString must be unique. */
+    replaceAll: z.boolean().default(false),
+  })
+  .strict();
+export type EditFileInput = z.infer<typeof EditFileInputSchema>;
+
+export interface EditFileOutput {
+  path: string;
+  /** How many occurrences were replaced. */
+  replacements: number;
+}
+
 export const ReadFileInputSchema = z
   .object({ path: z.string().min(1) })
   .strict();
@@ -60,8 +80,9 @@ export const RenderSceneInputSchema = z
     file: z.string().min(1),
     /** The Scene subclass name to render. */
     scene: z.string().min(1),
-    /** Render quality — "low" is fast (480p15) for iteration. */
-    quality: z.enum(RENDER_QUALITIES).default("low"),
+    /** Render quality — "high" (1080p60) is the default for final delivery;
+     * "low" (480p15) is for fast iteration via test renders. */
+    quality: z.enum(RENDER_QUALITIES).default("high"),
   })
   .strict();
 export type RenderSceneInput = z.infer<typeof RenderSceneInputSchema>;

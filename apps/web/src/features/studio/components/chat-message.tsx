@@ -15,6 +15,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { AskUserQuestionTool } from "@/features/studio/components/tools/ask-user-question";
 import { FinalizeVideoPlanTool } from "@/features/studio/components/tools/finalize-video-plan";
 import {
+	EditFileTool,
 	ManimStep,
 	RenderSceneTool,
 	RunCommandTool,
@@ -211,6 +212,22 @@ export function ChatMessage({
 							);
 						}
 						return <Shimmer key={part.toolCallId}>Writing a scene…</Shimmer>;
+					}
+
+					if (part.type === "tool-editFile") {
+						if (part.state !== "input-streaming" && part.input) {
+							return (
+								<EditFileTool
+									errorText={
+										part.state === "output-error" ? part.errorText : undefined
+									}
+									failed={part.state === "output-error"}
+									input={part.input}
+									key={part.toolCallId}
+								/>
+							);
+						}
+						return <Shimmer key={part.toolCallId}>Editing a file…</Shimmer>;
 					}
 
 					if (part.type === "tool-readFile") {

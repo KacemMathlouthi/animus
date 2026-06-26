@@ -1,6 +1,8 @@
 import type {
 	AskUserQuestionInput,
 	AskUserQuestionOutput,
+	EditFileInput,
+	EditFileOutput,
 	FinalizeVideoPlanOutput,
 	ListFilesInput,
 	ListFilesOutput,
@@ -34,6 +36,7 @@ type AnimusTools = {
 	webFetch: { input: WebFetchInput; output: WebFetchOutput };
 	webSearch: { input: WebSearchInput; output: WebSearchOutput };
 	writeFile: { input: WriteFileInput; output: WriteFileOutput };
+	editFile: { input: EditFileInput; output: EditFileOutput };
 	readFile: { input: ReadFileInput; output: ReadFileOutput };
 	listFiles: { input: ListFilesInput; output: ListFilesOutput };
 	runCommand: { input: RunCommandInput; output: RunCommandOutput };
