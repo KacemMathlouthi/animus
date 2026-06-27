@@ -55,11 +55,15 @@ export function useStudioChat({
 			},
 		});
 
-	// Auto-run the first prompt exactly once for a new conversation.
+	// Auto-run the first prompt exactly once for a genuinely new conversation.
+	// Capture whether the loaded snapshot already had messages at mount: router
+	// navigation state keeps the prompt across a hard refresh, so without this
+	// guard a refresh would re-send it and duplicate the turn.
 	const autoSent = useRef(false);
+	const hadInitialMessages = useRef((initialMessages?.length ?? 0) > 0).current;
 	const [initialSendFailed, setInitialSendFailed] = useState(false);
 	useEffect(() => {
-		if (initialPrompt && !autoSent.current) {
+		if (initialPrompt && !(autoSent.current || hadInitialMessages)) {
 			autoSent.current = true;
 			setInitialSendFailed(false);
 			void sendMessage({ text: initialPrompt }).catch(() => {
@@ -67,7 +71,7 @@ export function useStudioChat({
 				setInitialSendFailed(true);
 			});
 		}
-	}, [initialPrompt, sendMessage]);
+	}, [initialPrompt, hadInitialMessages, sendMessage]);
 
 	const send = useCallback(
 		(text: string) => {
