@@ -24,13 +24,18 @@ platforms: [linux, macos, windows]
 >    default. Define `FONT = "Latin Modern Roman"` and pass it to every `Text`.
 >    Math via `Tex`/`MathTex` already uses the LaTeX font.
 > 3. **Narration is required, via manim-voiceover.** Subclass `VoiceoverScene` and
->    set the service exactly: `ElevenLabsService(voice_name="Rachel",
->    model_id="eleven_multilingual_v2")` — the API key is in the environment, never
->    in code. Wrap every beat in `with self.voiceover(text=...) as tracker:` and
->    sync with `run_time=tracker.duration`. The "manim-voiceover" section of
->    `references/rendering.md` and "Narration synchronization" in
->    `references/animation-design-thinking.md` are now in scope — read them. Do NOT
->    add background music in the scene; animus mixes a music bed under your
+>    set the service with EXACTLY this call (use it verbatim):
+>    `ElevenLabsService(voice_name="Rachel", model="eleven_multilingual_v2",
+>    transcription_model=None)`. The examples elsewhere in this skill show
+>    `model_id=` and omit `transcription_model` — IGNORE them; the installed
+>    version takes `model=`, and `transcription_model=None` is required (otherwise
+>    it loads Whisper and prompts for input, crashing the non-interactive render).
+>    The API key is in the environment, never in code; do not patch the service or
+>    install extra packages. Wrap every beat in
+>    `with self.voiceover(text=...) as tracker:` and sync with
+>    `run_time=tracker.duration`. The "Narration synchronization" section of
+>    `references/animation-design-thinking.md` is in scope for timing — read it. Do
+>    NOT add background music in the scene; animus mixes a music bed under your
 >    narration after rendering.
 
 ## When to use
