@@ -8,12 +8,13 @@ import { ToolLoopAgent, type ToolSet } from "ai";
 import { getModel } from "./config/index.ts";
 import { MANIM_SYSTEM_PROMPT } from "./prompts/index.ts";
 import { createTools } from "./tools/index.ts";
-import type { SaveVideo } from "./tools/manim.ts";
+import type { BackgroundMusicUrl, SaveVideo } from "./tools/manim.ts";
 
 export function createManimAgent(deps: {
   sandbox: Sandbox;
   conversationId: string;
   saveVideo: SaveVideo;
+  backgroundMusicUrl: BackgroundMusicUrl;
 }): ToolLoopAgent<never, ToolSet, never> {
   return new ToolLoopAgent({
     model: getModel(),

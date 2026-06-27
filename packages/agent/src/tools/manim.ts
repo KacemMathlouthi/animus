@@ -25,6 +25,11 @@ const QUALITY_DIR = { low: "480p15", high: "1080p60" } as const;
 const FILE_READY = /File ready at\s+'?([^'\n]+\.mp4)'?/;
 const DIR_PREFIX = /^.*\//;
 const PY_SUFFIX = /\.py$/;
+const MP4_SUFFIX = /\.mp4$/;
+/** Where the fetched background track is staged in the sandbox before muxing. */
+const MUSIC_TRACK = `${PROJECT_DIR}/.background-music.mp3`;
+const MUSIC_VOLUME = 0.15;
+const MUSIC_FADE_IN_SEC = 2;
 
 /** Persist a rendered video and return its storage key (an R2 object key the
  * web resolves to a presigned URL). Implemented by the API. */
@@ -33,6 +38,11 @@ export type SaveVideo = (input: {
   conversationId: string;
   scene: string;
 }) => Promise<string>;
+
+/** A presigned URL the sandbox downloads the background track from (straight
+ * from R2, no byte round-trip through the API). Implemented by the API so the
+ * track can change without a sandbox rebuild. */
+export type BackgroundMusicUrl = () => Promise<string>;
 
 function resolvePath(path: string): string {
   return path.startsWith("/") ? path : `${PROJECT_DIR}/${path}`;
@@ -78,12 +88,48 @@ function outputPath(
   return `${PROJECT_DIR}/media/videos/${stem}/${QUALITY_DIR[quality]}/${scene}.mp4`;
 }
 
+/** Download the background track from R2 into the sandbox (via a presigned URL,
+ * no byte round-trip through the API) and mux it under the silent rendered master
+ * with ffmpeg (looped, ducked, faded in). Returns the path to deliver — the muxed
+ * file on success, or the silent master if the track is missing or anything in
+ * the step fails, so background music never blocks delivery. */
+async function muxBackgroundMusic(
+  sandbox: Sandbox,
+  masterPath: string,
+  backgroundMusicUrl: BackgroundMusicUrl
+): Promise<{ deliverPath: string; note?: string }> {
+  const url = await backgroundMusicUrl();
+  const finalPath = masterPath.replace(MP4_SUFFIX, ".music.mp4");
+  // Download then mux in one shell step; the URL rides in the env (not the
+  // command string) so its signature query params can't break quoting. A
+  // missing object 404s the download, short-circuiting before ffmpeg.
+  const command =
+    `python3 -c "import os,urllib.request; urllib.request.urlretrieve(os.environ['MUSIC_URL'], '${MUSIC_TRACK}')" && ` +
+    `ffmpeg -y -i ${masterPath} -stream_loop -1 -i ${MUSIC_TRACK} ` +
+    `-filter_complex "[1:a]volume=${MUSIC_VOLUME},afade=t=in:st=0:d=${MUSIC_FADE_IN_SEC}[a]" ` +
+    `-map 0:v:0 -map "[a]" -shortest -c:v copy -c:a aac ${finalPath} 2>&1`;
+  const res = await sandbox.process.executeCommand(
+    command,
+    PROJECT_DIR,
+    { MUSIC_URL: url },
+    COMMAND_TIMEOUT_SEC
+  );
+  if (res.exitCode === 0) {
+    return { deliverPath: finalPath };
+  }
+  return {
+    deliverPath: masterPath,
+    note: `[animus] background music skipped (download or mux failed, exit ${res.exitCode}); delivering the silent video.`,
+  };
+}
+
 export function createManimTools(deps: {
   sandbox: Sandbox;
   conversationId: string;
   saveVideo: SaveVideo;
+  backgroundMusicUrl: BackgroundMusicUrl;
 }): ToolSet {
-  const { sandbox, conversationId, saveVideo } = deps;
+  const { sandbox, conversationId, saveVideo, backgroundMusicUrl } = deps;
 
   return {
     writeFile: tool({
@@ -191,22 +237,35 @@ export function createManimTools(deps: {
           return { ok: false, file, scene, exitCode: res.exitCode, logs };
         }
 
-        const path = outputPath(output, file, scene, quality);
+        const masterPath = outputPath(output, file, scene, quality);
+        const { deliverPath, note } = await muxBackgroundMusic(
+          sandbox,
+          masterPath,
+          backgroundMusicUrl
+        );
+        const deliveredLogs = note ? `${logs}\n\n${note}` : logs;
         try {
-          const buffer = await sandbox.fs.downloadFile(path);
+          const buffer = await sandbox.fs.downloadFile(deliverPath);
           const videoKey = await saveVideo({
             bytes: new Uint8Array(buffer),
             conversationId,
             scene,
           });
-          return { ok: true, file, scene, exitCode: 0, videoKey, logs };
+          return {
+            ok: true,
+            file,
+            scene,
+            exitCode: 0,
+            videoKey,
+            logs: deliveredLogs,
+          };
         } catch (error) {
           return {
             ok: false,
             file,
             scene,
             exitCode: 0,
-            logs: `${logs}\n\n[animus] Render reported success but the output at ${path} could not be retrieved: ${String(error)}`,
+            logs: `${logs}\n\n[animus] Render reported success but the output at ${deliverPath} could not be retrieved: ${String(error)}`,
           };
         }
       },
