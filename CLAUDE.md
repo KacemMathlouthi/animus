@@ -81,9 +81,11 @@ Cross-package "does it compile" = `bun run typecheck`.
 **Roadmap:** shell ✓ (settings backend; conversation persistence with generated
 titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` →
 `useChat` + Streamdown, real agent loop with HITL + Exa web-research tools) →
-**next:** first Manim scene end-to-end via Daytona → generalize the
-render/repair loop + narration + R2 + playback → later: quota/billing,
-autonomous mode. (Outstanding before the chat phase fully closes: HTTP-level
+first Manim scene end-to-end via Daytona ✓ → R2 video storage ✓ (rendered mp4s
+live in R2; the agent's renderScene returns an object key, the web streams via
+short-lived presigned URLs minted by `/api/media/sign`, and a conversation's
+objects are deleted with it) → **next:** generalize the render/repair loop +
+narration + playback polish → later: quota/billing, autonomous mode. (Outstanding before the chat phase fully closes: HTTP-level
 route tests for `conversations` + the `/api/chat` sync contract, and an atomic
 title-generation claim.)
 
