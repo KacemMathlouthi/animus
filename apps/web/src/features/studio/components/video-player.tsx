@@ -23,7 +23,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSignedMediaUrl } from "@/features/studio/hooks/use-signed-media-url";
 
 const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 const SEEK_STEP_SEC = 5;
@@ -43,17 +42,19 @@ function formatTime(seconds: number): string {
  * controls are replaced with a custom overlay (play/pause, scrubber, time,
  * mute, speed, fullscreen). The overlay and cursor auto-hide after a moment of
  * inactivity while playing and reappear on pointer/keyboard activity. Keyboard:
- * space/k play-pause, ←/→ seek, ↑/↓ volume, m mute, f fullscreen. */
+ * space/k play-pause, ←/→ seek, ↑/↓ volume, m mute, f fullscreen.
+ *
+ * Takes an already-resolved `src` (a presigned URL) so the same player serves
+ * both the authed studio and the public share page. */
 export function VideoPlayer({
-	videoKey,
+	src,
 	title,
 	playToken,
 }: {
-	videoKey: string;
+	src: string | undefined;
 	title: string;
 	playToken: number;
 }) {
-	const { url } = useSignedMediaUrl(videoKey);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const hideTimerRef = useRef<number | null>(null);
@@ -305,7 +306,7 @@ export function VideoPlayer({
 				className="h-full w-full object-contain"
 				playsInline
 				ref={videoRef}
-				src={url ?? undefined}
+				src={src}
 			/>
 
 			{/* Title, top gradient. Right padding clears the panel's Hide button. */}

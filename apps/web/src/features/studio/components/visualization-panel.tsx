@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MorphLogo } from "@/features/studio/components/morph-logo";
 import { VideoPlayer } from "@/features/studio/components/video-player";
+import { useSignedMediaUrl } from "@/features/studio/hooks/use-signed-media-url";
 
 function NotifyButton() {
 	const [permission, setPermission] = useState<
@@ -56,10 +57,11 @@ export function VisualizationPanel({
 	title: string;
 	playToken?: number;
 }) {
+	const { url } = useSignedMediaUrl(videoKey);
 	return (
 		<div className="flex h-full flex-col bg-muted/30">
 			{videoKey ? (
-				<VideoPlayer playToken={playToken} title={title} videoKey={videoKey} />
+				<VideoPlayer playToken={playToken} src={url} title={title} />
 			) : (
 				<div className="flex flex-1 items-center justify-center overflow-auto p-6">
 					<RenderingStage />
