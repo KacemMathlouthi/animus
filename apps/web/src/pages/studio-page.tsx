@@ -61,7 +61,7 @@ function LoadedStudioChat({
 }) {
 	const location = useLocation();
 	const prompt = (location.state as { prompt?: string } | null)?.prompt;
-	const { messages, status, phase, videoUrl, respondToTool, send, stop } =
+	const { messages, status, phase, videoKey, respondToTool, send, stop } =
 		useStudioChat({
 			chatId,
 			initialPrompt: prompt,
@@ -80,7 +80,7 @@ function LoadedStudioChat({
 			respondToTool={respondToTool}
 			status={status}
 			title={detail.conversation.title}
-			videoUrl={videoUrl}
+			videoKey={videoKey}
 		/>
 	);
 }

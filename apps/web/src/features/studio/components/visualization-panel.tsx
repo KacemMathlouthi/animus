@@ -48,18 +48,18 @@ function RenderingStage() {
 }
 
 export function VisualizationPanel({
-	videoUrl,
+	videoKey,
 	title,
 	playToken = 0,
 }: {
-	videoUrl?: string;
+	videoKey?: string;
 	title: string;
 	playToken?: number;
 }) {
 	return (
 		<div className="flex h-full flex-col bg-muted/30">
-			{videoUrl ? (
-				<VideoPlayer playToken={playToken} title={title} url={videoUrl} />
+			{videoKey ? (
+				<VideoPlayer playToken={playToken} title={title} videoKey={videoKey} />
 			) : (
 				<div className="flex flex-1 items-center justify-center overflow-auto p-6">
 					<RenderingStage />

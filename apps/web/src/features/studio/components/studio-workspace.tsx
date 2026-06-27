@@ -15,7 +15,7 @@ import type { AnimusUIMessage, RespondToTool } from "@/features/studio/types";
 export function StudioWorkspace({
 	messages,
 	status,
-	videoUrl,
+	videoKey,
 	title,
 	respondToTool,
 	onSubmit,
@@ -23,7 +23,7 @@ export function StudioWorkspace({
 }: {
 	messages: AnimusUIMessage[];
 	status: ChatStatus;
-	videoUrl?: string;
+	videoKey?: string;
 	title: string;
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
@@ -34,11 +34,11 @@ export function StudioWorkspace({
 	// A video pinned by clicking its chat card; falls back to the latest render.
 	// Clear the pin whenever a newer render lands so the panel follows the latest
 	// again — done during render (the previous-value pattern) to avoid an effect.
-	const [pinnedVideoUrl, setPinnedVideoUrl] = useState<string>();
-	const [lastVideoUrl, setLastVideoUrl] = useState(videoUrl);
-	if (videoUrl !== lastVideoUrl) {
-		setLastVideoUrl(videoUrl);
-		setPinnedVideoUrl(undefined);
+	const [pinnedVideoKey, setPinnedVideoKey] = useState<string>();
+	const [lastVideoKey, setLastVideoKey] = useState(videoKey);
+	if (videoKey !== lastVideoKey) {
+		setLastVideoKey(videoKey);
+		setPinnedVideoKey(undefined);
 	}
 	// Bumped on each chat-card click so the panel autoplays that video.
 	const [playToken, setPlayToken] = useState(0);
@@ -59,8 +59,8 @@ export function StudioWorkspace({
 		setIsVideoCollapsed(true);
 	};
 
-	const openVideo = useCallback((url: string) => {
-		setPinnedVideoUrl(url);
+	const openVideo = useCallback((key: string) => {
+		setPinnedVideoKey(key);
 		setPlayToken((token) => token + 1);
 		videoPanelRef.current?.expand();
 		setIsVideoCollapsed(false);
@@ -118,7 +118,7 @@ export function StudioWorkspace({
 					<VisualizationPanel
 						playToken={playToken}
 						title={title}
-						videoUrl={pinnedVideoUrl ?? videoUrl}
+						videoKey={pinnedVideoKey ?? videoKey}
 					/>
 				</div>
 			</ResizablePanel>
