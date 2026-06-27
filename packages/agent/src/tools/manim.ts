@@ -26,8 +26,8 @@ const FILE_READY = /File ready at\s+'?([^'\n]+\.mp4)'?/;
 const DIR_PREFIX = /^.*\//;
 const PY_SUFFIX = /\.py$/;
 
-/** Persist a rendered video and return an absolute URL the web can embed.
- * Implemented by the API (local disk in v0.1, object storage later). */
+/** Persist a rendered video and return its storage key (an R2 object key the
+ * web resolves to a presigned URL). Implemented by the API. */
 export type SaveVideo = (input: {
   bytes: Uint8Array;
   conversationId: string;
@@ -194,12 +194,12 @@ export function createManimTools(deps: {
         const path = outputPath(output, file, scene, quality);
         try {
           const buffer = await sandbox.fs.downloadFile(path);
-          const videoUrl = await saveVideo({
+          const videoKey = await saveVideo({
             bytes: new Uint8Array(buffer),
             conversationId,
             scene,
           });
-          return { ok: true, file, scene, exitCode: 0, videoUrl, logs };
+          return { ok: true, file, scene, exitCode: 0, videoKey, logs };
         } catch (error) {
           return {
             ok: false,
