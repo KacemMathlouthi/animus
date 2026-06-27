@@ -111,6 +111,7 @@
       },
       "devDependencies": {
         "@better-auth/cli": "^1.4.21",
+        "vitest": "^3",
       },
     },
     "packages/core": {
