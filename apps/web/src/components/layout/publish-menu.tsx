@@ -1,55 +1,66 @@
 import {
 	ChevronDownIcon,
-	Code2Icon,
 	DownloadIcon,
-	LinkIcon,
 	Share2Icon,
 	UploadIcon,
 } from "lucide-react";
+import { useState } from "react";
+import { usePublishTarget } from "@/components/layout/publish-target";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuGroup,
 	DropdownMenuItem,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ShareDialog } from "@/features/studio/components/share-dialog";
+import { downloadVideo } from "@/lib/share";
 
+/** Header action to publish the current video. Disabled until a render is ready
+ * (no publish target), so it's inert on the new-video screen and other pages. */
 export function PublishMenu() {
+	const target = usePublishTarget();
+	const [shareOpen, setShareOpen] = useState(false);
+
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Button size="sm" variant="outline">
-					<UploadIcon data-icon="inline-start" />
-					Publish
-					<ChevronDownIcon
-						className="text-muted-foreground"
-						data-icon="inline-end"
-					/>
-				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-56">
-				<DropdownMenuGroup>
-					<DropdownMenuItem>
+		<>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button disabled={!target} size="sm" variant="outline">
+						<UploadIcon data-icon="inline-start" />
+						Publish
+						<ChevronDownIcon
+							className="text-muted-foreground"
+							data-icon="inline-end"
+						/>
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end" className="w-56">
+					<DropdownMenuItem
+						onSelect={() => {
+							if (target) {
+								void downloadVideo(target.videoKey, target.title);
+							}
+						}}
+					>
 						<DownloadIcon />
 						Download video
 					</DropdownMenuItem>
-					<DropdownMenuItem>
-						<LinkIcon />
-						Copy share link
-					</DropdownMenuItem>
-					<DropdownMenuItem>
+					<DropdownMenuItem onSelect={() => setShareOpen(true)}>
 						<Share2Icon />
 						Share…
 					</DropdownMenuItem>
-				</DropdownMenuGroup>
-				<DropdownMenuSeparator />
-				<DropdownMenuItem>
-					<Code2Icon />
-					Embed
-				</DropdownMenuItem>
-			</DropdownMenuContent>
-		</DropdownMenu>
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			{target ? (
+				<ShareDialog
+					onOpenChange={setShareOpen}
+					open={shareOpen}
+					title={target.title}
+					videoKey={target.videoKey}
+				/>
+			) : null}
+		</>
 	);
 }
