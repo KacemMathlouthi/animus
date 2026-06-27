@@ -35,6 +35,7 @@ vi.mock("@aws-sdk/client-s3", () => {
 vi.mock("@aws-sdk/s3-request-presigner", () => ({ getSignedUrl }));
 
 const {
+  backgroundMusicUrl,
   deleteConversationMedia,
   mediaKeyConversationId,
   saveVideo,
@@ -91,6 +92,21 @@ describe("mediaKeyConversationId", () => {
     expect(mediaKeyConversationId("videos/conv1/scene.txt")).toBeNull();
     expect(mediaKeyConversationId("../../etc/passwd")).toBeNull();
     expect(mediaKeyConversationId("videos/conv1/../x.mp4")).toBeNull();
+  });
+});
+
+describe("backgroundMusicUrl", () => {
+  it("presigns a GET for the fixed background music key", async () => {
+    getSignedUrl.mockResolvedValue("https://signed/music");
+
+    const url = await backgroundMusicUrl();
+
+    expect(url).toBe("https://signed/music");
+    const command = getSignedUrl.mock.calls[0]?.[1];
+    expect(command.input).toMatchObject({
+      Bucket: "animus-videos",
+      Key: "music/The_Merchants_Of_Death.mp3",
+    });
   });
 });
 

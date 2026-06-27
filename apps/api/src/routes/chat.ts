@@ -8,7 +8,7 @@ import { createManimAgent, ensureSandbox } from "@animus/agent";
 import { convertToModelMessages, createIdGenerator } from "ai";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { saveVideo } from "../lib/media.ts";
+import { backgroundMusicUrl, saveVideo } from "../lib/media.ts";
 import { userId } from "../lib/user.ts";
 import { requireAuth } from "../middleware/auth.ts";
 import { maybeGenerateConversationTitle } from "../services/conversation-titles.ts";
@@ -57,7 +57,12 @@ chatRoute.post("/", async (c) => {
     await setConversationSandboxId(conversationId, sandbox.id);
   }
 
-  const agent = createManimAgent({ sandbox, conversationId, saveVideo });
+  const agent = createManimAgent({
+    sandbox,
+    conversationId,
+    saveVideo,
+    backgroundMusicUrl,
+  });
   const result = await agent.stream({
     abortSignal: c.req.raw.signal,
     prompt: await convertToModelMessages(messages),
