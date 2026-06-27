@@ -7,6 +7,7 @@ import { SettingsLayout } from "@/features/settings/components/settings-layout";
 import { AuthPage } from "@/pages/auth-page";
 import { LandingPage } from "@/pages/landing-page";
 import { PrivacyPage } from "@/pages/privacy-page";
+import { SharePage } from "@/pages/share-page";
 import { StudioPage } from "@/pages/studio-page";
 import { TermsPage } from "@/pages/terms-page";
 
@@ -18,6 +19,7 @@ function App() {
 				<Route element={<AuthPage />} path="/auth" />
 				<Route element={<TermsPage />} path="/terms" />
 				<Route element={<PrivacyPage />} path="/privacy" />
+				<Route element={<SharePage />} path="/v/:token" />
 				<Route
 					element={
 						<RequireAuth>

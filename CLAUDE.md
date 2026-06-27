@@ -93,8 +93,11 @@ objects are deleted with it) → background music ✓ (renderScene fetches a tra
 from R2 at render time and mixes it under the video via ffmpeg, with a fallback;
 fixed key for now, user-configurable later) → narration ✓ (manim-voiceover +
 ElevenLabs; the agent writes a VoiceoverScene that auto-syncs to the speech, key
-injected into the sandbox, music ducked under it) → **next:** playback polish →
-generalize the render/repair loop
+injected into the sandbox, music ducked under it) → share & export ✓ (Publish
+menu downloads the mp4 via an attachment-disposition presign and mints a
+permanent unlisted public share — `video_share` token → `/v/:token` branded page
+served by the public `GET /api/share/:token`, with share-to-socials) → **next:**
+playback polish → generalize the render/repair loop
 → later: quota/billing, autonomous mode. (Outstanding before the chat phase fully closes: HTTP-level
 route tests for `conversations` + the `/api/chat` sync contract, and an atomic
 title-generation claim.)
