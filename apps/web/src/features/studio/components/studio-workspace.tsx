@@ -32,8 +32,8 @@ export function StudioWorkspace({
 	const videoPanelRef = useRef<PanelImperativeHandle>(null);
 	const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
 	// A video pinned by clicking its chat card; falls back to the latest render.
-	// Clear the pin whenever a newer render lands so the panel follows the latest
-	// again — done during render (the previous-value pattern) to avoid an effect.
+	// Clear the pin when a newer render lands (previous-value pattern, not an
+	// effect) so the panel follows the latest again.
 	const [pinnedVideoKey, setPinnedVideoKey] = useState<string>();
 	const [lastVideoKey, setLastVideoKey] = useState(videoKey);
 	if (videoKey !== lastVideoKey) {

@@ -88,12 +88,11 @@ function outputPath(
   return `${PROJECT_DIR}/media/videos/${stem}/${QUALITY_DIR[quality]}/${scene}.mp4`;
 }
 
-/** Download the background track from R2 into the sandbox (via a presigned URL,
- * no byte round-trip through the API) and mix it UNDER the master's narration
- * with ffmpeg (looped, ducked, faded in, then amix'd with the narration). Returns
- * the path to deliver — the mixed file on success, or the untouched master (which
- * already carries the narration) if the track is missing or anything in the step
- * fails, so background music never blocks delivery. */
+/** Download the background track from R2 into the sandbox (presigned URL, no byte
+ * round-trip through the API) and mix it UNDER the narration with ffmpeg (looped,
+ * ducked, faded in, amix'd). Returns the path to deliver: the mixed file on
+ * success, or the untouched master (which already carries the narration) if the
+ * track is missing or the step fails, so music never blocks delivery. */
 async function muxBackgroundMusic(
   sandbox: Sandbox,
   masterPath: string,

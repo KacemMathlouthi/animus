@@ -1,7 +1,6 @@
-/** Web view of the shared provider registry: the framework-agnostic data lives
- * in @animus/core; here we attach each provider's brand logo from
- * @lobehub/icons (a web-only concern). Adding a provider is still a single
- * entry in core — just map its icon here. */
+/** Web view of the shared provider registry (@animus/core), with each provider's
+ * brand logo from @lobehub/icons attached (a web-only concern). Adding a provider
+ * is still a single entry in core — just map its icon here. */
 
 import { PROVIDERS as PROVIDER_INFO, type ProviderId } from "@animus/core";
 import {

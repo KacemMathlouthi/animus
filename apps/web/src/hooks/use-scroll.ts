@@ -11,10 +11,8 @@ export function useScroll(downThreshold: number, upThreshold?: number) {
 			// Hysteresis: different thresholds for up/down to prevent flickering
 			setScrolled((prev) => {
 				if (prev) {
-					// Currently scrolled - only unscroll when below lower threshold
 					return y > scrollUpThreshold;
 				}
-				// Currently not scrolled - only scroll when above higher threshold
 				return y > downThreshold;
 			});
 		};

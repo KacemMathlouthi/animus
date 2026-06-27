@@ -1,7 +1,6 @@
-/** Shared chrome for the static legal pages (Terms, Privacy): the landing
- * header and footer wrapped around a centered, lightly styled prose column.
- * Pages pass plain semantic markup (h2/p/ul) as children — the article's
- * descendant styles handle the typography. */
+/** Shared chrome for the static legal pages (Terms, Privacy): header/footer
+ * around a centered prose column. Pages pass plain semantic markup (h2/p/ul);
+ * the article's descendant styles handle the typography. */
 
 import type { ReactNode } from "react";
 import { Footer } from "@/features/landing/components/footer";

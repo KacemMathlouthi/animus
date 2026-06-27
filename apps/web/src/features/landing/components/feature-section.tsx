@@ -57,13 +57,11 @@ function FeatureCard({
 			)}
 			{...props}
 		>
-			{/* Extended Borders */}
 			<div className="absolute -inset-y-4 -left-px w-px bg-border" />
 			<div className="absolute -inset-y-4 -right-px w-px bg-border" />
 			<div className="absolute -inset-x-4 -top-px h-px bg-border" />
 			<div className="absolute -right-4 -bottom-px -left-4 h-px bg-border" />
 
-			{/* Corner Decor */}
 			<DecorIcon className="size-3.5" position="top-left" />
 
 			<div

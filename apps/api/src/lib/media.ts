@@ -98,9 +98,8 @@ export function signMediaUrl(key: string): Promise<string> {
 }
 
 /** Mint a short-lived presigned GET URL that forces a download with a friendly
- * filename (R2 echoes `ResponseContentDisposition` into the response headers).
- * Lets the browser save the mp4 directly from R2 — no byte round-trip through us
- * and no need for a same-origin blob fetch to set the filename. */
+ * filename (R2 echoes `ResponseContentDisposition` into the response headers), so
+ * the browser saves the mp4 straight from R2 with no round-trip through us. */
 export function signDownloadUrl(
   key: string,
   filename: string

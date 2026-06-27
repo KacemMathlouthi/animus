@@ -24,8 +24,7 @@ export const sessionMiddleware = createMiddleware<AppEnv>(async (c, next) => {
 });
 
 /**
- * Guard for protected routes: 401 unless a user is present. Reusable across all
- * authenticated endpoints — the first product route to use it lands later.
+ * Guard for protected routes: 401 unless a user is present.
  * @public
  */
 export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {

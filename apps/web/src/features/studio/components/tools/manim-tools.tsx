@@ -96,9 +96,9 @@ export function RunCommandTool({
 	);
 }
 
-/** A surgical edit, shown as a compact one-liner with the file path — like the
- * other sandbox steps. On failure it takes the destructive treatment the render
- * tool uses and surfaces the server's reason, but never the before/after snippet. */
+/** A surgical edit, shown as a compact one-liner with the file path. On failure
+ * it takes the destructive treatment and surfaces the server's reason (never the
+ * before/after snippet). */
 export function EditFileTool({
 	input,
 	failed,

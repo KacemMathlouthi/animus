@@ -27,13 +27,11 @@ import {
 import type { AnimusUIMessage, RespondToTool } from "@/features/studio/types";
 import { useSession } from "@/lib/auth-client";
 
-/** New words fade in as they arrive, in order, at the provider's real stream
- * speed (no server-side pacing). stagger:0 is the key: each word's delay would
- * otherwise be index*stagger, which spreads a provider chunk's words across time
- * and lets a later chunk overtake an earlier one's tail — the out-of-order pop.
- * With stagger:0 every word in a chunk fades together, and chunks append in
- * order, so the reveal tracks the stream as a soft trailing fade. The short
- * duration keeps that fade from lingering once newer text lands.
+/** Words fade in as they stream. stagger:0 is the key: a nonzero stagger delays
+ * each word by index*stagger, spreading a chunk's words across time and letting
+ * a later chunk overtake an earlier one's tail (the out-of-order pop). With
+ * stagger:0 each chunk fades together and chunks append in order. The short
+ * duration keeps the fade from lingering once newer text lands.
  * Requires `streamdown/styles.css` (imported in index.css) for the keyframes. */
 const STREAM_ANIMATION = {
 	animation: "blurIn",

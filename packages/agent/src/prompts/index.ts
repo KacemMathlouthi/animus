@@ -1,6 +1,5 @@
-/** The agent's persona and operating instructions. It grows as we add the
- * render/repair loop and narration. Additional prompts (repair, narration) will
- * live alongside this. The always-on Manim craft rules live in ./manim-craft. */
+/** The agent's persona and operating instructions. The always-on Manim craft
+ * rules live in ./manim-craft. */
 
 import { MANIM_CRAFT } from "./manim-craft.ts";
 

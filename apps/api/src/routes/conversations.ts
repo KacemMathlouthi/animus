@@ -89,8 +89,8 @@ conversationsRoute.delete("/:id", async (c) => {
     throw new HTTPException(404, { message: "Conversation not found" });
   }
 
-  // TODO: THIS IS A TEMPORARY DESIGN TO WORK ON OTHER STUFF, THIS MAKES NO SENSE AT ALL, THANK YOU.
-  // Tear the sandbox down out-of-band — the delete shouldn't block on (or fail because of) the provider.
+  // TODO: temporary design. Tear the sandbox down out-of-band — the delete
+  // shouldn't block on (or fail because of) the provider.
   if (deleted.sandboxId) {
     const sandboxId = deleted.sandboxId;
     destroySandbox(sandboxId).catch((error) =>
