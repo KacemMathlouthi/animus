@@ -97,6 +97,26 @@ export function signMediaUrl(key: string): Promise<string> {
   );
 }
 
+/** Mint a short-lived presigned GET URL that forces a download with a friendly
+ * filename (R2 echoes `ResponseContentDisposition` into the response headers).
+ * Lets the browser save the mp4 directly from R2 — no byte round-trip through us
+ * and no need for a same-origin blob fetch to set the filename. */
+export function signDownloadUrl(
+  key: string,
+  filename: string
+): Promise<string> {
+  const safe = safeName(filename) || "video";
+  return getSignedUrl(
+    getClient(),
+    new GetObjectCommand({
+      Bucket: bucket(),
+      Key: key,
+      ResponseContentDisposition: `attachment; filename="${safe}.mp4"`,
+    }),
+    { expiresIn: SIGNED_URL_TTL_SEC }
+  );
+}
+
 /** Delete every object stored for a conversation (best-effort, paginated). */
 export async function deleteConversationMedia(
   conversationId: string
