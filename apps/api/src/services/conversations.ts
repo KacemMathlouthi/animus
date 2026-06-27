@@ -167,6 +167,24 @@ export async function listConversations({
   return { conversations: rows.map(serializeConversation), total };
 }
 
+/** Cheap ownership check — no message load — for gating per-object access. */
+export async function userOwnsConversation({
+  conversationId,
+  userId,
+}: {
+  conversationId: string;
+  userId: string;
+}): Promise<boolean> {
+  const row = await db.query.conversation.findFirst({
+    columns: { id: true },
+    where: and(
+      eq(conversation.id, conversationId),
+      eq(conversation.userId, userId)
+    ),
+  });
+  return Boolean(row);
+}
+
 export async function loadOwnedConversation({
   conversationId,
   userId,

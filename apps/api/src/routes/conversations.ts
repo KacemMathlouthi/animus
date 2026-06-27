@@ -7,6 +7,7 @@ import {
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "../lib/logger.ts";
+import { deleteConversationMedia } from "../lib/media.ts";
 import { userId } from "../lib/user.ts";
 import { requireAuth } from "../middleware/auth.ts";
 import {
@@ -96,6 +97,13 @@ conversationsRoute.delete("/:id", async (c) => {
       logger.warn({ err: error, sandboxId }, "sandbox destroy failed")
     );
   }
+
+  // Drop the conversation's rendered videos from R2, out-of-band for the same
+  // reason — the delete shouldn't fail because object storage is unavailable.
+  const conversationId = c.req.param("id");
+  deleteConversationMedia(conversationId).catch((error) =>
+    logger.warn({ err: error, conversationId }, "media cleanup failed")
+  );
 
   return c.json({ ok: true });
 });

@@ -85,7 +85,7 @@ export function ChatMessage({
 	message: AnimusUIMessage;
 	isStreaming?: boolean;
 	respondToTool: RespondToTool;
-	onOpenVideo?: (url: string) => void;
+	onOpenVideo?: (key: string) => void;
 }) {
 	if (message.role === "user") {
 		return (

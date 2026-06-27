@@ -1,35 +1,35 @@
-/** Serves rendered videos saved by the agent's renderScene tool. Intentionally
- * unauthenticated for v0.1 so the browser's <video> element (a cross-origin
- * subresource that won't carry the session cookie) can load it; the URLs carry
- * a random per-render id. Auth/signed URLs come with the R2 migration. */
+/** Mints short-lived presigned URLs for rendered videos stored in R2. The
+ * renderScene output carries only the object key; the web calls this route to
+ * resolve a key into a playable URL. Authenticated and ownership-checked: the
+ * key encodes its conversation id, and the caller must own that conversation. */
 
-import { readFile } from "node:fs/promises";
-import { basename, join } from "node:path";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { mediaRoot } from "../lib/media.ts";
+import { mediaKeyConversationId, signMediaUrl } from "../lib/media.ts";
+import { userId } from "../lib/user.ts";
+import { requireAuth } from "../middleware/auth.ts";
+import { userOwnsConversation } from "../services/conversations.ts";
+import type { AppEnv } from "../types.ts";
 
-const MP4_NAME = /^[\w-]+\.mp4$/;
+export const mediaRoute = new Hono<AppEnv>();
 
-export const mediaRoute = new Hono();
+mediaRoute.use("*", requireAuth);
 
-mediaRoute.get("/:conversationId/:file", async (c) => {
-  // basename strips any path-traversal; the regex pins the shape.
-  const conversationId = basename(c.req.param("conversationId"));
-  const file = basename(c.req.param("file"));
-  if (!MP4_NAME.test(file)) {
-    throw new HTTPException(400, { message: "Invalid media path" });
+mediaRoute.get("/sign", async (c) => {
+  const key = c.req.query("key");
+  const conversationId = key ? mediaKeyConversationId(key) : null;
+  if (!(key && conversationId)) {
+    throw new HTTPException(400, { message: "Invalid media key" });
   }
 
-  try {
-    const bytes = await readFile(join(mediaRoot(), conversationId, file));
-    return new Response(bytes, {
-      headers: {
-        "content-type": "video/mp4",
-        "cache-control": "private, max-age=3600",
-      },
-    });
-  } catch {
+  const owned = await userOwnsConversation({
+    conversationId,
+    userId: userId(c),
+  });
+  if (!owned) {
     throw new HTTPException(404, { message: "Media not found" });
   }
+
+  const url = await signMediaUrl(key);
+  return c.json({ url });
 });

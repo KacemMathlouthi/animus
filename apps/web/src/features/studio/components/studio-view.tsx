@@ -10,15 +10,15 @@ import type {
 } from "@/features/studio/types";
 
 /**
- * Notify the user when the explainer finishes (a video URL appears) while
+ * Notify the user when the explainer finishes (a rendered video appears) while
  * they're on another tab — the "leave and come back" promise from the panel.
  */
-function useRenderNotification(videoUrl: string | undefined) {
-	const previous = useRef(videoUrl);
+function useRenderNotification(videoKey: string | undefined) {
+	const previous = useRef(videoKey);
 
 	useEffect(() => {
-		const finished = !previous.current && Boolean(videoUrl);
-		previous.current = videoUrl;
+		const finished = !previous.current && Boolean(videoKey);
+		previous.current = videoKey;
 
 		if (
 			finished &&
@@ -33,14 +33,14 @@ function useRenderNotification(videoUrl: string | undefined) {
 			});
 			notification.onclick = () => window.focus();
 		}
-	}, [videoUrl]);
+	}, [videoKey]);
 }
 
 export function StudioStage({
 	phase,
 	messages,
 	status,
-	videoUrl,
+	videoKey,
 	title,
 	respondToTool,
 	onSubmit,
@@ -49,13 +49,13 @@ export function StudioStage({
 	phase: StudioPhase;
 	messages: AnimusUIMessage[];
 	status: ChatStatus;
-	videoUrl?: string;
+	videoKey?: string;
 	title: string;
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 	onStop: () => void;
 }) {
-	useRenderNotification(videoUrl);
+	useRenderNotification(videoKey);
 
 	return (
 		<>
@@ -71,7 +71,7 @@ export function StudioStage({
 					respondToTool={respondToTool}
 					status={status}
 					title={title}
-					videoUrl={videoUrl}
+					videoKey={videoKey}
 				/>
 			) : null}
 		</>

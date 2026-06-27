@@ -18,6 +18,7 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useSignedMediaUrl } from "@/features/studio/hooks/use-signed-media-url";
 import { cn } from "@/lib/utils";
 
 /** A compact one-line record of a sandbox action (write/read/list). */
@@ -133,6 +134,49 @@ export function EditFileTool({
 	);
 }
 
+/** The "your video is ready" artifact card. Resolves the R2 key to a presigned
+ * URL for the muted thumbnail frame; clicking opens it in the side panel. */
+function RenderedVideoCard({
+	scene,
+	videoKey,
+	onOpen,
+}: {
+	scene: string;
+	videoKey: string;
+	onOpen?: (key: string) => void;
+}) {
+	const { url } = useSignedMediaUrl(videoKey);
+	return (
+		<button
+			className="group my-3 flex w-full items-center gap-3 rounded-lg border bg-card p-2.5 text-left transition-colors hover:bg-accent"
+			onClick={() => onOpen?.(videoKey)}
+			type="button"
+		>
+			<span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-black">
+				{/* A muted, controls-free frame as the artifact's thumbnail; playback
+				    happens in the side panel. biome-ignore lint/a11y/useMediaCaption: preview frame only. */}
+				<video
+					className="pointer-events-none h-full w-full object-cover"
+					muted
+					playsInline
+					preload="metadata"
+					src={url ?? undefined}
+				/>
+				<span className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors group-hover:bg-black/10">
+					<PlayIcon className="size-4 fill-white text-white" />
+				</span>
+			</span>
+			<span className="min-w-0 flex-1">
+				<span className="block font-medium text-sm">Your video is ready</span>
+				<span className="block truncate text-muted-foreground text-xs">
+					{scene}
+				</span>
+			</span>
+			<PlayIcon className="size-4 shrink-0 text-muted-foreground" />
+		</button>
+	);
+}
+
 export function RenderSceneTool({
 	input,
 	output,
@@ -140,38 +184,15 @@ export function RenderSceneTool({
 }: {
 	input: RenderSceneInput;
 	output: RenderSceneOutput;
-	onOpen?: (url: string) => void;
+	onOpen?: (key: string) => void;
 }) {
-	if (output.ok && output.videoUrl) {
-		const url = output.videoUrl;
+	if (output.ok && output.videoKey) {
 		return (
-			<button
-				className="group my-3 flex w-full items-center gap-3 rounded-lg border bg-card p-2.5 text-left transition-colors hover:bg-accent"
-				onClick={() => onOpen?.(url)}
-				type="button"
-			>
-				<span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-black">
-					{/* A muted, controls-free frame as the artifact's thumbnail; playback
-					    happens in the side panel. biome-ignore lint/a11y/useMediaCaption: preview frame only. */}
-					<video
-						className="pointer-events-none h-full w-full object-cover"
-						muted
-						playsInline
-						preload="metadata"
-						src={url}
-					/>
-					<span className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors group-hover:bg-black/10">
-						<PlayIcon className="size-4 fill-white text-white" />
-					</span>
-				</span>
-				<span className="min-w-0 flex-1">
-					<span className="block font-medium text-sm">Your video is ready</span>
-					<span className="block truncate text-muted-foreground text-xs">
-						{input.scene}
-					</span>
-				</span>
-				<PlayIcon className="size-4 shrink-0 text-muted-foreground" />
-			</button>
+			<RenderedVideoCard
+				onOpen={onOpen}
+				scene={input.scene}
+				videoKey={output.videoKey}
+			/>
 		);
 	}
 

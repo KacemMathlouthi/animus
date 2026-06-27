@@ -23,6 +23,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSignedMediaUrl } from "@/features/studio/hooks/use-signed-media-url";
 
 const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 const SEEK_STEP_SEC = 5;
@@ -44,14 +45,15 @@ function formatTime(seconds: number): string {
  * inactivity while playing and reappear on pointer/keyboard activity. Keyboard:
  * space/k play-pause, ←/→ seek, ↑/↓ volume, m mute, f fullscreen. */
 export function VideoPlayer({
-	url,
+	videoKey,
 	title,
 	playToken,
 }: {
-	url: string;
+	videoKey: string;
 	title: string;
 	playToken: number;
 }) {
+	const { url } = useSignedMediaUrl(videoKey);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const hideTimerRef = useRef<number | null>(null);
@@ -303,7 +305,7 @@ export function VideoPlayer({
 				className="h-full w-full object-contain"
 				playsInline
 				ref={videoRef}
-				src={url}
+				src={url ?? undefined}
 			/>
 
 			{/* Title, top gradient. Right padding clears the panel's Hide button. */}

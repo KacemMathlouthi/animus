@@ -22,7 +22,7 @@ export function ChatPanel({
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 	onStop: () => void;
-	onOpenVideo?: (url: string) => void;
+	onOpenVideo?: (key: string) => void;
 }) {
 	const lastIndex = messages.length - 1;
 	return (

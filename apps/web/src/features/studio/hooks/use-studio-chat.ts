@@ -15,9 +15,10 @@ type StudioChat = {
 	messages: AnimusUIMessage[];
 	status: ChatStatus;
 	phase: StudioPhase;
-	/** Rendered explainer URL, once the render loop produces one. Undefined until
-	 * then — the side panel keeps animating while it's absent. */
-	videoUrl?: string;
+	/** R2 object key of the rendered explainer, once the render loop produces one.
+	 * Undefined until then — the side panel keeps animating while it's absent.
+	 * The player resolves it to a presigned URL via useSignedMediaUrl. */
+	videoKey?: string;
 	send: (text: string) => void;
 	stop: () => void;
 	respondToTool: RespondToTool;
@@ -102,19 +103,19 @@ export function useStudioChat({
 	}
 
 	// The latest successfully rendered scene drives the side panel's player.
-	let videoUrl: string | undefined;
+	let videoKey: string | undefined;
 	for (const message of messages) {
 		for (const part of message.parts) {
 			if (
 				part.type === "tool-renderScene" &&
 				part.state === "output-available" &&
 				part.output.ok &&
-				part.output.videoUrl
+				part.output.videoKey
 			) {
-				videoUrl = part.output.videoUrl;
+				videoKey = part.output.videoKey;
 			}
 		}
 	}
 
-	return { messages, status, phase, videoUrl, send, stop, respondToTool };
+	return { messages, status, phase, videoKey, send, stop, respondToTool };
 }
