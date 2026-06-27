@@ -17,7 +17,7 @@ export const PROJECT_DIR = "/home/daytona/project";
 /** The prebaked snapshot sandboxes boot from. Build or refresh it with
  * `bun run snapshot:build` in this package after changing the Dockerfile. The
  * tag is required — Daytona rejects mutable tags like `latest`. */
-export const SNAPSHOT_NAME = "animus-manim:0.3";
+export const SNAPSHOT_NAME = "animus-manim:0.5";
 
 const CREATE_TIMEOUT_SEC = 180;
 const DELETE_TIMEOUT_SEC = 60;
@@ -64,11 +64,20 @@ export async function ensureSandbox(input: {
     }
   }
 
+  // Inject the ElevenLabs key so manim-voiceover can synthesize narration during
+  // render — set on the sandbox env so every command (test renders via
+  // runCommand and the final renderScene alike) inherits it. Both names are set
+  // because the elevenlabs SDK and manim-voiceover have used either over time.
+  const elevenLabsKey = getServerEnv().elevenLabsApiKey;
   return daytona.create(
     {
       snapshot: SNAPSHOT_NAME,
       autoStopInterval: AUTO_STOP_MINUTES,
       labels: { app: "animus", conversationId: input.conversationId },
+      envVars: {
+        ELEVEN_API_KEY: elevenLabsKey,
+        ELEVENLABS_API_KEY: elevenLabsKey,
+      },
     },
     { timeout: CREATE_TIMEOUT_SEC }
   );

@@ -31,11 +31,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       tipa \
       fontconfig \
       fonts-lmodern \
+      sox \
+      libsox-fmt-all \
     && fc-cache -f \
     && rm -rf /var/lib/apt/lists/*
 
-# Manim itself.
-RUN pip install --upgrade pip && pip install manim
+# Manim plus manim-voiceover (ElevenLabs narration; sox adjusts speech speed).
+RUN pip install --upgrade pip && pip install manim "manim-voiceover[elevenlabs]"
 
 # Project directory the agent's tools write into. World-writable so it works
 # whatever user Daytona runs the sandbox as. The Manim craft skill is added to

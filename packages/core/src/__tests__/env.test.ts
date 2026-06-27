@@ -8,6 +8,7 @@ const MINIMAL = {
   R2_ACCESS_KEY_ID: "akid",
   R2_SECRET_ACCESS_KEY: "secret",
   R2_BUCKET: "animus-videos",
+  ELEVENLABS_API_KEY: "el-key",
 };
 
 describe("parseServerEnv", () => {
@@ -64,5 +65,11 @@ describe("parseServerEnv", () => {
   it("throws when an R2 variable is missing", () => {
     const { R2_BUCKET, ...withoutBucket } = MINIMAL;
     expect(() => parseServerEnv(withoutBucket)).toThrow("R2_BUCKET");
+  });
+
+  it("maps and requires the ElevenLabs key", () => {
+    expect(parseServerEnv(MINIMAL).elevenLabsApiKey).toBe("el-key");
+    const { ELEVENLABS_API_KEY, ...withoutKey } = MINIMAL;
+    expect(() => parseServerEnv(withoutKey)).toThrow("ELEVENLABS_API_KEY");
   });
 });

@@ -28,7 +28,7 @@ const PY_SUFFIX = /\.py$/;
 const MP4_SUFFIX = /\.mp4$/;
 /** Where the fetched background track is staged in the sandbox before muxing. */
 const MUSIC_TRACK = `${PROJECT_DIR}/.background-music.mp3`;
-const MUSIC_VOLUME = 0.15;
+const MUSIC_VOLUME = 0.08;
 const MUSIC_FADE_IN_SEC = 2;
 
 /** Persist a rendered video and return its storage key (an R2 object key the
@@ -89,10 +89,11 @@ function outputPath(
 }
 
 /** Download the background track from R2 into the sandbox (via a presigned URL,
- * no byte round-trip through the API) and mux it under the silent rendered master
- * with ffmpeg (looped, ducked, faded in). Returns the path to deliver — the muxed
- * file on success, or the silent master if the track is missing or anything in
- * the step fails, so background music never blocks delivery. */
+ * no byte round-trip through the API) and mix it UNDER the master's narration
+ * with ffmpeg (looped, ducked, faded in, then amix'd with the narration). Returns
+ * the path to deliver — the mixed file on success, or the untouched master (which
+ * already carries the narration) if the track is missing or anything in the step
+ * fails, so background music never blocks delivery. */
 async function muxBackgroundMusic(
   sandbox: Sandbox,
   masterPath: string,
@@ -100,13 +101,14 @@ async function muxBackgroundMusic(
 ): Promise<{ deliverPath: string; note?: string }> {
   const url = await backgroundMusicUrl();
   const finalPath = masterPath.replace(MP4_SUFFIX, ".music.mp4");
-  // Download then mux in one shell step; the URL rides in the env (not the
+  // Download then mix in one shell step; the URL rides in the env (not the
   // command string) so its signature query params can't break quoting. A
-  // missing object 404s the download, short-circuiting before ffmpeg.
+  // missing object 404s the download, short-circuiting before ffmpeg. The music
+  // is ducked and amix'd with the narration (normalize=0 keeps the voice full).
   const command =
     `python3 -c "import os,urllib.request; urllib.request.urlretrieve(os.environ['MUSIC_URL'], '${MUSIC_TRACK}')" && ` +
     `ffmpeg -y -i ${masterPath} -stream_loop -1 -i ${MUSIC_TRACK} ` +
-    `-filter_complex "[1:a]volume=${MUSIC_VOLUME},afade=t=in:st=0:d=${MUSIC_FADE_IN_SEC}[a]" ` +
+    `-filter_complex "[1:a]volume=${MUSIC_VOLUME},afade=t=in:st=0:d=${MUSIC_FADE_IN_SEC}[m];[0:a][m]amix=inputs=2:duration=first:normalize=0[a]" ` +
     `-map 0:v:0 -map "[a]" -shortest -c:v copy -c:a aac ${finalPath} 2>&1`;
   const res = await sandbox.process.executeCommand(
     command,
@@ -119,7 +121,7 @@ async function muxBackgroundMusic(
   }
   return {
     deliverPath: masterPath,
-    note: `[animus] background music skipped (download or mux failed, exit ${res.exitCode}); delivering the silent video.`,
+    note: `[animus] background music skipped (download or mix failed, exit ${res.exitCode}); delivering narration only.`,
   };
 }
 

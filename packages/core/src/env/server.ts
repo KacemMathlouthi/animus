@@ -43,6 +43,9 @@ const ServerEnvSchema = z.object({
   BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-6-v1"),
   /** Exa API key used by the agent's web search and fetch tools. */
   EXA_API_KEY: z.string().optional(),
+  /** ElevenLabs API key for narration. Injected into the render sandbox so
+   * manim-voiceover can synthesize speech during render. */
+  ELEVENLABS_API_KEY: z.string().min(1, "ELEVENLABS_API_KEY is required"),
   /** Daytona API key for the sandbox the agent renders Manim in. Optional at
    * boot; required only when a turn actually needs the sandbox. */
   DAYTONA_API_KEY: z.string().optional(),
@@ -65,6 +68,7 @@ export interface ServerEnv {
   databaseUrl: string;
   daytonaApiKey?: string;
   daytonaTarget?: string;
+  elevenLabsApiKey: string;
   encryptionKey?: string;
   exaApiKey?: string;
   githubClientId?: string;
@@ -107,6 +111,7 @@ export function parseServerEnv(
     databaseUrl: e.DATABASE_URL,
     encryptionKey: e.ENCRYPTION_KEY,
     exaApiKey: e.EXA_API_KEY,
+    elevenLabsApiKey: e.ELEVENLABS_API_KEY,
     daytonaApiKey: e.DAYTONA_API_KEY,
     daytonaTarget: e.DAYTONA_TARGET,
     r2AccountId: e.R2_ACCOUNT_ID,
