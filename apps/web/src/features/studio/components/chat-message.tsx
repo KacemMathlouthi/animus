@@ -89,7 +89,7 @@ export function ChatMessage({
 		return (
 			<div className="flex items-start justify-end gap-3">
 				<Message className="ml-0 max-w-[80%]" from="user">
-					<MessageContent className="whitespace-pre-wrap break-words">
+					<MessageContent className="whitespace-pre-wrap wrap-break-word">
 						{textOf(message)}
 					</MessageContent>
 				</Message>

@@ -310,7 +310,7 @@ export function VideoPlayer({
 			/>
 
 			{/* Title, top gradient. Right padding clears the panel's Hide button. */}
-			<div className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-black/70 to-transparent px-5 pt-4 pb-12 opacity-0 transition-opacity group-data-[controls=true]:opacity-100">
+			<div className="pointer-events-none absolute inset-x-0 top-0 bg-linear-to-b from-black/70 to-transparent px-5 pt-4 pb-12 opacity-0 transition-opacity group-data-[controls=true]:opacity-100">
 				<p className="truncate pr-32 font-semibold text-white text-xl tracking-tight [text-shadow:0_1px_3px_rgb(0_0_0/0.5)]">
 					{title}
 				</p>
@@ -329,7 +329,7 @@ export function VideoPlayer({
 			)}
 
 			{/* Control bar, bottom gradient. */}
-			<div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-black/70 to-transparent px-3 pt-8 pb-2 opacity-0 transition-opacity group-data-[controls=true]:opacity-100">
+			<div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-linear-to-t from-black/70 to-transparent px-3 pt-8 pb-2 opacity-0 transition-opacity group-data-[controls=true]:opacity-100">
 				<SliderPrimitive.Root
 					aria-label="Seek"
 					className="group/seek relative flex h-4 w-full touch-none select-none items-center"

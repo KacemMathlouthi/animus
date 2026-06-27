@@ -176,7 +176,7 @@ export function SharePage() {
 				) : null}
 
 				{state.status === "ready" ? (
-					<div className="mx-auto grid w-full max-w-[90rem] items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+					<div className="mx-auto grid w-full max-w-360 items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
 						<div className="flex flex-col items-center gap-7 text-center lg:items-start lg:text-left">
 							<Link
 								className={cn(
