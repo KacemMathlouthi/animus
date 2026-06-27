@@ -14,5 +14,6 @@ export { type Database, db, schema, sql } from "./client.ts";
 export {
   conversation,
   conversationMessage,
+  videoShare,
 } from "./schema/conversations.ts";
 export { providerKey, userSettings } from "./schema/settings.ts";
