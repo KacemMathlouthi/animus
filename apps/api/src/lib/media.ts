@@ -23,6 +23,9 @@ const UNSAFE_NAME_CHARS = /[^a-zA-Z0-9_-]/g;
 const MEDIA_PREFIX = "videos";
 /** videos/<conversationId>/<file>.mp4 — pins the shape we mint and accept. */
 const MEDIA_KEY = /^videos\/([a-zA-Z0-9_-]+)\/[a-zA-Z0-9_-]+\.mp4$/;
+/** Fixed object key for the background track muxed under every render. Hardcoded
+ * for now; a user-configurable key is a later iteration. */
+const MUSIC_KEY = "music/The_Merchants_Of_Death.mp3";
 
 let client: S3Client | null = null;
 
@@ -76,6 +79,13 @@ export async function saveVideo(input: {
     })
   );
   return key;
+}
+
+/** Presigned GET URL for the background track, so the sandbox can download it
+ * straight from R2 (no byte round-trip through the API). If the object is
+ * absent the download simply fails and renderScene delivers a silent video. */
+export function backgroundMusicUrl(): Promise<string> {
+  return signMediaUrl(MUSIC_KEY);
 }
 
 /** Mint a short-lived presigned GET URL the browser can stream from directly. */

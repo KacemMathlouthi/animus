@@ -59,6 +59,7 @@ function editTool(initial: Record<string, string>) {
     sandbox: state.sandbox,
     conversationId: "conv-1",
     saveVideo: vi.fn(() => Promise.resolve("https://example.com/v.mp4")),
+    backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
   });
   const edit = tools.editFile;
   if (!edit?.execute) {
@@ -73,6 +74,7 @@ function runTool(commandOut: string) {
     sandbox: state.sandbox,
     conversationId: "conv-1",
     saveVideo: vi.fn(() => Promise.resolve("https://example.com/v.mp4")),
+    backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
   });
   const run = tools.runCommand;
   if (!run?.execute) {
@@ -199,5 +201,107 @@ describe("runCommand log truncation", () => {
     expect(output.output).toContain("truncated 500 earlier characters");
     // The marker plus exactly the last MAX_LOG_CHARS of the original output.
     expect(output.output.endsWith("x".repeat(MAX_LOG_CHARS))).toBe(true);
+  });
+});
+
+const MASTER = "/home/daytona/project/media/videos/scene/1080p60/Main.mp4";
+const MUSIC_MASTER =
+  "/home/daytona/project/media/videos/scene/1080p60/Main.music.mp4";
+const STAGED_TRACK = "/home/daytona/project/.background-music.mp3";
+const MUSIC_URL = "https://r2.example/music?sig=abc";
+const MUSIC_SKIPPED = /background music skipped/;
+
+function renderSandbox(opts: { renderExit?: number; muxExit?: number }) {
+  const downloadCalls: string[] = [];
+  const saveVideo = vi.fn(() =>
+    Promise.resolve("videos/conv/Main-ab12cd34.mp4")
+  );
+  const backgroundMusicUrl = vi.fn(() => Promise.resolve(MUSIC_URL));
+  const executeCommand = vi.fn(
+    (command: string, _cwd?: string, _env?: Record<string, string>) => {
+      if (command.includes("manim render")) {
+        return Promise.resolve({
+          exitCode: opts.renderExit ?? 0,
+          result: `Rendering scene\nFile ready at '${MASTER}'\n`,
+        });
+      }
+      // download + ffmpeg mux
+      return Promise.resolve({ exitCode: opts.muxExit ?? 0, result: "" });
+    }
+  );
+  const sandbox = {
+    process: { executeCommand },
+    fs: {
+      downloadFile: vi.fn((path: string) => {
+        downloadCalls.push(path);
+        return Promise.resolve(Buffer.from("video-bytes"));
+      }),
+    },
+  } as unknown as Sandbox;
+  const tools = createManimTools({
+    sandbox,
+    conversationId: "conv",
+    saveVideo,
+    backgroundMusicUrl,
+  });
+  const render = tools.renderScene;
+  if (!render?.execute) {
+    throw new Error("renderScene tool is not executable");
+  }
+  return { execute: render.execute, downloadCalls, saveVideo, executeCommand };
+}
+
+const RENDER_INPUT = {
+  file: "scene.py",
+  scene: "Main",
+  quality: "high",
+} as const;
+
+describe("renderScene background music", () => {
+  it("downloads the track in-sandbox, muxes it, and delivers the muxed file", async () => {
+    const { execute, downloadCalls, saveVideo, executeCommand } = renderSandbox(
+      {}
+    );
+
+    const output = await execute(RENDER_INPUT, EXEC_CTX);
+
+    expect(output.ok).toBe(true);
+    expect(output.videoKey).toBe("videos/conv/Main-ab12cd34.mp4");
+    // Second sandbox command downloads the track then muxes it; the presigned
+    // URL rides in the env, not the command string.
+    const [muxCommand, , muxEnv] = executeCommand.mock.calls[1] ?? [];
+    expect(muxCommand).toContain("urlretrieve");
+    expect(muxCommand).toContain("ffmpeg");
+    expect(muxCommand).toContain(STAGED_TRACK);
+    expect(muxCommand).toContain(MUSIC_MASTER);
+    expect(muxEnv).toEqual({ MUSIC_URL });
+    // The muxed file (not the silent master) is what gets uploaded.
+    expect(downloadCalls).toEqual([MUSIC_MASTER]);
+    expect(saveVideo).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the silent master when the music step fails", async () => {
+    const { execute, downloadCalls, saveVideo } = renderSandbox({ muxExit: 1 });
+
+    const output = await execute(RENDER_INPUT, EXEC_CTX);
+
+    expect(output.ok).toBe(true);
+    expect(output.videoKey).toBe("videos/conv/Main-ab12cd34.mp4");
+    expect(output.logs).toMatch(MUSIC_SKIPPED);
+    // Delivers the silent master, never the (failed) muxed file.
+    expect(downloadCalls).toEqual([MASTER]);
+    expect(saveVideo).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not run the music step or deliver when the render fails", async () => {
+    const { execute, saveVideo, executeCommand } = renderSandbox({
+      renderExit: 1,
+    });
+
+    const output = await execute(RENDER_INPUT, EXEC_CTX);
+
+    expect(output.ok).toBe(false);
+    expect(executeCommand).toHaveBeenCalledTimes(1);
+    expect(saveVideo).not.toHaveBeenCalled();
   });
 });

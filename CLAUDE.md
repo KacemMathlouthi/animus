@@ -84,8 +84,11 @@ titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` �
 first Manim scene end-to-end via Daytona ✓ → R2 video storage ✓ (rendered mp4s
 live in R2; the agent's renderScene returns an object key, the web streams via
 short-lived presigned URLs minted by `/api/media/sign`, and a conversation's
-objects are deleted with it) → **next:** generalize the render/repair loop +
-narration + playback polish → later: quota/billing, autonomous mode. (Outstanding before the chat phase fully closes: HTTP-level
+objects are deleted with it) → background music ✓ (renderScene fetches a track
+from R2 at render time and muxes it under the video via ffmpeg, with a silent
+fallback; fixed `music/background.mp3` key for now, user-configurable later) →
+**next:** narration (TTS) → playback polish → generalize the render/repair loop
+→ later: quota/billing, autonomous mode. (Outstanding before the chat phase fully closes: HTTP-level
 route tests for `conversations` + the `/api/chat` sync contract, and an atomic
 title-generation claim.)
 

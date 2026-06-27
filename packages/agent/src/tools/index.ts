@@ -17,12 +17,21 @@ import {
 import type { Sandbox } from "@daytonaio/sdk";
 import { type ToolSet, tool } from "ai";
 import { type ExaClient, fetchWeb, getExaClient, searchWeb } from "./exa.ts";
-import { createManimTools, type SaveVideo } from "./manim.ts";
+import {
+  type BackgroundMusicUrl,
+  createManimTools,
+  type SaveVideo,
+} from "./manim.ts";
 
 interface ToolDependencies {
   getExaClient?: () => ExaClient;
   /** When present, the agent gets the Manim sandbox tools bound to this turn. */
-  manim?: { sandbox: Sandbox; conversationId: string; saveVideo: SaveVideo };
+  manim?: {
+    sandbox: Sandbox;
+    conversationId: string;
+    saveVideo: SaveVideo;
+    backgroundMusicUrl: BackgroundMusicUrl;
+  };
 }
 
 export function createTools(dependencies: ToolDependencies = {}): ToolSet {
