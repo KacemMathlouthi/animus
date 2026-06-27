@@ -94,6 +94,7 @@ export interface RenderSceneOutput {
   logs: string;
   ok: boolean;
   scene: string;
-  /** Absolute URL to the rendered mp4 when ok; absent on failure. */
-  videoUrl?: string;
+  /** R2 object key of the rendered mp4 when ok; absent on failure. The web
+   * resolves it to a short-lived presigned URL via the media route. */
+  videoKey?: string;
 }

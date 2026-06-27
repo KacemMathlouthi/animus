@@ -48,14 +48,16 @@ const ServerEnvSchema = z.object({
   DAYTONA_API_KEY: z.string().optional(),
   /** Optional Daytona region/target (e.g. "us", "eu"). */
   DAYTONA_TARGET: z.string().optional(),
-  /** Public base URL of this API, used to build absolute URLs for served media. (TEMP)
-   * TODO: TO BE REPLACED WITH PROPER STORAGE SOLUTION LATER ON ...
-   */
-  API_PUBLIC_URL: z.url().default("http://localhost:8787"),
+  /** Cloudflare R2 (S3-compatible) storage for rendered videos. The endpoint is
+   * derived from the account id; the browser streams videos from R2 via
+   * short-lived presigned URLs minted by the media route. */
+  R2_ACCOUNT_ID: z.string().min(1, "R2_ACCOUNT_ID is required"),
+  R2_ACCESS_KEY_ID: z.string().min(1, "R2_ACCESS_KEY_ID is required"),
+  R2_SECRET_ACCESS_KEY: z.string().min(1, "R2_SECRET_ACCESS_KEY is required"),
+  R2_BUCKET: z.string().min(1, "R2_BUCKET is required"),
 });
 
 export interface ServerEnv {
-  apiPublicUrl: string;
   bedrockModel: string;
   betterAuthApiKey?: string;
   betterAuthSecret: string;
@@ -72,6 +74,10 @@ export interface ServerEnv {
   logLevel?: "fatal" | "error" | "warn" | "info" | "debug" | "trace";
   nodeEnv: "development" | "test" | "production";
   port: number;
+  r2AccessKeyId: string;
+  r2AccountId: string;
+  r2Bucket: string;
+  r2SecretAccessKey: string;
   resendApiKey?: string;
   resendFrom: string;
   webOrigin: string;
@@ -103,7 +109,10 @@ export function parseServerEnv(
     exaApiKey: e.EXA_API_KEY,
     daytonaApiKey: e.DAYTONA_API_KEY,
     daytonaTarget: e.DAYTONA_TARGET,
-    apiPublicUrl: e.API_PUBLIC_URL,
+    r2AccountId: e.R2_ACCOUNT_ID,
+    r2AccessKeyId: e.R2_ACCESS_KEY_ID,
+    r2SecretAccessKey: e.R2_SECRET_ACCESS_KEY,
+    r2Bucket: e.R2_BUCKET,
     logLevel: e.LOG_LEVEL,
     betterAuthSecret: e.BETTER_AUTH_SECRET,
     betterAuthUrl: e.BETTER_AUTH_URL,

@@ -4,6 +4,10 @@ import { parseServerEnv } from "../env/server.ts";
 const MINIMAL = {
   DATABASE_URL: "postgres://u:p@localhost:5432/db",
   BETTER_AUTH_SECRET: "a-test-secret",
+  R2_ACCOUNT_ID: "acct",
+  R2_ACCESS_KEY_ID: "akid",
+  R2_SECRET_ACCESS_KEY: "secret",
+  R2_BUCKET: "animus-videos",
 };
 
 describe("parseServerEnv", () => {
@@ -47,5 +51,18 @@ describe("parseServerEnv", () => {
 
   it("rejects an invalid NODE_ENV", () => {
     expect(() => parseServerEnv({ ...MINIMAL, NODE_ENV: "staging" })).toThrow();
+  });
+
+  it("maps the R2 storage credentials", () => {
+    const env = parseServerEnv(MINIMAL);
+    expect(env.r2AccountId).toBe("acct");
+    expect(env.r2AccessKeyId).toBe("akid");
+    expect(env.r2SecretAccessKey).toBe("secret");
+    expect(env.r2Bucket).toBe("animus-videos");
+  });
+
+  it("throws when an R2 variable is missing", () => {
+    const { R2_BUCKET, ...withoutBucket } = MINIMAL;
+    expect(() => parseServerEnv(withoutBucket)).toThrow("R2_BUCKET");
   });
 });
