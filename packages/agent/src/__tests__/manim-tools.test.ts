@@ -274,6 +274,8 @@ describe("renderScene background music", () => {
     expect(muxCommand).toContain("ffmpeg");
     expect(muxCommand).toContain(STAGED_TRACK);
     expect(muxCommand).toContain(MUSIC_MASTER);
+    // Music is mixed UNDER the narration (amix), not replacing the audio.
+    expect(muxCommand).toContain("amix");
     expect(muxEnv).toEqual({ MUSIC_URL });
     // The muxed file (not the silent master) is what gets uploaded.
     expect(downloadCalls).toEqual([MUSIC_MASTER]);

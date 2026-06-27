@@ -1,7 +1,7 @@
 /** Always-on Manim craft rules — the highest-value, every-render guidance
  * synthesized from the bundled manim-video skill (SKILL.md +
  * production-quality.md + visual-design.md), rewritten for animus's flow (one
- * Scene rendered once via renderScene, no audio). The skill's long-tail
+ * narrated VoiceoverScene rendered once via renderScene). The skill's long-tail
  * references stay in the sandbox for on-demand reading; this is the core that
  * must apply to every render, so it lives in the system prompt rather than
  * behind a tool the model might not consult. */
@@ -34,4 +34,4 @@ Typography — use the LaTeX serif for all text. Define FONT = "Latin Modern Rom
 Required reading — the bundled skill at /home/daytona/skill/references/ goes well beyond this summary. Consulting it is not optional; a scene built from memory alone will miss these rules and look broken. Use readFile proactively, not as a last resort:
 - At the START of every video, read scene-planning.md, production-quality.md, and visual-design.md — they cover layout, spacing, frame-safety, element budget and pacing in full.
 - Before using any specialized construct, open its reference FIRST: equations.md (Tex/MathTex, derivations), graphs-and-data.md (axes, charts, algorithm viz), camera-and-3d.md (3D, moving camera), updaters-and-trackers.md (ValueTracker, always_redraw), decorations.md (braces, arrows, SurroundingRectangle), mobjects.md (text/shapes/positioning), animations.md (rate functions, composition), troubleshooting.md (whenever a render errors).
-- These are technique references: apply their Manim code, but IGNORE any workflow that conflicts with animus — we render ONE Scene ONCE via renderScene: no per-scene files, no ffmpeg stitching, no voiceover/subtitles/add_subcaption.`;
+- These are technique references: apply their Manim code, but IGNORE any workflow that conflicts with animus — we render ONE narrated VoiceoverScene ONCE via renderScene: no per-scene files and no ffmpeg stitching. Narration IS used (manim-voiceover); background music is mixed in by animus after rendering, so don't add it in the scene.`;

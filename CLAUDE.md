@@ -12,8 +12,9 @@ and specialized for narrated, research-grounded explainer animations. The user
 chats with the agent; the agent writes and edits Manim code in a persistent
 cloud sandbox, renders it, reads the errors / inspects frames, and repairs until
 the scene is clean. The user can interrupt and steer at any turn (chat-only
-steering — the agent owns the code). Narration is generated separately
-(ElevenLabs) and muxed in, so we don't depend on `manim-voiceover`.
+steering — the agent owns the code). Narration uses `manim-voiceover` with
+ElevenLabs, synthesized in-scene during render so the animation auto-syncs to the
+speech; background music is mixed under it after rendering.
 
 The mental model is a relocated Claude Code:
 
@@ -76,7 +77,11 @@ Cross-package "does it compile" = `bun run typecheck`.
   generated asynchronously (Haiku). Generation settings are global per-user.
 - **Storage:** Cloudflare R2 (S3-compatible) for rendered videos. Multi-cloud
   posture (managed Postgres + container host, no single-cloud lock-in).
-- **Narration:** ElevenLabs directly, word-level timestamps, ffmpeg mux at assembly.
+- **Narration:** `manim-voiceover` + ElevenLabs. The agent writes a `VoiceoverScene`
+  that synthesizes speech in-scene during render, so animation timing auto-syncs to
+  the narration (`tracker.duration`, bookmarks). The ElevenLabs key is injected into
+  the render sandbox via `envVars`. Background music is mixed under the narration in
+  the post-render ffmpeg step.
 
 **Roadmap:** shell ✓ (settings backend; conversation persistence with generated
 titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` →
@@ -85,9 +90,11 @@ first Manim scene end-to-end via Daytona ✓ → R2 video storage ✓ (rendered 
 live in R2; the agent's renderScene returns an object key, the web streams via
 short-lived presigned URLs minted by `/api/media/sign`, and a conversation's
 objects are deleted with it) → background music ✓ (renderScene fetches a track
-from R2 at render time and muxes it under the video via ffmpeg, with a silent
-fallback; fixed `music/background.mp3` key for now, user-configurable later) →
-**next:** narration (TTS) → playback polish → generalize the render/repair loop
+from R2 at render time and mixes it under the video via ffmpeg, with a fallback;
+fixed key for now, user-configurable later) → narration ✓ (manim-voiceover +
+ElevenLabs; the agent writes a VoiceoverScene that auto-syncs to the speech, key
+injected into the sandbox, music ducked under it) → **next:** playback polish →
+generalize the render/repair loop
 → later: quota/billing, autonomous mode. (Outstanding before the chat phase fully closes: HTTP-level
 route tests for `conversations` + the `/api/chat` sync contract, and an atomic
 title-generation claim.)
