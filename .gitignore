@@ -33,3 +33,6 @@ npm-debug.log*
 
 # agent skills (local tooling); skills-lock.json stays tracked
 .agents/
+
+# personal scratch tracker
+todo.md
