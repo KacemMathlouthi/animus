@@ -28,7 +28,7 @@ const PY_SUFFIX = /\.py$/;
 const MP4_SUFFIX = /\.mp4$/;
 /** Where the fetched background track is staged in the sandbox before muxing. */
 const MUSIC_TRACK = `${PROJECT_DIR}/.background-music.mp3`;
-const MUSIC_VOLUME = 0.15;
+const MUSIC_VOLUME = 0.08;
 const MUSIC_FADE_IN_SEC = 2;
 
 /** Persist a rendered video and return its storage key (an R2 object key the
