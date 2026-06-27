@@ -17,7 +17,7 @@ export const PROJECT_DIR = "/home/daytona/project";
 /** The prebaked snapshot sandboxes boot from. Build or refresh it with
  * `bun run snapshot:build` in this package after changing the Dockerfile. The
  * tag is required — Daytona rejects mutable tags like `latest`. */
-export const SNAPSHOT_NAME = "animus-manim:0.4";
+export const SNAPSHOT_NAME = "animus-manim:0.5";
 
 const CREATE_TIMEOUT_SEC = 180;
 const DELETE_TIMEOUT_SEC = 60;
