@@ -9,4 +9,5 @@ export * from "./conversations.ts";
 export * from "./generation.ts";
 export * from "./keys.ts";
 export * from "./providers.ts";
+export * from "./share.ts";
 export * from "./tools/index.ts";
