@@ -24,10 +24,10 @@ export function FeatureSection() {
 		>
 			<div className="space-y-3 text-center">
 				<h2 className="font-medium text-3xl tracking-tight md:text-5xl">
-					Everything a good explainer needs
+					Everything it takes to make it click
 				</h2>
 				<p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed md:text-lg">
-					animus handles the research, the storyboard, the math, and the voice —
+					animus handles the research, the storyboard, the math, and the voice,
 					so a finished video is the default, not the destination.
 				</p>
 			</div>
@@ -96,7 +96,7 @@ const features: FeatureType[] = [
 		title: "Storyboarded scenes",
 		icon: <SquareStackIcon />,
 		description:
-			"animus plans the full arc scene by scene before a single frame is drawn — you can edit it first.",
+			"animus plans the full arc scene by scene before a single frame is drawn, so you can edit it first.",
 	},
 	{
 		title: "Real narration",
@@ -108,7 +108,7 @@ const features: FeatureType[] = [
 		title: "Mathematically precise",
 		icon: <SigmaIcon />,
 		description:
-			"Built on Manim, so equations, graphs, and transforms are exact — never hand-waved approximations.",
+			"Built on Manim, so equations, graphs, and transforms are exact, never hand-waved approximations.",
 	},
 	{
 		title: "Self-correcting",

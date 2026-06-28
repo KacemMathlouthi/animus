@@ -49,7 +49,7 @@ export function Footer() {
 					</div>
 				</div>
 				<div className="col-span-3 w-full md:col-span-1">
-					<span className="text-muted-foreground text-xs">Company</span>
+					<span className="text-muted-foreground text-xs">More</span>
 					<div className="mt-2 flex flex-col gap-2">
 						{company.map(({ href, title }) => (
 							<a
@@ -63,7 +63,7 @@ export function Footer() {
 					</div>
 				</div>
 			</div>
-			{/* Hairline separator: a dot-anchored center line fading out at the ends. */}
+			{/* Hairline separator that fades out toward both ends. */}
 			<Separator />
 
 			<div className="flex items-center justify-center gap-2 py-4">
@@ -76,7 +76,7 @@ export function Footer() {
 			    sinking into the page toward the base. Framed by edge-fading rules. */}
 			<div className="relative overflow-hidden">
 				<Separator />
-				<p className="pointer-events-none select-none bg-linear-to-b from-foreground/70 via-foreground/30 to-foreground/5 bg-clip-text px-4 pt-10 text-center font-bold text-[clamp(4rem,24vw,18rem)] text-transparent leading-[0.74] tracking-tighter">
+				<p className="pointer-events-none select-none bg-linear-to-b from-foreground/55 via-primary/20 via-60% to-transparent bg-clip-text px-4 pt-10 text-center font-bold text-[clamp(4rem,24vw,18rem)] text-transparent leading-[0.74] tracking-tighter">
 					animus
 				</p>
 			</div>
@@ -84,21 +84,19 @@ export function Footer() {
 	);
 }
 
-/** A horizontal rule that dissolves toward both edges, with a faint center node
-    where the gradient peaks, so the line reads as a seam rather than a box edge. */
+/** A horizontal rule that dissolves toward both edges, reading as a seam
+    rather than a box edge. */
 function Separator() {
 	return (
-		<div className="relative h-px w-full bg-linear-to-r from-transparent via-border to-transparent">
-			<span className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 size-1 rounded-full bg-border" />
-		</div>
+		<div className="h-px w-full bg-linear-to-r from-transparent via-border to-transparent" />
 	);
 }
 
 const company = [
-	{ title: "About", href: "#" },
-	{ title: "Blog", href: "#" },
-	{ title: "Careers", href: "#" },
-	{ title: "Contact", href: "#" },
+	{ title: "Studio", href: "/studio" },
+	{ title: "Sign in", href: "/auth" },
+	{ title: "Privacy", href: "/privacy" },
+	{ title: "Terms", href: "/terms" },
 ];
 
 const product = [
@@ -109,6 +107,14 @@ const product = [
 ];
 
 const socialLinks = [
-	{ icon: <GithubIcon />, link: "#", label: "GitHub" },
-	{ icon: <XIcon />, link: "#", label: "X" },
+	{
+		icon: <GithubIcon />,
+		link: "https://github.com/KacemMathlouthi/animus",
+		label: "GitHub",
+	},
+	{
+		icon: <XIcon />,
+		link: "https://x.com/KacemMathl44045",
+		label: "X",
+	},
 ];

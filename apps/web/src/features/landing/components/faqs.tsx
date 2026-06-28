@@ -5,6 +5,19 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
+
+/** The "Got any questions?" cascade: bold repeats stepping diagonally, the way
+ * a16z's FAQ does it. Indents wave out and back so it reads as motion, not a list. */
+const CASCADE = [
+	{ id: "c1", indent: "pl-0" },
+	{ id: "c2", indent: "pl-3 md:pl-6" },
+	{ id: "c3", indent: "pl-6 md:pl-12" },
+	{ id: "c4", indent: "pl-9 md:pl-20" },
+	{ id: "c5", indent: "pl-6 md:pl-12" },
+	{ id: "c6", indent: "pl-3 md:pl-6" },
+	{ id: "c7", indent: "pl-0" },
+];
 
 export function FaqsSection() {
 	return (
@@ -12,22 +25,19 @@ export function FaqsSection() {
 			className="mx-auto grid w-full max-w-5xl grid-cols-1 px-4 py-20 md:grid-cols-2 md:px-8 md:py-28"
 			id="faq"
 		>
-			<div className="pb-8 md:pr-8 md:pb-0">
-				<div className="space-y-5">
-					<h2 className="text-balance font-medium text-3xl tracking-tight md:text-5xl">
-						Frequently asked questions
-					</h2>
-					<p className="text-muted-foreground">
-						The short version of how animus works. Open any question for more.
+			<div className="flex flex-col justify-center gap-0.5 pb-8 md:pr-8 md:pb-0">
+				{CASCADE.map((line, i) => (
+					<p
+						className={cn(
+							"font-semibold text-3xl tracking-tighter md:text-4xl",
+							line.indent,
+							i % 2 === 1 ? "text-foreground" : "text-foreground/35",
+						)}
+						key={line.id}
+					>
+						Got any questions?
 					</p>
-					<p className="text-muted-foreground">
-						{"Still curious? "}
-						<a className="text-primary hover:underline" href="#top">
-							Get in touch
-						</a>
-						.
-					</p>
-				</div>
+				))}
 			</div>
 			<div className="relative place-content-center">
 				<Accordion
@@ -66,7 +76,7 @@ const faqs = [
 		id: "item-1",
 		title: "What exactly does animus produce?",
 		content:
-			"A narrated, animated explainer video. animus researches your topic, plans the scenes, animates them with Manim, and adds a synced voiceover — you get a finished, shareable film.",
+			"A narrated, animated explainer video. animus researches your topic, plans the scenes, animates them with Manim, and adds a synced voiceover, so you get a finished, shareable film.",
 	},
 	{
 		id: "item-2",
