@@ -6,6 +6,7 @@ import { SecretsSection } from "@/features/settings/components/secrets-section";
 import { SettingsLayout } from "@/features/settings/components/settings-layout";
 import { AuthPage } from "@/pages/auth-page";
 import { LandingPage } from "@/pages/landing-page";
+import { NotFoundPage } from "@/pages/not-found-page";
 import { PrivacyPage } from "@/pages/privacy-page";
 import { SharePage } from "@/pages/share-page";
 import { StudioPage } from "@/pages/studio-page";
@@ -39,6 +40,7 @@ function App() {
 						<Route element={<SecretsSection />} path="secrets" />
 					</Route>
 				</Route>
+				<Route element={<NotFoundPage />} path="*" />
 			</Routes>
 		</BrowserRouter>
 	);
