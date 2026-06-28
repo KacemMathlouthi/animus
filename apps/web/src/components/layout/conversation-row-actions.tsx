@@ -2,6 +2,7 @@ import type { ConversationSummary } from "@animus/core";
 import { MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -49,6 +50,7 @@ function RenameDialog({
 			.then(() => {
 				notifyConversationsChanged();
 				onOpenChange(false);
+				toast.success("Conversation renamed");
 			})
 			.catch(() => setError(true))
 			.finally(() => setSaving(false));
@@ -119,6 +121,7 @@ function DeleteDialog({
 				}
 				notifyConversationsChanged();
 				onOpenChange(false);
+				toast.success("Conversation deleted");
 			})
 			.catch(() => setError(true))
 			.finally(() => setSaving(false));
