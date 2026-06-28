@@ -14,6 +14,7 @@ import { conversationsRoute } from "./routes/conversations.ts";
 import { healthRoute } from "./routes/health.ts";
 import { mediaRoute } from "./routes/media.ts";
 import { settingsRoute } from "./routes/settings.ts";
+import { shareRoute } from "./routes/share.ts";
 import type { AppEnv } from "./types.ts";
 
 const env = getServerEnv();
@@ -51,6 +52,8 @@ app.route("/api/settings", settingsRoute);
 app.route("/api/conversations", conversationsRoute);
 app.route("/api/chat", chatRoute);
 app.route("/api/media", mediaRoute);
+// Public (unauthenticated) — anyone with an unlisted token can resolve a share.
+app.route("/api/share", shareRoute);
 
 export type AppType = typeof app;
 

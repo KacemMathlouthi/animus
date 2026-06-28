@@ -39,6 +39,7 @@ const {
   deleteConversationMedia,
   mediaKeyConversationId,
   saveVideo,
+  signDownloadUrl,
   signMediaUrl,
 } = await import("../lib/media.ts");
 
@@ -120,6 +121,25 @@ describe("signMediaUrl", () => {
     expect(command.input).toMatchObject({
       Bucket: "animus-videos",
       Key: "videos/conv1/Scene-ab12cd34.mp4",
+    });
+  });
+});
+
+describe("signDownloadUrl", () => {
+  it("presigns a GET with an attachment disposition and a safe filename", async () => {
+    getSignedUrl.mockResolvedValue("https://signed/download");
+    const url = await signDownloadUrl(
+      "videos/conv1/Scene-ab12cd34.mp4",
+      "My Title!"
+    );
+
+    expect(url).toBe("https://signed/download");
+    const command = getSignedUrl.mock.calls[0]?.[1];
+    expect(command.input).toMatchObject({
+      Bucket: "animus-videos",
+      Key: "videos/conv1/Scene-ab12cd34.mp4",
+      // Unsafe chars are replaced and the .mp4 extension is appended.
+      ResponseContentDisposition: 'attachment; filename="My_Title_.mp4"',
     });
   });
 });

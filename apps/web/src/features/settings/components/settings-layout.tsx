@@ -1,5 +1,6 @@
-/** settings chrome: a slim left rail to switch sections and a scrollable content column on the right
- * (the active section renders into the Outlet). Its own full-height layout, separate from the studio shell. */
+/** Settings chrome: a left rail to switch sections and a scrollable content
+ * column (the active section renders into the Outlet). Full-height layout,
+ * separate from the studio shell. */
 
 import { ChevronLeftIcon, KeyIcon, SlidersIcon, UserIcon } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router";

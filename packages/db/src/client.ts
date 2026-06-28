@@ -17,6 +17,7 @@ import {
   conversationMessage,
   conversationMessageRelations,
   conversationRelations,
+  videoShare,
 } from "./schema/conversations.ts";
 import { providerKey, userSettings } from "./schema/settings.ts";
 
@@ -31,6 +32,7 @@ export const schema = {
   providerKey,
   conversation,
   conversationMessage,
+  videoShare,
   accountRelations,
   sessionRelations,
   userRelations,

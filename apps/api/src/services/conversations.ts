@@ -185,6 +185,25 @@ export async function userOwnsConversation({
   return Boolean(row);
 }
 
+/** The title of a conversation the user owns, or null if not found/owned. Cheap
+ * (no message load) — used to snapshot the title onto a share. */
+export async function ownedConversationTitle({
+  conversationId,
+  userId,
+}: {
+  conversationId: string;
+  userId: string;
+}): Promise<string | null> {
+  const row = await db.query.conversation.findFirst({
+    columns: { title: true },
+    where: and(
+      eq(conversation.id, conversationId),
+      eq(conversation.userId, userId)
+    ),
+  });
+  return row?.title ?? null;
+}
+
 export async function loadOwnedConversation({
   conversationId,
   userId,

@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth.ts";
 
@@ -60,6 +61,33 @@ export const conversationMessage = pgTable(
       table.position
     ),
     index("conversation_message_text_idx").on(table.textContent),
+  ]
+);
+
+/** A permanent, unlisted public share of a single rendered video. The `token` is
+ * the unguessable public slug used in the share URL; anyone with it can view the
+ * video (the public route mints a fresh presigned URL on each load). One share
+ * per `videoKey` (unique) so re-sharing the same render returns the same link.
+ * Cascades with its conversation, so deleting the conversation revokes the link. */
+export const videoShare = pgTable(
+  "video_share",
+  {
+    token: text("token").primaryKey(),
+    conversationId: text("conversation_id")
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    /** The R2 object key of the shared video. */
+    videoKey: text("video_key").notNull(),
+    /** Title snapshot shown on the public page (the conversation's title at share time). */
+    title: text("title").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("video_share_video_key_idx").on(table.videoKey),
+    index("video_share_conversation_idx").on(table.conversationId),
   ]
 );
 

@@ -285,7 +285,7 @@ const Grainient: React.FC<GrainientProps> = ({
 				/* ignore */
 			}
 		};
-	}, []); // renderer created once
+	}, []);
 
 	// Effect 2: sync props to uniforms — zero GPU cost, no teardown
 	useEffect(() => {

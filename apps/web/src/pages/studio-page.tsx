@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import type { AppBreadcrumbSegment } from "@/components/layout/app-breadcrumbs";
 import { AppShell } from "@/components/layout/app-shell";
+import { useRegisterPublishTarget } from "@/components/layout/publish-target";
 import { StudioEmptyState } from "@/features/studio/components/studio-empty-state";
 import { StudioLoading } from "@/features/studio/components/studio-loading";
 import { StudioStage } from "@/features/studio/components/studio-view";
@@ -70,6 +71,11 @@ function LoadedStudioChat({
 			// the sidebar and detail hook refresh from that single signal.
 			onConversationUpdated: notifyConversationsChanged,
 		});
+
+	// Expose the latest render to the header's Publish menu (disabled until one exists).
+	useRegisterPublishTarget(
+		videoKey ? { videoKey, title: detail.conversation.title } : null,
+	);
 
 	return (
 		<StudioStage

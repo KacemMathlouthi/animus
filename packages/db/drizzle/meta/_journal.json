@@ -29,6 +29,13 @@
       "when": 1782168011146,
       "tag": "0003_chilly_chameleon",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1782592856219,
+      "tag": "0004_sour_bastion",
+      "breakpoints": true
     }
   ]
 }

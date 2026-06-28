@@ -13,7 +13,6 @@ export function HeroSection() {
 	return (
 		<section>
 			<div className="relative flex min-h-svh flex-col items-center justify-center gap-5 px-4 py-20">
-				{/* X Faded Borders & Shades */}
 				<div
 					aria-hidden="true"
 					className="absolute inset-0 -z-1 size-full overflow-hidden"

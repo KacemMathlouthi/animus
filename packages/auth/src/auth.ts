@@ -30,7 +30,7 @@ export const auth = betterAuth({
   baseURL: env.betterAuthUrl,
   // The web app's origin is allowed to drive auth (cookies + redirects).
   trustedOrigins: [env.webOrigin],
-  // Store everything in our Postgres via Drizzle. `schema` carries the table
+  // Persist everything in our Postgres via the Drizzle adapter.
   database: drizzleAdapter(db, { provider: "pg", schema }),
   // How long a login lasts and how it is read on each request.
   session: {
@@ -55,7 +55,6 @@ export const auth = betterAuth({
     },
   },
 
-  // Social logins
   socialProviders: {
     ...(githubId && githubSecret
       ? { github: { clientId: githubId, clientSecret: githubSecret } }
@@ -66,7 +65,7 @@ export const auth = betterAuth({
   },
 
   plugins: [
-    // Passwordless email sign-in. The token lives in the `verification` table;
+    // Passwordless email sign-in.
     magicLink({
       // The link is single-use and valid for five minutes.
       expiresIn: 60 * 5,

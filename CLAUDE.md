@@ -93,11 +93,14 @@ objects are deleted with it) → background music ✓ (renderScene fetches a tra
 from R2 at render time and mixes it under the video via ffmpeg, with a fallback;
 fixed key for now, user-configurable later) → narration ✓ (manim-voiceover +
 ElevenLabs; the agent writes a VoiceoverScene that auto-syncs to the speech, key
-injected into the sandbox, music ducked under it) → **next:** playback polish →
-generalize the render/repair loop
-→ later: quota/billing, autonomous mode. (Outstanding before the chat phase fully closes: HTTP-level
-route tests for `conversations` + the `/api/chat` sync contract, and an atomic
-title-generation claim.)
+injected into the sandbox, music ducked under it) → share & export ✓ (Publish
+menu downloads the mp4 via an attachment-disposition presign and mints a
+permanent unlisted public share — `video_share` token → `/v/:token` branded page
+served by the public `GET /api/share/:token`, with share-to-socials) → **next:**
+playback polish → generalize the render/repair loop
+→ later: quota/billing, autonomous mode. (Outstanding before the chat phase fully
+closes: an atomic title-generation claim. HTTP-level route tests for
+`conversations` + the `/api/chat` sync contract now exist.)
 
 ---
 
@@ -172,11 +175,13 @@ bun run snapshot:build # build/refresh the prebaked Manim+LaTeX Daytona snapshot
 
 ## Testing standards
 
-The test suite uses **vitest**. It is being established as modules land — every
-new module ships with its tests in the same change. Target coverage of all core
-logic: `@animus/core` schemas, the API routers (auth + settings, and the SSE
-chat contract once it exists), the crypto egress gate (encrypt/decrypt
-round-trip), the agent runner pipeline, and the sandbox/render loop.
+The test suite uses **vitest** and every new module ships with its tests in the
+same change. Current coverage spans `@animus/core` schemas, the API routes
+(conversations, settings, media, share, and the `/api/chat` sync contract) and
+their services + middleware, the crypto egress gate (encrypt/decrypt round-trip),
+the agent runner + tools + title generation, and `@animus/auth` email delivery.
+Declarative/trivial modules (schema DDL, barrels, config constants, Better Auth
+wiring) are intentionally not unit-tested.
 
 ### Test runner
 - Use `vitest` (not `bun test`). Run: `bunx vitest run`.
