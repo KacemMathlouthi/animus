@@ -6,18 +6,21 @@ import { MobileNav } from "@/features/landing/components/mobile-nav";
 import { useScroll } from "@/hooks/use-scroll";
 import { cn } from "@/lib/utils";
 
+// Absolute hrefs so the links resolve to the landing sections from any route
+// (e.g. the legal pages), not the current path. On the landing page itself
+// these stay same-page hash scrolls.
 export const navLinks = [
 	{
 		label: "Features",
-		href: "#features",
+		href: "/#features",
 	},
 	{
 		label: "How it works",
-		href: "#how",
+		href: "/#how",
 	},
 	{
 		label: "FAQ",
-		href: "#faq",
+		href: "/#faq",
 	},
 ];
 
@@ -44,7 +47,7 @@ export function Header() {
 			>
 				<a
 					className="-ml-1 inline-flex items-center rounded-md px-2 py-1 hover:bg-muted dark:hover:bg-muted/50"
-					href="#top"
+					href="/"
 				>
 					<Wordmark />
 				</a>

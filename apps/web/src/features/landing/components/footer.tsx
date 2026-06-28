@@ -100,10 +100,9 @@ const company = [
 ];
 
 const product = [
-	{ title: "Features", href: "#features" },
-	{ title: "How it works", href: "#how" },
-	{ title: "FAQ", href: "#faq" },
-	{ title: "Changelog", href: "#" },
+	{ title: "Features", href: "/#features" },
+	{ title: "How it works", href: "/#how" },
+	{ title: "FAQ", href: "/#faq" },
 ];
 
 const socialLinks = [
