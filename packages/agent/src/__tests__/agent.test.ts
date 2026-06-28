@@ -1,12 +1,18 @@
 import type { Sandbox } from "@daytonaio/sdk";
-import type { ToolSet } from "ai";
+import type { TelemetrySettings, ToolSet } from "ai";
 import { describe, expect, it, vi } from "vitest";
 
 /** Capture what createManimAgent passes to ToolLoopAgent so we can assert the
- * wiring (model + toolset) without standing up a real model or sandbox. */
+ * wiring (model + toolset + telemetry) without standing up a real model or
+ * sandbox. */
 const captured = vi.hoisted(() => ({
   config: undefined as
-    | { model: unknown; instructions: string; tools: ToolSet }
+    | {
+        model: unknown;
+        instructions: string;
+        tools: ToolSet;
+        experimental_telemetry?: TelemetrySettings;
+      }
     | undefined,
 }));
 
@@ -17,6 +23,7 @@ vi.mock("ai", async (importOriginal) => {
       model: unknown;
       instructions: string;
       tools: ToolSet;
+      experimental_telemetry?: TelemetrySettings;
     }) {
       captured.config = config;
     }
@@ -30,12 +37,13 @@ vi.mock("../config/index.ts", () => ({
 
 const { createManimAgent } = await import("../agent.ts");
 
-function build(): void {
+function build(telemetry?: TelemetrySettings): void {
   createManimAgent({
     sandbox: {} as unknown as Sandbox,
     conversationId: "conv-1",
     saveVideo: vi.fn(() => Promise.resolve("videos/conv/x.mp4")),
     backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
+    telemetry,
   });
 }
 
@@ -65,5 +73,22 @@ describe("createManimAgent", () => {
     expect(toolNames).toEqual(
       expect.arrayContaining(["editFile", "runCommand", "renderScene"])
     );
+  });
+
+  it("forwards the caller's telemetry settings to the agent", () => {
+    const telemetry: TelemetrySettings = {
+      isEnabled: true,
+      functionId: "manim-agent",
+      metadata: { conversationId: "conv-1", userId: "user-1" },
+    };
+    build(telemetry);
+
+    expect(captured.config?.experimental_telemetry).toEqual(telemetry);
+  });
+
+  it("leaves telemetry undefined when the caller passes none", () => {
+    build();
+
+    expect(captured.config?.experimental_telemetry).toBeUndefined();
   });
 });

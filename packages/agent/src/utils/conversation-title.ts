@@ -1,5 +1,5 @@
 import { GeneratedConversationTitleSchema } from "@animus/core";
-import { generateText, Output } from "ai";
+import { generateText, Output, type TelemetrySettings } from "ai";
 import { getModel } from "../config/index.ts";
 
 const MAX_TITLE_LENGTH = 120;
@@ -33,13 +33,16 @@ export async function generateConversationTitle({
   firstPrompt,
   assistantSummary,
   abortSignal,
+  telemetry,
 }: {
   firstPrompt: string;
   assistantSummary?: string;
   abortSignal?: AbortSignal;
+  telemetry?: TelemetrySettings;
 }): Promise<string> {
   const result = await generateText({
     abortSignal,
+    experimental_telemetry: telemetry,
     model: getModel(TITLE_MODEL),
     output: Output.object({
       schema: GeneratedConversationTitleSchema,
