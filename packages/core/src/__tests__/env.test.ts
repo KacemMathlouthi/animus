@@ -50,6 +50,22 @@ describe("parseServerEnv", () => {
     expect(env.githubClientId).toBe("gh-id");
   });
 
+  it("defaults the Braintrust project and leaves the key optional", () => {
+    const env = parseServerEnv(MINIMAL);
+    expect(env.braintrustProject).toBe("animus");
+    expect(env.braintrustApiKey).toBeUndefined();
+  });
+
+  it("passes the Braintrust key and project through", () => {
+    const env = parseServerEnv({
+      ...MINIMAL,
+      BRAINTRUST_API_KEY: "bt-key",
+      BRAINTRUST_PROJECT: "animus-prod",
+    });
+    expect(env.braintrustApiKey).toBe("bt-key");
+    expect(env.braintrustProject).toBe("animus-prod");
+  });
+
   it("rejects an invalid NODE_ENV", () => {
     expect(() => parseServerEnv({ ...MINIMAL, NODE_ENV: "staging" })).toThrow();
   });
