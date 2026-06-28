@@ -62,8 +62,9 @@ export function HeroSection() {
 						"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-snappy",
 					)}
 				>
-					animus researches your topic, storyboards it, and renders a narrated,
-					math-precise video — grounded in real sources and ready to share.
+					Ask about anything you want to understand. animus turns it into a
+					clear, narrated video that makes the idea stick, grounded in real
+					sources and ready to share.
 				</p>
 
 				<div className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center gap-3 fill-mode-backwards pt-2 delay-300 duration-500 ease-snappy">

@@ -76,25 +76,25 @@ const faqs = [
 		id: "item-1",
 		title: "What exactly does animus produce?",
 		content:
-			"A narrated, animated explainer video. animus researches your topic, plans the scenes, animates them with Manim, and adds a synced voiceover, so you get a finished, shareable film.",
+			"A narrated, animated explainer video. animus researches your topic, plans the scenes, animates them, and adds a synced voiceover, so you get a finished, shareable film.",
 	},
 	{
 		id: "item-2",
 		title: "How is this different from NotebookLM or a slideshow tool?",
 		content:
-			"Instead of static slides or talking-head audio, animus renders real motion graphics with mathematically precise visuals, and every claim is grounded in sources it actually read.",
+			"Instead of static slides or talking-head audio, animus creates real motion graphics with precise, accurate visuals, and every claim is grounded in sources it actually read.",
 	},
 	{
 		id: "item-3",
-		title: "Do I need to know Manim or write any code?",
+		title: "Do I need to know animation or write any code?",
 		content:
-			"No. animus writes and runs the Manim code for you inside a sandbox. If you do know Manim, you can review and steer the storyboard before it renders.",
+			"No. animus does all the animation for you. You just describe what you want to understand, then review and steer the storyboard before it becomes a video.",
 	},
 	{
 		id: "item-4",
-		title: "Can I edit the storyboard before it renders?",
+		title: "Can I edit the storyboard before it becomes a video?",
 		content:
-			"Yes. animus shows you the scene-by-scene plan with narration first. You can reorder, rewrite, or cut scenes before committing to a full render.",
+			"Yes. animus shows you the scene-by-scene plan with narration first. You can reorder, rewrite, or cut scenes before committing to the final video.",
 	},
 	{
 		id: "item-5",
@@ -104,8 +104,8 @@ const faqs = [
 	},
 	{
 		id: "item-6",
-		title: "What happens when a render breaks?",
+		title: "What if a video comes out wrong?",
 		content:
-			"animus watches its own output. When a scene has a layout, timing, or code error, it diagnoses and repairs it automatically before handing you the result.",
+			"animus checks its own work. When a scene has a layout or timing problem, it diagnoses and fixes it automatically before handing you the result.",
 	},
 ];

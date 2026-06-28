@@ -14,12 +14,12 @@ const steps = [
 	{
 		title: "It storyboards",
 		description:
-			"A scene-by-scene plan with narration and visuals, yours to review and adjust before rendering.",
+			"A scene-by-scene plan with narration and visuals, yours to review and adjust before it becomes a video.",
 	},
 	{
-		title: "It renders",
+		title: "You get a video",
 		description:
-			"animus animates each scene in Manim, narrates it, and repairs anything that looks off. You get a video.",
+			"animus animates each scene, narrates it, and fixes anything that looks off. A finished video, ready to share.",
 	},
 ];
 
