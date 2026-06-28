@@ -16,8 +16,8 @@ export function Footer() {
 				<div className="col-span-6 flex flex-col gap-4 pt-5 md:col-span-4">
 					<Wordmark />
 					<p className="max-w-sm text-balance text-muted-foreground text-sm">
-						The studio that turns any topic into a narrated, research-grounded
-						explainer video.
+						The antidote to AI brain rot. Turn any question into a narrated,
+						research-grounded explainer you actually understand.
 					</p>
 					<div className="flex gap-2">
 						{socialLinks.map((item) => (
@@ -63,12 +63,34 @@ export function Footer() {
 					</div>
 				</div>
 			</div>
-			<div className="flex items-center justify-center gap-2 border-t py-4">
+			{/* Hairline separator: a dot-anchored center line fading out at the ends. */}
+			<Separator />
+
+			<div className="flex items-center justify-center gap-2 py-4">
 				<p className="text-center font-light text-muted-foreground text-sm">
 					&copy; {new Date().getFullYear()} animus · All rights reserved
 				</p>
 			</div>
+
+			{/* Oversized wordmark sign-off: clear, solid crowns up top resolving and
+			    sinking into the page toward the base. Framed by edge-fading rules. */}
+			<div className="relative overflow-hidden">
+				<Separator />
+				<p className="pointer-events-none select-none bg-linear-to-b from-foreground/70 via-foreground/30 to-foreground/5 bg-clip-text px-4 pt-10 text-center font-bold text-[clamp(4rem,24vw,18rem)] text-transparent leading-[0.74] tracking-tighter">
+					animus
+				</p>
+			</div>
 		</footer>
+	);
+}
+
+/** A horizontal rule that dissolves toward both edges, with a faint center node
+    where the gradient peaks, so the line reads as a seam rather than a box edge. */
+function Separator() {
+	return (
+		<div className="relative h-px w-full bg-linear-to-r from-transparent via-border to-transparent">
+			<span className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 size-1 rounded-full bg-border" />
+		</div>
 	);
 }
 
