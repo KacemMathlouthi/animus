@@ -79,10 +79,16 @@ describe("conversation title service", () => {
     });
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(mockGenerateConversationTitle).toHaveBeenCalledWith({
-      firstPrompt: "Explain eigenvectors",
-      assistantSummary: "Eigenvectors keep direction.",
-    });
+    expect(mockGenerateConversationTitle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstPrompt: "Explain eigenvectors",
+        assistantSummary: "Eigenvectors keep direction.",
+        telemetry: expect.objectContaining({
+          functionId: "conversation-title",
+          metadata: { conversationId: "conversation-1" },
+        }),
+      })
+    );
     expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
   });
 

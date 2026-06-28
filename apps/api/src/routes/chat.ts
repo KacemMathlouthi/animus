@@ -11,6 +11,7 @@ import { HTTPException } from "hono/http-exception";
 import { backgroundMusicUrl, saveVideo } from "../lib/media.ts";
 import { userId } from "../lib/user.ts";
 import { requireAuth } from "../middleware/auth.ts";
+import { aiTelemetry } from "../observability/telemetry.ts";
 import { maybeGenerateConversationTitle } from "../services/conversation-titles.ts";
 import {
   isUIMessage,
@@ -62,6 +63,13 @@ chatRoute.post("/", async (c) => {
     conversationId,
     saveVideo,
     backgroundMusicUrl,
+    telemetry: aiTelemetry({
+      functionId: "manim-agent",
+      metadata: {
+        conversationId,
+        userId: userId(c),
+      },
+    }),
   });
   const result = await agent.stream({
     abortSignal: c.req.raw.signal,

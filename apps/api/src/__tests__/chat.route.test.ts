@@ -23,6 +23,12 @@ const {
 }));
 
 vi.mock("@animus/agent", () => ({ createManimAgent, ensureSandbox }));
+vi.mock("@animus/core/env", () => ({
+  getServerEnv: () => ({ bedrockModel: "model-x" }),
+}));
+vi.mock("../observability/telemetry.ts", () => ({
+  aiTelemetry: (opts: unknown) => opts,
+}));
 vi.mock("../lib/media.ts", () => ({ backgroundMusicUrl, saveVideo }));
 vi.mock("../services/conversation-titles.ts", () => ({
   maybeGenerateConversationTitle,
@@ -188,6 +194,13 @@ describe("POST /chat — happy path", () => {
         conversationId: "conv1",
         saveVideo,
         backgroundMusicUrl,
+        telemetry: expect.objectContaining({
+          functionId: "manim-agent",
+          metadata: expect.objectContaining({
+            conversationId: "conv1",
+            model: "model-x",
+          }),
+        }),
       })
     );
     expect(stream).toHaveBeenCalledTimes(1);
