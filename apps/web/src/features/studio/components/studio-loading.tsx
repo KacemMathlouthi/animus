@@ -4,7 +4,7 @@ import { MorphLogo } from "@/features/studio/components/morph-logo";
 
 const steps = [
 	"Preparing workspace…",
-	"Booting the sandbox…",
+	"Warming things up…",
 	"Setting the stage…",
 ];
 

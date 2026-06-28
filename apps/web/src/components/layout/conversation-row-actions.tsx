@@ -66,6 +66,7 @@ function RenameDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<Input
+					aria-label="Conversation title"
 					autoFocus
 					onChange={(event) => setTitle(event.target.value)}
 					onKeyDown={(event) => {

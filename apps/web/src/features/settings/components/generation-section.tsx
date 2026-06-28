@@ -94,6 +94,7 @@ export function GenerationSection() {
 					<div className="flex gap-1 rounded-lg border p-0.5">
 						{VIDEO_THEMES.map((option) => (
 							<button
+								aria-pressed={config.videoTheme === option}
 								className={cn(
 									"rounded-md px-3 py-1 text-sm capitalize transition-colors",
 									config.videoTheme === option
@@ -153,8 +154,8 @@ export function GenerationSection() {
 						<VoicePicker
 							emptyLabel="No track found."
 							onValueChange={(id) => update({ musicTrack: id })}
-							placeholder="Select a track..."
-							searchPlaceholder="Search tracks..."
+							placeholder="Select a track…"
+							searchPlaceholder="Search tracks…"
 							value={config.musicTrack}
 							voices={MUSIC_OPTIONS}
 						/>

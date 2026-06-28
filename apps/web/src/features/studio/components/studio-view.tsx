@@ -28,7 +28,7 @@ function useRenderNotification(videoKey: string | undefined) {
 			document.hidden
 		) {
 			const notification = new Notification("Your explainer is ready", {
-				body: "animus finished rendering your video.",
+				body: "Your video is ready to watch.",
 				icon: "/logo.svg",
 			});
 			notification.onclick = () => window.focus();

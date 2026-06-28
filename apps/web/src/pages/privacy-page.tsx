@@ -22,7 +22,7 @@ export function PrivacyPage() {
 					you choose to sign in with GitHub or Google.
 				</li>
 				<li>
-					<strong>What you submit</strong> — the topics and prompts you give it
+					<strong>What you submit</strong>, the topics and prompts you give it
 					to generate videos.
 				</li>
 				<li>

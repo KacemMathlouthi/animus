@@ -75,7 +75,7 @@ export function TermsPage() {
 			<p>
 				To the extent allowed by law, the maintainers are not liable for any
 				damages or losses arising from your use of the Service. It's a hobby
-				project — use it at your own risk.
+				project, so use it at your own risk.
 			</p>
 
 			<h2>8. Changes</h2>

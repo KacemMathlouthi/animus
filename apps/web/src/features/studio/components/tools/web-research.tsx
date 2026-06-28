@@ -132,7 +132,7 @@ export function WebSearchTool({
 	output?: WebSearchOutput;
 }) {
 	if (!output) {
-		return <Shimmer>Searching the web...</Shimmer>;
+		return <Shimmer>Searching the web…</Shimmer>;
 	}
 
 	return (
@@ -159,7 +159,7 @@ export function WebFetchTool({
 	output?: WebFetchOutput;
 }) {
 	if (!output) {
-		return <Shimmer>Reading pages...</Shimmer>;
+		return <Shimmer>Reading pages…</Shimmer>;
 	}
 
 	return (
