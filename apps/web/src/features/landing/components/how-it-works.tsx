@@ -2,7 +2,7 @@ import { DecorIcon } from "@/components/decor-icon";
 
 const steps = [
 	{
-		title: "Describe it",
+		title: "Ask anything",
 		description:
 			"Drop in a topic, a question, or a paper. animus figures out what needs explaining and to whom.",
 	},
@@ -14,12 +14,12 @@ const steps = [
 	{
 		title: "It storyboards",
 		description:
-			"A scene-by-scene plan with narration and visuals — yours to review and adjust before rendering.",
+			"A scene-by-scene plan with narration and visuals, yours to review and adjust before it becomes a video.",
 	},
 	{
-		title: "It renders",
+		title: "You get a video",
 		description:
-			"animus animates each scene in Manim, narrates it, and repairs anything that looks off. You get a video.",
+			"animus animates each scene, narrates it, and fixes anything that looks off. A finished video, ready to share.",
 	},
 ];
 
@@ -34,7 +34,7 @@ export function HowItWorks() {
 					How it works
 				</p>
 				<h2 className="font-medium text-3xl tracking-tight md:text-5xl">
-					From a prompt to a finished film
+					From a question to a film that sticks
 				</h2>
 			</div>
 

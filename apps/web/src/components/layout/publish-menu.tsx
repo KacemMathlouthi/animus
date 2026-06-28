@@ -5,6 +5,7 @@ import {
 	UploadIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { usePublishTarget } from "@/components/layout/publish-target";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +40,9 @@ export function PublishMenu() {
 					<DropdownMenuItem
 						onSelect={() => {
 							if (target) {
-								void downloadVideo(target.videoKey, target.title);
+								downloadVideo(target.videoKey, target.title).catch(() =>
+									toast.error("Couldn't download the video. Try again."),
+								);
 							}
 						}}
 					>

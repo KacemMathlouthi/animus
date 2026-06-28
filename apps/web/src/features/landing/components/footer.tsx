@@ -16,8 +16,8 @@ export function Footer() {
 				<div className="col-span-6 flex flex-col gap-4 pt-5 md:col-span-4">
 					<Wordmark />
 					<p className="max-w-sm text-balance text-muted-foreground text-sm">
-						The studio that turns any topic into a narrated, research-grounded
-						explainer video.
+						The antidote to AI brain rot. Turn any question into a narrated,
+						research-grounded explainer you actually understand.
 					</p>
 					<div className="flex gap-2">
 						{socialLinks.map((item) => (
@@ -49,7 +49,7 @@ export function Footer() {
 					</div>
 				</div>
 				<div className="col-span-3 w-full md:col-span-1">
-					<span className="text-muted-foreground text-xs">Company</span>
+					<span className="text-muted-foreground text-xs">More</span>
 					<div className="mt-2 flex flex-col gap-2">
 						{company.map(({ href, title }) => (
 							<a
@@ -63,30 +63,57 @@ export function Footer() {
 					</div>
 				</div>
 			</div>
-			<div className="flex items-center justify-center gap-2 border-t py-4">
+			{/* Hairline separator that fades out toward both ends. */}
+			<Separator />
+
+			<div className="flex items-center justify-center gap-2 py-4">
 				<p className="text-center font-light text-muted-foreground text-sm">
 					&copy; {new Date().getFullYear()} animus · All rights reserved
+				</p>
+			</div>
+
+			{/* Oversized wordmark sign-off: clear, solid crowns up top resolving and
+			    sinking into the page toward the base. Framed by edge-fading rules. */}
+			<div className="relative overflow-hidden">
+				<Separator />
+				<p className="pointer-events-none select-none bg-linear-to-b from-foreground/55 via-primary/20 via-60% to-transparent bg-clip-text px-4 pt-10 text-center font-bold text-[clamp(4rem,24vw,18rem)] text-transparent leading-[0.74] tracking-tighter">
+					animus
 				</p>
 			</div>
 		</footer>
 	);
 }
 
+/** A horizontal rule that dissolves toward both edges, reading as a seam
+    rather than a box edge. */
+function Separator() {
+	return (
+		<div className="h-px w-full bg-linear-to-r from-transparent via-border to-transparent" />
+	);
+}
+
 const company = [
-	{ title: "About", href: "#" },
-	{ title: "Blog", href: "#" },
-	{ title: "Careers", href: "#" },
-	{ title: "Contact", href: "#" },
+	{ title: "Studio", href: "/studio" },
+	{ title: "Sign in", href: "/auth" },
+	{ title: "Privacy", href: "/privacy" },
+	{ title: "Terms", href: "/terms" },
 ];
 
 const product = [
-	{ title: "Features", href: "#features" },
-	{ title: "How it works", href: "#how" },
-	{ title: "FAQ", href: "#faq" },
-	{ title: "Changelog", href: "#" },
+	{ title: "Features", href: "/#features" },
+	{ title: "How it works", href: "/#how" },
+	{ title: "FAQ", href: "/#faq" },
 ];
 
 const socialLinks = [
-	{ icon: <GithubIcon />, link: "#", label: "GitHub" },
-	{ icon: <XIcon />, link: "#", label: "X" },
+	{
+		icon: <GithubIcon />,
+		link: "https://github.com/KacemMathlouthi/animus",
+		label: "GitHub",
+	},
+	{
+		icon: <XIcon />,
+		link: "https://x.com/KacemMathl44045",
+		label: "X",
+	},
 ];

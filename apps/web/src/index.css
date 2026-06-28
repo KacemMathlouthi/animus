@@ -128,7 +128,7 @@
 	--destructive: #e7795b;
 	--border: oklch(1 0 0 / 10%);
 	--input: oklch(1 0 0 / 15%);
-	--ring: #6f9e57; /* sage — green focus hint */
+	--ring: #d8b98a; /* warm sand — brand focus, replaces the harsh green */
 	--chart-1: #d8b98a;
 	--chart-2: #6f9e57;
 	--chart-3: #d7e8b5;
@@ -141,7 +141,7 @@
 	--sidebar-accent: #1c1c1c;
 	--sidebar-accent-foreground: #fafafa;
 	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: #6f9e57;
+	--sidebar-ring: #d8b98a;
 	color-scheme: dark;
 }
 

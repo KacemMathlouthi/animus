@@ -212,12 +212,20 @@ export function AuthPage() {
 									void submitMagicLink();
 								}}
 							>
-								<p className="text-start text-muted-foreground text-xs">
+								<p
+									className="text-start text-muted-foreground text-xs"
+									id="email-hint"
+								>
 									Enter your email address to sign in or create an account
 								</p>
 								<div className="relative">
-									<AtSignIcon className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-2.5 size-4 text-muted-foreground" />
+									<AtSignIcon
+										aria-hidden="true"
+										className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-2.5 size-4 text-muted-foreground"
+									/>
 									<Input
+										aria-describedby="email-hint"
+										aria-label="Email address"
 										className="pl-8"
 										disabled={pending !== null}
 										onChange={(event) => setEmail(event.target.value)}

@@ -152,7 +152,7 @@ export function AccountSection() {
 							variant="outline"
 						>
 							<LogOutIcon data-icon="inline-start" />
-							Log out
+							Sign out
 						</Button>
 					</CardContent>
 				</Card>

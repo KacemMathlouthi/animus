@@ -1,8 +1,8 @@
 import {
 	AudioLinesIcon,
-	BoxIcon,
 	RefreshCwIcon,
 	SearchIcon,
+	Share2Icon,
 	SigmaIcon,
 	SquareStackIcon,
 } from "lucide-react";
@@ -24,10 +24,10 @@ export function FeatureSection() {
 		>
 			<div className="space-y-3 text-center">
 				<h2 className="font-medium text-3xl tracking-tight md:text-5xl">
-					Everything a good explainer needs
+					Everything it takes to make it click
 				</h2>
 				<p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed md:text-lg">
-					animus handles the research, the storyboard, the math, and the voice —
+					animus handles the research, the storyboard, the math, and the voice,
 					so a finished video is the default, not the destination.
 				</p>
 			</div>
@@ -96,7 +96,7 @@ const features: FeatureType[] = [
 		title: "Storyboarded scenes",
 		icon: <SquareStackIcon />,
 		description:
-			"animus plans the full arc scene by scene before a single frame is drawn — you can edit it first.",
+			"animus plans the full arc scene by scene before a single frame is drawn, so you can edit it first.",
 	},
 	{
 		title: "Real narration",
@@ -105,21 +105,21 @@ const features: FeatureType[] = [
 			"Studio-grade voiceover is written and timed to the motion, not bolted on afterwards.",
 	},
 	{
-		title: "Mathematically precise",
+		title: "Precise, not hand-wavy",
 		icon: <SigmaIcon />,
 		description:
-			"Built on Manim, so equations, graphs, and transforms are exact — never hand-waved approximations.",
+			"Equations, graphs, and transforms are drawn exactly, so the visuals are accurate, never rough approximations.",
 	},
 	{
 		title: "Self-correcting",
 		icon: <RefreshCwIcon />,
 		description:
-			"It watches its own renders, catches layout and timing slips, and repairs the scene on its own.",
+			"It checks its own work, catches anything that looks off, and fixes it before you ever see it.",
 	},
 	{
-		title: "Sandboxed renders",
-		icon: <BoxIcon />,
+		title: "Ready to share",
+		icon: <Share2Icon />,
 		description:
-			"Each video builds in an isolated sandbox, so runs are reproducible and never touch your machine.",
+			"Every explainer comes back as a polished video you can download, post, or send in a click.",
 	},
 ];

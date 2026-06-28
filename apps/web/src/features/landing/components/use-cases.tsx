@@ -1,76 +1,82 @@
 import {
-	AudioLinesIcon,
-	BoxIcon,
-	DatabaseIcon,
-	SearchIcon,
-	ShapesIcon,
+	GraduationCapIcon,
+	type LucideIcon,
+	MicIcon,
+	PresentationIcon,
 	SparklesIcon,
+	UsersIcon,
+	VideoIcon,
 } from "lucide-react";
-import type React from "react";
 import { DecorIcon } from "@/components/decor-icon";
 import { cn } from "@/lib/utils";
 
-type Integration = {
+type UseCase = {
 	name: string;
 	description: string;
-	icon: React.ReactNode;
+	icon: LucideIcon;
 	decor?: React.ReactNode;
 };
 
-const data: Integration[] = [
+const data: UseCase[] = [
 	{
-		name: "Manim",
+		name: "Students",
 		description:
-			"The animation engine behind every precise, programmatic scene.",
-		icon: <ShapesIcon />,
+			"Turn a confusing lecture or textbook chapter into a video that finally makes it click.",
+		icon: GraduationCapIcon,
 	},
 	{
-		name: "ElevenLabs",
-		description: "Lifelike narration voices, timed to the motion on screen.",
-		icon: <AudioLinesIcon />,
+		name: "Teachers",
+		description:
+			"Build animated lessons your class will actually remember, in minutes instead of weekends.",
+		icon: PresentationIcon,
 		decor: <DecorIcon position="bottom-left" />,
 	},
 	{
-		name: "Exa",
-		description: "Grounded web research so explanations cite what's real.",
-		icon: <SearchIcon />,
+		name: "The endlessly curious",
+		description:
+			"Ask the questions you never got answered and watch them become explainers that stick.",
+		icon: SparklesIcon,
 	},
 	{
-		name: "Daytona",
-		description: "Isolated sandboxes where each render builds reproducibly.",
-		icon: <BoxIcon />,
+		name: "Researchers",
+		description:
+			"Explain your paper or a hard idea to any audience, clearly, without simplifying it to death.",
+		icon: MicIcon,
 	},
 	{
-		name: "Postgres",
-		description: "Durable history of every project, scene, and revision.",
-		icon: <DatabaseIcon />,
+		name: "Creators",
+		description:
+			"Produce polished explainer videos for your audience without touching animation software.",
+		icon: VideoIcon,
 	},
 	{
-		name: "Claude",
-		description: "Reasoning and code generation that drives the whole studio.",
-		icon: <SparklesIcon />,
+		name: "Teams",
+		description:
+			"Make complex ideas land in onboarding, docs, and presentations everyone has to sit through.",
+		icon: UsersIcon,
 		decor: <DecorIcon position="top-left" />,
 	},
 ];
 
-export function Integrations() {
+export function UseCases() {
 	return (
 		<section className="mx-auto w-full max-w-5xl px-4 py-20 md:px-8 md:py-28">
 			<div className="mx-auto mb-14 max-w-2xl space-y-3 text-center">
 				<h2 className="font-medium text-3xl tracking-tight md:text-5xl">
-					Built on tools you already trust
+					Made for anyone who'd rather understand
 				</h2>
 				<p className="text-muted-foreground leading-relaxed md:text-lg">
-					animus orchestrates best-in-class engines instead of reinventing them.
+					If you can ask the question, animus can turn the answer into something
+					you'll actually remember.
 				</p>
 			</div>
 
 			<div className="relative mx-auto max-w-5xl border">
 				<div className="grid grid-cols-2 gap-px bg-border md:grid-cols-3">
 					{data.map((item) => (
-						<IntegrationCard integration={item} key={item.name}>
+						<UseCaseCard key={item.name} useCase={item}>
 							{item.decor}
-						</IntegrationCard>
+						</UseCaseCard>
 					))}
 				</div>
 				<DecorIcon position="top-left" />
@@ -82,14 +88,16 @@ export function Integrations() {
 	);
 }
 
-function IntegrationCard({
-	integration,
+function UseCaseCard({
+	useCase,
 	className,
 	children,
 	...props
 }: React.ComponentProps<"div"> & {
-	integration: Integration;
+	useCase: UseCase;
 }) {
+	const Icon = useCase.icon;
+
 	return (
 		<div
 			className={cn(
@@ -99,13 +107,11 @@ function IntegrationCard({
 			{...props}
 		>
 			<div className="flex size-10 items-center justify-center rounded-lg border bg-muted/40 text-foreground [&_svg]:size-5 [&_svg]:stroke-[1.5]">
-				{integration.icon}
+				<Icon />
 			</div>
 			<div className="space-y-1">
-				<h3 className="font-medium">{integration.name}</h3>
-				<p className="text-muted-foreground text-sm">
-					{integration.description}
-				</p>
+				<h3 className="font-medium">{useCase.name}</h3>
+				<p className="text-muted-foreground text-sm">{useCase.description}</p>
 			</div>
 			{children}
 		</div>

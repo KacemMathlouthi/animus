@@ -89,7 +89,7 @@ export function NavUser() {
 						variant="destructive"
 					>
 						<LogOutIcon />
-						Log out
+						Sign out
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 			</DropdownMenuContent>

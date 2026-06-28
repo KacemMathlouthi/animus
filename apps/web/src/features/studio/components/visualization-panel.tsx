@@ -37,7 +37,7 @@ function RenderingStage() {
 		<div className="flex max-w-sm flex-col items-center gap-5 text-center">
 			<MorphLogo className="h-28" />
 			<div className="space-y-1.5">
-				<p className="font-medium">Rendering your explainer</p>
+				<p className="font-medium">Creating your explainer</p>
 				<p className="text-muted-foreground text-sm">
 					Once the video is ready, it will appear here. You can enable
 					notifications to get an instant alert when it's time to watch.

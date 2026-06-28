@@ -5,7 +5,7 @@ import { Footer } from "@/features/landing/components/footer";
 import { Header } from "@/features/landing/components/header";
 import { HeroSection } from "@/features/landing/components/hero";
 import { HowItWorks } from "@/features/landing/components/how-it-works";
-import { Integrations } from "@/features/landing/components/integrations";
+import { UseCases } from "@/features/landing/components/use-cases";
 
 export function LandingPage() {
 	return (
@@ -15,7 +15,7 @@ export function LandingPage() {
 				<HeroSection />
 				<FeatureSection />
 				<HowItWorks />
-				<Integrations />
+				<UseCases />
 				<FaqsSection />
 				<CallToAction />
 			</main>

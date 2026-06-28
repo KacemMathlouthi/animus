@@ -5,6 +5,19 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
+
+/** The "Got any questions?" cascade: bold repeats stepping diagonally, the way
+ * a16z's FAQ does it. Indents wave out and back so it reads as motion, not a list. */
+const CASCADE = [
+	{ id: "c1", indent: "pl-0" },
+	{ id: "c2", indent: "pl-3 md:pl-6" },
+	{ id: "c3", indent: "pl-6 md:pl-12" },
+	{ id: "c4", indent: "pl-9 md:pl-20" },
+	{ id: "c5", indent: "pl-6 md:pl-12" },
+	{ id: "c6", indent: "pl-3 md:pl-6" },
+	{ id: "c7", indent: "pl-0" },
+];
 
 export function FaqsSection() {
 	return (
@@ -12,22 +25,19 @@ export function FaqsSection() {
 			className="mx-auto grid w-full max-w-5xl grid-cols-1 px-4 py-20 md:grid-cols-2 md:px-8 md:py-28"
 			id="faq"
 		>
-			<div className="pb-8 md:pr-8 md:pb-0">
-				<div className="space-y-5">
-					<h2 className="text-balance font-medium text-3xl tracking-tight md:text-5xl">
-						Frequently asked questions
-					</h2>
-					<p className="text-muted-foreground">
-						The short version of how animus works. Open any question for more.
+			<div className="flex flex-col justify-center gap-0.5 pb-8 md:pr-8 md:pb-0">
+				{CASCADE.map((line, i) => (
+					<p
+						className={cn(
+							"font-semibold text-3xl tracking-tighter md:text-4xl",
+							line.indent,
+							i % 2 === 1 ? "text-foreground" : "text-foreground/35",
+						)}
+						key={line.id}
+					>
+						Got any questions?
 					</p>
-					<p className="text-muted-foreground">
-						{"Still curious? "}
-						<a className="text-primary hover:underline" href="#top">
-							Get in touch
-						</a>
-						.
-					</p>
-				</div>
+				))}
 			</div>
 			<div className="relative place-content-center">
 				<Accordion
@@ -66,25 +76,25 @@ const faqs = [
 		id: "item-1",
 		title: "What exactly does animus produce?",
 		content:
-			"A narrated, animated explainer video. animus researches your topic, plans the scenes, animates them with Manim, and adds a synced voiceover — you get a finished, shareable film.",
+			"A narrated, animated explainer video. animus researches your topic, plans the scenes, animates them, and adds a synced voiceover, so you get a finished, shareable film.",
 	},
 	{
 		id: "item-2",
 		title: "How is this different from NotebookLM or a slideshow tool?",
 		content:
-			"Instead of static slides or talking-head audio, animus renders real motion graphics with mathematically precise visuals, and every claim is grounded in sources it actually read.",
+			"Instead of static slides or talking-head audio, animus creates real motion graphics with precise, accurate visuals, and every claim is grounded in sources it actually read.",
 	},
 	{
 		id: "item-3",
-		title: "Do I need to know Manim or write any code?",
+		title: "Do I need to know animation or write any code?",
 		content:
-			"No. animus writes and runs the Manim code for you inside a sandbox. If you do know Manim, you can review and steer the storyboard before it renders.",
+			"No. animus does all the animation for you. You just describe what you want to understand, then review and steer the storyboard before it becomes a video.",
 	},
 	{
 		id: "item-4",
-		title: "Can I edit the storyboard before it renders?",
+		title: "Can I edit the storyboard before it becomes a video?",
 		content:
-			"Yes. animus shows you the scene-by-scene plan with narration first. You can reorder, rewrite, or cut scenes before committing to a full render.",
+			"Yes. animus shows you the scene-by-scene plan with narration first. You can reorder, rewrite, or cut scenes before committing to the final video.",
 	},
 	{
 		id: "item-5",
@@ -94,8 +104,8 @@ const faqs = [
 	},
 	{
 		id: "item-6",
-		title: "What happens when a render breaks?",
+		title: "What if a video comes out wrong?",
 		content:
-			"animus watches its own output. When a scene has a layout, timing, or code error, it diagnoses and repairs it automatically before handing you the result.",
+			"animus checks its own work. When a scene has a layout or timing problem, it diagnoses and fixes it automatically before handing you the result.",
 	},
 ];
