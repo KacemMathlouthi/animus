@@ -77,9 +77,11 @@ stitching step. The flow is:
 
 ## Project Structure
 
-A single scene file (e.g. `scene.py`) in the sandbox's working directory.
-Manim writes its render artifacts under `media/` as usual; `renderScene`
-pulls the final mp4 out for you.
+One or more Python files in the sandbox's working directory; the `construct`
+method of a single entry scene file (e.g. `scene.py`) plays the whole video.
+Splitting helper code into other files is fine — what matters is exactly one
+render of one scene at the end. Manim writes its render artifacts under
+`media/` as usual; `renderScene` pulls the final mp4 out for you.
 
 ## Creative Direction
 
