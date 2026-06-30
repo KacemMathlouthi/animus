@@ -73,4 +73,28 @@ describe("generateConversationTitle", () => {
     expect(result.length).toBe(120);
     expect(result.endsWith("...")).toBe(true);
   });
+
+  it("forwards telemetry settings to generateText", async () => {
+    mockedGenerateText.mockResolvedValue({
+      output: { title: "Anything" },
+    } as unknown as Awaited<ReturnType<typeof generateText>>);
+
+    await generateConversationTitle({
+      firstPrompt: "explain something",
+      telemetry: {
+        isEnabled: true,
+        functionId: "conversation-title",
+        metadata: { conversationId: "conv-1" },
+      },
+    });
+
+    expect(mockedGenerateText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        experimental_telemetry: expect.objectContaining({
+          functionId: "conversation-title",
+          isEnabled: true,
+        }),
+      })
+    );
+  });
 });

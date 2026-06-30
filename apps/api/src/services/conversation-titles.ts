@@ -2,6 +2,7 @@ import { generateConversationTitle } from "@animus/agent";
 import { conversation, db, eq } from "@animus/db";
 import type { UIMessage } from "ai";
 import { logger } from "../lib/logger.ts";
+import { aiTelemetry } from "../observability/telemetry.ts";
 import { textOf } from "./conversations.ts";
 
 export function maybeGenerateConversationTitle({
@@ -30,6 +31,10 @@ export function maybeGenerateConversationTitle({
     const title = await generateConversationTitle({
       firstPrompt: textOf(firstPrompt),
       assistantSummary: textOf(firstAssistant),
+      telemetry: aiTelemetry({
+        functionId: "conversation-title",
+        metadata: { conversationId },
+      }),
     });
 
     await db

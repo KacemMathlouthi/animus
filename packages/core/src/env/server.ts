@@ -43,6 +43,11 @@ const ServerEnvSchema = z.object({
   BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-6-v1"),
   /** Exa API key used by the agent's web search and fetch tools. */
   EXA_API_KEY: z.string().optional(),
+  /** Braintrust API key for LLM observability. When set, the agent's AI SDK
+   * calls emit OpenTelemetry traces exported to Braintrust. */
+  BRAINTRUST_API_KEY: z.string().optional(),
+  /** Braintrust project the LLM traces land in (the `x-bt-parent`). */
+  BRAINTRUST_PROJECT: z.string().default("animus"),
   /** ElevenLabs API key for narration. Injected into the render sandbox so
    * manim-voiceover can synthesize speech during render. */
   ELEVENLABS_API_KEY: z.string().min(1, "ELEVENLABS_API_KEY is required"),
@@ -65,6 +70,8 @@ export interface ServerEnv {
   betterAuthApiKey?: string;
   betterAuthSecret: string;
   betterAuthUrl: string;
+  braintrustApiKey?: string;
+  braintrustProject: string;
   databaseUrl: string;
   daytonaApiKey?: string;
   daytonaTarget?: string;
@@ -129,6 +136,8 @@ export function parseServerEnv(
     resendApiKey: e.RESEND_API_KEY,
     resendFrom: e.RESEND_FROM,
     bedrockModel: e.BEDROCK_MODEL,
+    braintrustApiKey: e.BRAINTRUST_API_KEY,
+    braintrustProject: e.BRAINTRUST_PROJECT,
   };
 }
 

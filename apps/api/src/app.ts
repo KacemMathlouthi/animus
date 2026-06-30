@@ -9,6 +9,7 @@ import { logger } from "./lib/logger.ts";
 import { sessionMiddleware } from "./middleware/auth.ts";
 import { onError, onNotFound } from "./middleware/error.ts";
 import { requestLogger } from "./middleware/logger.ts";
+import { initTelemetry } from "./observability/telemetry.ts";
 import { chatRoute } from "./routes/chat.ts";
 import { conversationsRoute } from "./routes/conversations.ts";
 import { healthRoute } from "./routes/health.ts";
@@ -18,6 +19,9 @@ import { shareRoute } from "./routes/share.ts";
 import type { AppEnv } from "./types.ts";
 
 const env = getServerEnv();
+
+// Register the LLM tracer provider before any agent runs.
+initTelemetry();
 
 export const app = new Hono<AppEnv>();
 

@@ -118,6 +118,10 @@ closes: an atomic title-generation claim. HTTP-level route tests for
 - **Sandbox:** Daytona
 - **Object storage:** Cloudflare R2
 - **Logging:** Pino (structured)
+- **LLM observability:** Braintrust via OpenTelemetry (AI SDK
+  `experimental_telemetry` → OTLP). Gated on `BRAINTRUST_API_KEY`; no-op when
+  unset. Init in `apps/api/src/observability/telemetry.ts`; per-turn settings
+  built by `aiTelemetry()` and passed into the agent + title generation.
 - **Retries:** `p-retry` (for external calls — Daytona, model providers)
 - **Lint / format:** Ultracite + Biome
 - **Dead-code / deps:** Knip
