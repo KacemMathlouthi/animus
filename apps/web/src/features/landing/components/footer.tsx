@@ -76,7 +76,10 @@ export function Footer() {
 			    sinking into the page toward the base. Framed by edge-fading rules. */}
 			<div className="relative overflow-hidden">
 				<Separator />
-				<p className="pointer-events-none select-none bg-linear-to-b from-foreground/55 via-primary/20 via-60% to-transparent bg-clip-text px-4 pt-10 text-center font-bold text-[clamp(4rem,24vw,18rem)] text-transparent leading-[0.74] tracking-tighter">
+				<p
+					aria-hidden="true"
+					className="pointer-events-none select-none bg-linear-to-b from-foreground/65 via-primary/25 via-55% to-transparent bg-clip-text px-4 pt-10 text-center font-(family-name:--font-pixel-grid) text-[clamp(4rem,24vw,18rem)] text-transparent leading-[0.74] tracking-tighter"
+				>
 					animus
 				</p>
 			</div>

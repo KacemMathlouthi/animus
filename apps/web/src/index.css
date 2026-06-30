@@ -5,11 +5,20 @@
 /* Streamdown's per-word streaming animation: @keyframes sd-* + [data-sd-animate]. */
 @import "streamdown/styles.css";
 
+@font-face {
+	font-family: "Geist Pixel Grid";
+	src: url("/fonts/GeistPixel-Grid.woff2") format("woff2");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
 	--font-heading: var(--font-sans);
 	--font-sans: "Geist Variable", sans-serif;
+	--font-pixel-grid: "Geist Pixel Grid", "Geist Mono", monospace;
 
 	/* strong ease-out — entrances, presses, hovers */
 	--ease-snappy: cubic-bezier(0.23, 1, 0.32, 1);
