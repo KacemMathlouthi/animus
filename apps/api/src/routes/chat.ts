@@ -5,6 +5,7 @@
  * once the turn finishes. */
 
 import { createManimAgent, ensureSandbox } from "@animus/agent";
+import { getServerEnv } from "@animus/core/env";
 import { convertToModelMessages, createIdGenerator } from "ai";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -68,6 +69,7 @@ chatRoute.post("/", async (c) => {
       metadata: {
         conversationId,
         userId: userId(c),
+        model: getServerEnv().bedrockModel,
       },
     }),
   });
