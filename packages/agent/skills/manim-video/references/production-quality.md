@@ -9,7 +9,7 @@ Before writing any Manim code:
 - [ ] Narration script written with visual beats marked
 - [ ] Scene list with purpose, duration, and layout for each
 - [ ] Color palette defined with meaning assignments (`PRIMARY` = main concept, etc.)
-- [ ] `MONO = "Menlo"` set as the font constant
+- [ ] `FONT = "Latin Modern Roman"` set as the font constant
 - [ ] Target resolution and aspect ratio decided
 
 ## Text Quality
@@ -35,7 +35,7 @@ Long text strings overflow the frame:
 
 ```python
 # RULE: Set max width for any text that might be long
-text = Text("This is a potentially long description", font_size=22, font=MONO)
+text = Text("This is a potentially long description", font_size=22, font=FONT)
 if text.width > config.frame_width - 1.0:
     text.set_width(config.frame_width - 1.0)
 ```
@@ -43,8 +43,8 @@ if text.width > config.frame_width - 1.0:
 ### Font consistency
 
 ```python
-# RULE: Define MONO once, use everywhere
-MONO = "Menlo"
+# RULE: Define FONT once, use everywhere
+FONT = "Latin Modern Roman"
 
 # WRONG: mixing fonts
 Text("Title", font="Helvetica")
@@ -52,9 +52,9 @@ Text("Label", font="Arial")
 Text("Code", font="Courier")
 
 # RIGHT: one font
-Text("Title", font=MONO, weight=BOLD, font_size=48)
-Text("Label", font=MONO, font_size=20)
-Text("Code", font=MONO, font_size=18)
+Text("Title", font=FONT, weight=BOLD, font_size=48)
+Text("Label", font=FONT, font_size=20)
+Text("Code", font=FONT, font_size=18)
 ```
 
 ## Spatial Layout
@@ -156,7 +156,7 @@ Once a color is assigned a meaning, it keeps that meaning for the entire video:
 When showing a number changing:
 ```python
 # GOOD: DecimalNumber with smooth animation
-counter = DecimalNumber(0, font_size=48, num_decimal_places=0, font="Menlo")
+counter = DecimalNumber(0, font_size=48, num_decimal_places=0, font="Latin Modern Roman")
 self.play(counter.animate.set_value(1000), run_time=3, rate_func=rush_from)
 
 # BAD: Text that jumps between values
@@ -168,7 +168,7 @@ Before running `manim -qh`:
 
 - [ ] All scenes render without errors at `-ql`
 - [ ] Preview stills at `-qm` for text-heavy scenes (check kerning)
-- [ ] Background color set in every scene (`self.camera.background_color = BG`)
+- [ ] Background left at Manim's default (black) — `self.camera.background_color` not set
 - [ ] `add_subcaption()` or `subcaption=` on every significant animation
 - [ ] No text smaller than font_size=18
 - [ ] No text using proportional fonts (use monospace)

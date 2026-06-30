@@ -282,8 +282,8 @@ text = Text(
 
 # Different fonts per word (t2f = text-to-font)
 text = Text(
-    "Use Menlo for code and Inter for prose",
-    t2f={"Menlo": "Menlo", "Inter": "Inter"}
+    "Mix fonts sparingly, e.g. a serif body with a different accent word",
+    t2f={"serif": "Latin Modern Roman", "accent": "Latin Modern Roman"}
 )
 
 # Italic/slant per word (t2s = text-to-slant)

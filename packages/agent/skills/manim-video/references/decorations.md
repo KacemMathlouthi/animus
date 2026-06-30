@@ -24,7 +24,7 @@ self.play(FadeOut(highlight))
 ```python
 eq = MathTex(r"E", r"=", r"m", r"c^2")
 box = SurroundingRectangle(eq[2:], color=YELLOW, buff=0.1)  # highlight "mc²"
-label = Text("mass-energy", font_size=18, font="Menlo", color=YELLOW)
+label = Text("mass-energy", font_size=18, font="Latin Modern Roman", color=YELLOW)
 label.next_to(box, DOWN, buff=0.2)
 self.play(Create(box), FadeIn(label))
 ```
@@ -101,7 +101,7 @@ arrow = CurvedArrow(
 ```python
 # LabeledArrow: arrow with built-in text label
 arr = LabeledArrow(
-    Text("gradient", font_size=16, font="Menlo"),
+    Text("gradient", font_size=16, font="Latin Modern Roman"),
     start=point_a, end=point_b, color=RED
 )
 ```
