@@ -1,29 +1,32 @@
 import {
 	AudioLinesIcon,
-	RefreshCwIcon,
 	SearchIcon,
 	Share2Icon,
 	SigmaIcon,
-	SquareStackIcon,
 } from "lucide-react";
 import type React from "react";
 import { DecorIcon } from "@/components/decor-icon";
+import { FullWidthDivider } from "@/features/landing/components/full-width-divider";
 import { cn } from "@/lib/utils";
-
-type FeatureType = {
-	title: string;
-	icon: React.ReactNode;
-	description: string;
-};
 
 export function FeatureSection() {
 	return (
 		<div
-			className="mx-auto flex w-full max-w-5xl flex-col justify-center gap-12 px-4 py-20 md:px-8 md:py-28"
+			className="relative flex min-h-svh scroll-mt-20 flex-col items-center justify-center gap-10 px-4 py-20"
 			id="features"
 		>
+			<DecorIcon className="size-4" position="top-left" />
+			<DecorIcon className="size-4" position="top-right" />
+			<DecorIcon className="size-4" position="bottom-left" />
+			<DecorIcon className="size-4" position="bottom-right" />
+
+			<FullWidthDivider className="-top-px" />
+
 			<div className="space-y-3 text-center">
-				<h2 className="font-medium text-3xl tracking-tight md:text-5xl">
+				<p className="font-mono text-muted-foreground text-xs uppercase tracking-wider">
+					Why animus
+				</p>
+				<h2 className="font-medium text-3xl text-foreground tracking-tight md:text-5xl">
 					Everything it takes to make it click
 				</h2>
 				<p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed md:text-lg">
@@ -32,21 +35,63 @@ export function FeatureSection() {
 				</p>
 			</div>
 
-			<div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-				{features.map((feature) => (
-					<FeatureCard feature={feature} key={feature.title} />
-				))}
+			<div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2">
+				<FeatureCard className="h-80 p-0 md:h-96">
+					<PaintingCard
+						alt="Raphael, The School of Athens"
+						description="Every explainer starts from real sources, so the narration stays accurate instead of plausible."
+						icon={<SearchIcon className="size-4" />}
+						image="/features/research-grounded.webp"
+						objectPosition="50% 38%"
+						title="Research-grounded"
+					/>
+				</FeatureCard>
+
+				<FeatureCard className="h-80 p-0 md:h-96">
+					<PaintingCard
+						alt="Caravaggio, The Lute Player"
+						description="Studio-grade voiceover is written and timed to the motion, not bolted on afterwards."
+						icon={<AudioLinesIcon className="size-4" />}
+						image="/features/narration.webp"
+						objectPosition="50% 40%"
+						title="Real narration"
+					/>
+				</FeatureCard>
+
+				<FeatureCard className="h-80 p-0 md:h-96">
+					<PaintingCard
+						alt="Leonardo da Vinci, Vitruvian Man"
+						description="Equations, graphs, and transforms are drawn exactly, so the visuals are accurate, never rough approximations."
+						icon={<SigmaIcon className="size-4" />}
+						image="/features/precision.webp"
+						objectPosition="50% 30%"
+						title="Precise, not hand-wavy"
+					/>
+				</FeatureCard>
+
+				<FeatureCard className="h-80 p-0 md:h-96">
+					<PaintingCard
+						alt="Claude Lorrain, Seaport with the Embarkation of the Queen of Sheba"
+						description="Every explainer comes back as a polished video you can download, post, or send in a click."
+						icon={<Share2Icon className="size-4" />}
+						image="/features/share.webp"
+						objectPosition="50% 55%"
+						title="Ready to share"
+					/>
+				</FeatureCard>
 			</div>
+
+			<FullWidthDivider className="-bottom-px" />
 		</div>
 	);
 }
 
 function FeatureCard({
-	feature,
+	children,
 	className,
-	...props
-}: React.ComponentProps<"div"> & {
-	feature: FeatureType;
+}: {
+	children: React.ReactNode;
+	className?: string;
 }) {
 	return (
 		<div
@@ -55,7 +100,6 @@ function FeatureCard({
 				"dark:bg-[radial-gradient(50%_80%_at_25%_0%,theme(--color-foreground/.08),transparent)]",
 				className,
 			)}
-			{...props}
 		>
 			<div className="absolute -inset-y-4 -left-px w-px bg-border" />
 			<div className="absolute -inset-y-4 -right-px w-px bg-border" />
@@ -64,62 +108,42 @@ function FeatureCard({
 
 			<DecorIcon className="size-3.5" position="top-left" />
 
-			<div
-				className={cn(
-					"relative z-10 flex w-fit items-center justify-center rounded-lg border bg-muted/40 p-3",
-					"[&_svg]:size-5 [&_svg]:stroke-[1.5] [&_svg]:text-foreground",
-				)}
-			>
-				{feature.icon}
-			</div>
-
-			<div className="relative z-10 space-y-2">
-				<h3 className="font-medium text-base text-foreground">
-					{feature.title}
-				</h3>
-				<p className="text-muted-foreground text-sm leading-relaxed">
-					{feature.description}
-				</p>
-			</div>
+			{children}
 		</div>
 	);
 }
 
-const features: FeatureType[] = [
-	{
-		title: "Research-grounded",
-		icon: <SearchIcon />,
-		description:
-			"Every explainer starts from real sources, so the narration stays accurate instead of plausible.",
-	},
-	{
-		title: "Storyboarded scenes",
-		icon: <SquareStackIcon />,
-		description:
-			"animus plans the full arc scene by scene before a single frame is drawn, so you can edit it first.",
-	},
-	{
-		title: "Real narration",
-		icon: <AudioLinesIcon />,
-		description:
-			"Studio-grade voiceover is written and timed to the motion, not bolted on afterwards.",
-	},
-	{
-		title: "Precise, not hand-wavy",
-		icon: <SigmaIcon />,
-		description:
-			"Equations, graphs, and transforms are drawn exactly, so the visuals are accurate, never rough approximations.",
-	},
-	{
-		title: "Self-correcting",
-		icon: <RefreshCwIcon />,
-		description:
-			"It checks its own work, catches anything that looks off, and fixes it before you ever see it.",
-	},
-	{
-		title: "Ready to share",
-		icon: <Share2Icon />,
-		description:
-			"Every explainer comes back as a polished video you can download, post, or send in a click.",
-	},
-];
+function PaintingCard({
+	image,
+	alt,
+	icon,
+	title,
+	description,
+	objectPosition = "center",
+}: {
+	image: string;
+	alt: string;
+	icon: React.ReactNode;
+	title: string;
+	description: string;
+	objectPosition?: string;
+}) {
+	return (
+		<div className="relative size-full overflow-hidden">
+			<img
+				alt={alt}
+				className="absolute inset-0 size-full object-cover"
+				loading="lazy"
+				src={image}
+				style={{ objectPosition }}
+			/>
+			<div className="absolute top-4 left-4 flex size-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm">
+				{icon}
+			</div>
+			<div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-6 pt-20">
+				<h3 className="font-medium text-white text-xl">{title}</h3>
+				<p className="max-w-sm text-white/75">{description}</p>
+			</div>
+		</div>
+	);
+}
