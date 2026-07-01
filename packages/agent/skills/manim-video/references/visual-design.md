@@ -12,7 +12,7 @@
 8. **Breathing Room** — `self.wait(1.5)` minimum after showing something new.
 9. **Visual Weight Balance** — Don't cluster everything on one side.
 10. **Consistent Motion Vocabulary** — Pick a small set of animation types and reuse them.
-11. **Dark Background, Light Content** — #1C1C1C to #2D2B55 backgrounds maximize contrast.
+11. **Dark Background, Light Content** — Manim's default black background maximizes contrast with light content; leave it unset rather than overriding it.
 12. **Intentional Empty Space** — Leave at least 15% of the frame empty.
 
 ## Layout Templates
@@ -43,57 +43,54 @@ Best for: architecture diagrams, annotated figures.
 
 ## Color Palettes
 
+Pick PRIMARY/SECONDARY/ACCENT/HIGHLIGHT against Manim's default black
+background — never set `self.camera.background_color`.
+
 ### Classic 3B1B
 ```python
-BG="#1C1C1C"; PRIMARY=BLUE; SECONDARY=GREEN; ACCENT=YELLOW; HIGHLIGHT=RED
+PRIMARY=BLUE; SECONDARY=GREEN; ACCENT=YELLOW; HIGHLIGHT=RED
 ```
 
 ### Warm Academic
 ```python
-BG="#2D2B55"; PRIMARY="#FF6B6B"; SECONDARY="#FFD93D"; ACCENT="#6BCB77"
+PRIMARY="#FF6B6B"; SECONDARY="#FFD93D"; ACCENT="#6BCB77"
 ```
 
 ### Neon Tech
 ```python
-BG="#0A0A0A"; PRIMARY="#00F5FF"; SECONDARY="#FF00FF"; ACCENT="#39FF14"
+PRIMARY="#00F5FF"; SECONDARY="#FF00FF"; ACCENT="#39FF14"
 ```
 
 ## Font Selection
 
-**Use monospace fonts for all text.** Manim's Pango text renderer produces broken kerning with proportional fonts (Helvetica, Inter, SF Pro, Arial) at all sizes and resolutions. Characters overlap and spacing is inconsistent. This is a fundamental Pango limitation, not a Manim bug.
+Use the LaTeX serif, `"Latin Modern Roman"`, for all `Text()` — it's
+installed via TeX Live and renders consistently in this sandbox. Avoid
+common proportional fonts like Helvetica, Inter, SF Pro, or Arial: Manim's
+Pango text renderer can produce broken kerning with them, and none of them
+are installed here anyway.
 
-Monospace fonts have fixed character widths — zero kerning issues by design.
+### Recommended Font
 
-### Recommended Fonts
-
-| Use case | Font | Fallback |
-|----------|------|----------|
-| **All text (default)** | `"Menlo"` | `"Courier New"`, `"DejaVu Sans Mono"` |
-| Code, labels | `"JetBrains Mono"`, `"SF Mono"` | `"Menlo"` |
-| Math | Use `MathTex` (renders via LaTeX, not Pango) | — |
+| Use case | Font |
+|----------|------|
+| **All text (default)** | `"Latin Modern Roman"` |
+| Math | Use `MathTex` (renders via LaTeX, not Pango) |
 
 ```python
-MONO = "Menlo"  # define once at top of file
+FONT = "Latin Modern Roman"  # define once at top of file
 
-title = Text("Fourier Series", font_size=48, color=PRIMARY, weight=BOLD, font=MONO)
-label = Text("n=1: (4/pi) sin(x)", font_size=20, color=BLUE, font=MONO)
-note = Text("Convergence at discontinuities", font_size=18, color=DIM, font=MONO)
+title = Text("Fourier Series", font_size=48, color=PRIMARY, weight=BOLD, font=FONT)
+label = Text("n=1: (4/pi) sin(x)", font_size=20, color=BLUE, font=FONT)
+note = Text("Convergence at discontinuities", font_size=18, color=DIM, font=FONT)
 
 # Math — always use MathTex, not Text
 equation = MathTex(r"\nabla L = \frac{\partial L}{\partial w}")
 ```
 
-### When Proportional Fonts Are Acceptable
-
-Large title text (font_size >= 48) with short strings (1-3 words) can use proportional fonts without visible kerning issues. For anything else — labels, descriptions, multi-word text, small sizes — use monospace.
-
 ### Font Availability
 
-- **macOS**: Menlo (pre-installed), SF Mono
-- **Linux**: DejaVu Sans Mono (pre-installed), Liberation Mono
-- **Cross-platform**: JetBrains Mono (install from jetbrains.com)
-
-`"Menlo"` is the safest default — pre-installed on macOS, and Linux systems fall back to DejaVu Sans Mono.
+`"Latin Modern Roman"` ships with the sandbox's TeX Live install, so it's
+always available — no fallback needed.
 
 ### Fine-Grained Text Control
 
@@ -101,13 +98,13 @@ Large title text (font_size >= 48) with short strings (1-3 words) can use propor
 
 ```python
 # Letter spacing (Pango units: 1/1024 of a point)
-MarkupText('<span letter_spacing="6000">HERMES</span>', font_size=18, font="Menlo")
+MarkupText('<span letter_spacing="6000">HERMES</span>', font_size=18, font="Latin Modern Roman")
 
 # Bold specific words
-MarkupText('This is <b>important</b>', font_size=24, font="Menlo")
+MarkupText('This is <b>important</b>', font_size=24, font="Latin Modern Roman")
 
 # Color specific words
-MarkupText('Red <span foreground="#FF6B6B">warning</span>', font_size=24, font="Menlo")
+MarkupText('Red <span foreground="#FF6B6B">warning</span>', font_size=24, font="Latin Modern Roman")
 ```
 
 ### Minimum Font Size

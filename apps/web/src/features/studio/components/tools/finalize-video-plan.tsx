@@ -52,7 +52,7 @@ function SceneList({
 	return (
 		<ol
 			className={cn(
-				"overflow-hidden rounded-md border",
+				"overflow-hidden rounded-sm border",
 				variant === "resolved" ? "bg-background/60" : "bg-muted/20",
 			)}
 		>
@@ -63,7 +63,7 @@ function SceneList({
 				>
 					<span
 						className={cn(
-							"flex size-6 shrink-0 items-center justify-center rounded-md font-medium text-muted-foreground text-xs",
+							"flex size-6 shrink-0 items-center justify-center rounded-sm font-mono text-muted-foreground text-xs",
 							variant === "resolved" ? "bg-muted" : "bg-background",
 						)}
 					>
@@ -94,7 +94,7 @@ function PlanStatusBadge({ approved }: { approved: boolean }): JSX.Element {
 
 function RequestedChanges({ feedback }: { feedback: string }): JSX.Element {
 	return (
-		<div className="rounded-md border bg-background/60 p-3">
+		<div className="rounded-sm border bg-background/60 p-3">
 			<p className="flex items-center gap-1.5 font-medium text-xs">
 				<MessageSquareText className="size-3.5" />
 				Requested changes
@@ -117,7 +117,7 @@ export function FinalizeVideoPlanTool({
 
 	if (output) {
 		return (
-			<div className="tool-enter space-y-3 rounded-lg border bg-muted/40 p-3">
+			<div className="tool-enter space-y-3 rounded-sm border bg-muted/40 p-3">
 				<PlanHeader
 					input={input}
 					label={sceneCountLabel(input.scenes.length)}
@@ -132,7 +132,7 @@ export function FinalizeVideoPlanTool({
 	}
 
 	return (
-		<div className="tool-enter space-y-3 rounded-lg border bg-card p-3">
+		<div className="tool-enter space-y-3 rounded-sm border bg-card p-3">
 			<PlanHeader
 				input={input}
 				label="Proposed plan"

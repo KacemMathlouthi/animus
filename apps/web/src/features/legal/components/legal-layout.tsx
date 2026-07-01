@@ -5,6 +5,7 @@
 import type { ReactNode } from "react";
 import { Footer } from "@/features/landing/components/footer";
 import { Header } from "@/features/landing/components/header";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export function LegalLayout({
 	title,
@@ -15,6 +16,8 @@ export function LegalLayout({
 	lastUpdated: string;
 	children: ReactNode;
 }) {
+	useDocumentTitle(title);
+
 	return (
 		<div className="min-h-svh overflow-x-clip bg-background">
 			<Header />

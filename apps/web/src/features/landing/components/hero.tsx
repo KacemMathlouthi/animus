@@ -12,11 +12,33 @@ export function HeroSection() {
 
 	return (
 		<section>
-			<div className="relative flex min-h-svh flex-col items-center justify-center gap-5 px-4 py-20">
+			<div className="relative isolate flex min-h-svh flex-col items-center justify-center gap-5 px-4 py-20">
 				<div
 					aria-hidden="true"
 					className="absolute inset-0 -z-1 size-full overflow-hidden"
 				>
+					<img
+						alt=""
+						className={cn(
+							"absolute inset-x-0 bottom-0 h-auto w-full",
+							"opacity-100 transition-opacity duration-700 ease-fluid dark:opacity-0",
+							"[-webkit-mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
+							"[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
+						)}
+						fetchPriority="high"
+						src="/hero/hero-light.webp"
+					/>
+					<img
+						alt=""
+						className={cn(
+							"absolute inset-x-0 bottom-0 h-auto w-full",
+							"opacity-0 transition-opacity duration-700 ease-fluid dark:opacity-100",
+							"[-webkit-mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
+							"[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
+						)}
+						src="/hero/hero-dark.webp"
+					/>
+					<div className="absolute inset-0 bg-background/40 dark:bg-background/15" />
 					<div
 						className={cn(
 							"absolute -inset-x-20 inset-y-0 z-0 rounded-full",
@@ -29,23 +51,6 @@ export function HeroSection() {
 					<div className="absolute inset-y-0 left-8 w-px bg-linear-to-b from-transparent via-border/50 to-border/50 md:left-12" />
 					<div className="absolute inset-y-0 right-8 w-px bg-linear-to-b from-transparent via-border/50 to-border/50 md:right-12" />
 				</div>
-
-				<a
-					className={cn(
-						"group mx-auto flex w-fit items-center gap-3 rounded-sm border bg-card p-1 shadow-xs",
-						"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-500 duration-500 ease-snappy",
-					)}
-					href="#features"
-				>
-					<div className="rounded-xs border bg-card px-1.5 py-0.5 shadow-sm">
-						<p className="font-mono text-xs">NEW</p>
-					</div>
-					<span className="text-xs">now in private beta</span>
-					<span className="block h-5 border-l" />
-					<div className="pr-1">
-						<ArrowRightIcon className="size-3 -translate-x-0.5 transition-transform duration-150 ease-snappy group-hover:translate-x-0.5" />
-					</div>
-				</a>
 
 				<h1
 					className={cn(
@@ -68,7 +73,11 @@ export function HeroSection() {
 				</p>
 
 				<div className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center gap-3 fill-mode-backwards pt-2 delay-300 duration-500 ease-snappy">
-					<Button asChild variant="outline">
+					<Button
+						asChild
+						className="dark:border-border dark:bg-card dark:hover:bg-accent"
+						variant="outline"
+					>
 						<a href="#demo">
 							<PlayIcon data-icon="inline-start" /> Watch a demo
 						</a>
@@ -81,16 +90,30 @@ export function HeroSection() {
 				</div>
 			</div>
 
-			<div className="relative scroll-mt-20" id="demo">
+			<div
+				className="relative flex min-h-svh scroll-mt-20 flex-col items-center justify-center gap-10 px-4 py-20"
+				id="demo"
+			>
 				<DecorIcon className="size-4" position="top-left" />
 				<DecorIcon className="size-4" position="top-right" />
 				<DecorIcon className="size-4" position="bottom-left" />
 				<DecorIcon className="size-4" position="bottom-right" />
 
 				<FullWidthDivider className="-top-px" />
-				<div className="mx-auto max-w-5xl px-4 py-6 md:px-8 md:py-10">
+
+				<div className="space-y-3 text-center">
+					<p className="font-mono text-muted-foreground text-xs uppercase tracking-wider">
+						See it in action
+					</p>
+					<h2 className="font-medium text-3xl text-foreground tracking-tight md:text-5xl">
+						Watch animus turn a question into a video
+					</h2>
+				</div>
+
+				<div className="mx-auto w-full max-w-5xl px-4 md:px-8">
 					<StudioPreview />
 				</div>
+
 				<FullWidthDivider className="-bottom-px" />
 			</div>
 		</section>

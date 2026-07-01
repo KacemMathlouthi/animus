@@ -84,13 +84,12 @@ manim -ql --resolution 1080,1080 script.py Scene  # 1:1 square
 
 ## Render Workflow
 
-1. Draft render all scenes at `-ql`
-2. Preview stills at key moments (`-s`)
-3. Fix and re-render only broken scenes
-4. Stitch with ffmpeg
-5. Review stitched output
-6. Production render at `-qh`
-7. Re-stitch + add audio
+animus renders one continuous scene, not multiple stitched scenes:
+
+1. Test-render the scene at `-ql` while iterating
+2. Preview stills at key moments (`-s`) for text-heavy sections
+3. Fix and re-render until clean
+4. Deliver via the `renderScene` tool at high quality, exactly once
 
 ## manim.cfg — Project Configuration
 
@@ -102,14 +101,12 @@ quality = low_quality
 preview = True
 media_dir = ./media
 
-[renderer]
-background_color = #0D1117
-
 [tex]
 tex_template_file = custom_template.tex
 ```
 
-This eliminates repetitive CLI flags and `self.camera.background_color` in every scene.
+This eliminates repetitive CLI flags. Don't add a `[renderer] background_color`
+override — animus keeps Manim's default black background.
 
 ## Sections — Chapter Markers
 
@@ -146,6 +143,9 @@ pip install "manim-voiceover[azure]"   # Azure Cognitive Services
 
 ### Usage
 
+`transcription_model=None` is required — without it, the service tries to
+load Whisper and prompts for input, which crashes a non-interactive render.
+
 ```python
 from manim import *
 from manim_voiceover import VoiceoverScene
@@ -154,8 +154,9 @@ from manim_voiceover.services.elevenlabs import ElevenLabsService
 class NarratedScene(VoiceoverScene):
     def construct(self):
         self.set_speech_service(ElevenLabsService(
-            voice_name="Alice",
-            model_id="eleven_multilingual_v2"
+            voice_name="Rachel",
+            model="eleven_multilingual_v2",
+            transcription_model=None,
         ))
 
         # Voiceover auto-controls scene duration

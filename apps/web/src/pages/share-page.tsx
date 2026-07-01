@@ -13,6 +13,7 @@ import { DecorIcon } from "@/components/decor-icon";
 import { Button } from "@/components/ui/button";
 import { useCtaTarget } from "@/features/landing/hooks/use-cta-target";
 import { VideoPlayer } from "@/features/studio/components/video-player";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -112,6 +113,14 @@ export function SharePage() {
 	const { token } = useParams<{ token: string }>();
 	const ctaTarget = useCtaTarget();
 	const [state, setState] = useState<LoadState>({ status: "loading" });
+
+	useDocumentTitle(
+		state.status === "ready"
+			? state.share.title
+			: state.status === "error"
+				? "Video unavailable"
+				: "Loading video",
+	);
 
 	useEffect(() => {
 		if (!token) {

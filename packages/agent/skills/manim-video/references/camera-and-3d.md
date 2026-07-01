@@ -91,8 +91,7 @@ class ZoomExample(ZoomedScene):
         )
 
     def construct(self):
-        self.camera.background_color = BG
-        # ... create your scene content ...
+        # ... create your scene content ... (leave the background at Manim's default)
 
         # Activate the zoom
         self.activate_zooming()

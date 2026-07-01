@@ -2,14 +2,16 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
 import Grainient from "@/features/auth/components/grainient";
 
-// Source the gradient from theme tokens (the botanical --chart-* ramp, which
-// already inverts per theme in index.css) rather than hardcoded hex.
+// Source the gradient from the same tokens that carry the brand's single
+// chromatic accent (--primary, --chart-2) plus the page's own --background,
+// so the backdrop reads as an extension of the site rather than a generic
+// SaaS gradient blob.
 const TOKENS = {
-	color1: "--chart-3",
-	color2: "--chart-1",
-	color3: "--chart-5",
+	color1: "--primary",
+	color2: "--chart-2",
+	color3: "--background",
 };
-const FALLBACK = { color1: "#6f9e57", color2: "#4a3212", color3: "#c5ccb6" };
+const FALLBACK = { color1: "#4a3212", color2: "#203b14", color3: "#fbfdf6" };
 
 function readTokenColors() {
 	if (typeof window === "undefined") {
@@ -43,20 +45,20 @@ export function AuthBackdrop() {
 		<Grainient
 			{...colors}
 			blendAngle={-12}
-			blendSoftness={0.28}
+			blendSoftness={0.32}
 			centerX={0}
 			centerY={0}
-			colorBalance={0}
-			contrast={1.3}
+			colorBalance={0.1}
+			contrast={1.1}
 			gamma={1.05}
 			grainAmount={0.1}
 			grainAnimated={false}
 			grainScale={1.4}
 			noiseScale={1.7}
 			rotationAmount={340}
-			saturation={0.95}
+			saturation={0.65}
 			timeSpeed={0.12}
-			warpAmplitude={62}
+			warpAmplitude={40}
 			warpFrequency={4}
 			warpSpeed={1.2}
 			warpStrength={1.1}

@@ -121,7 +121,6 @@ MathTex(r"...", tex_environment="gather*")
 ```python
 class DerivationScene(Scene):
     def construct(self):
-        self.camera.background_color = BG
         s1 = MathTex(r"ax^2 + bx + c = 0")
         self.play(Write(s1))
         self.wait(1.5)

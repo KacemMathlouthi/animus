@@ -124,7 +124,7 @@ mob.resume_updating()
 
 **No breathing room**: `self.wait(1.5)` minimum after reveals, `self.wait(2.0)` for key moments.
 
-**Missing background color**: Set `self.camera.background_color = BG` in every scene.
+**Background looks wrong**: leave it alone — never set `self.camera.background_color`; Manim's default black is correct.
 
 ## Debugging Strategy
 

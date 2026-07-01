@@ -1,8 +1,10 @@
 # @animus/web
 
 The animus single-page app — landing, auth, and the studio (chat + conversation
-sidebar + video panel), plus settings, legal, and the public `/v/:token` share
-page. React 19 + Vite, React Router v7, Tailwind v4, shadcn/ai-elements.
+sidebar + video panel), plus settings, legal, a 404 page, and the public
+`/v/:token` share page. Routes set their own document title via the
+`useDocumentTitle` hook, and the app defaults to dark mode. React 19 + Vite,
+React Router v7, Tailwind v4, shadcn/ai-elements.
 
 This is the only workspace Vite builds; everything else runs `.ts` directly via
 Bun. Run it from the repo root with `bun run dev` (Turborepo starts the web and

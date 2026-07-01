@@ -82,13 +82,12 @@ Scene 6: Closing — implications text
 Before coding scenes, define the visual language:
 
 ```python
-# style.py — import in every scene file
-BG = "#0D1117"
+# shared color constants at the top of the scene file (background stays Manim's default)
 PRIMARY = "#58C4DD"
 SECONDARY = "#83C167"
 ACCENT = "#FFFF00"
 HIGHLIGHT = "#FF6B6B"
-MONO = "Menlo"
+FONT = "Latin Modern Roman"
 
 # Color meanings for THIS paper
 MODEL_COLOR = PRIMARY      # "the model"
@@ -133,7 +132,7 @@ for part, color, label_text in [
     (r"V", ACCENT, "Value: what do I output?"),
 ]:
     eq.set_color_by_tex(part, color)
-    label = Text(label_text, font_size=18, color=color, font=MONO)
+    label = Text(label_text, font_size=18, color=color, font=FONT)
     # position label, animate it, wait, then dim it
 ```
 
@@ -153,7 +152,7 @@ Don't show the full architecture at once. Build it:
 def make_box(label, color, width=2.0, height=0.8):
     box = RoundedRectangle(corner_radius=0.1, width=width, height=height,
                            color=color, fill_opacity=0.1, stroke_width=1.5)
-    text = Text(label, font_size=18, font=MONO, color=color).move_to(box)
+    text = Text(label, font_size=18, font=FONT, color=color).move_to(box)
     return Group(box, text)
 
 encoder = make_box("Encoder", PRIMARY)
@@ -195,8 +194,8 @@ before_chart = BarChart(before_data, bar_names=labels,
 after_chart = BarChart(after_data, bar_names=labels,
     y_range=[0, 100, 20], bar_colors=[SECONDARY]*4).scale(0.6).shift(RIGHT*3)
 
-before_label = Text("Baseline", font_size=20, color=HIGHLIGHT, font=MONO)
-after_label = Text("Ours", font_size=20, color=SECONDARY, font=MONO)
+before_label = Text("Baseline", font_size=20, color=HIGHLIGHT, font=FONT)
+after_label = Text("Ours", font_size=20, color=SECONDARY, font=FONT)
 
 # Reveal baseline first, then ours (dramatic comparison)
 self.play(Create(before_chart), FadeIn(before_label))
@@ -205,7 +204,7 @@ self.play(Create(after_chart), FadeIn(after_label))
 self.wait(0.5)
 
 # Highlight the improvement
-improvement = Text("+35% avg", font_size=24, color=ACCENT, font=MONO)
+improvement = Text("+35% avg", font_size=24, color=ACCENT, font=FONT)
 self.play(FadeIn(improvement))
 ```
 
@@ -218,7 +217,7 @@ curve = always_redraw(lambda: axes.plot(
     x_range=[0, tracker.get_value()], color=PRIMARY
 ))
 epoch_label = always_redraw(lambda: Text(
-    f"Epoch {int(tracker.get_value())}", font_size=18, font=MONO
+    f"Epoch {int(tracker.get_value())}", font_size=18, font=FONT
 ).to_corner(UR))
 
 self.add(curve, epoch_label)

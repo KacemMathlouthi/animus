@@ -20,39 +20,35 @@ type UseCase = {
 const data: UseCase[] = [
 	{
 		name: "Students",
-		description:
-			"Turn a confusing lecture or textbook chapter into a video that finally makes it click.",
+		description: "Turn a confusing lecture into a video that finally clicks.",
 		icon: GraduationCapIcon,
 	},
 	{
 		name: "Teachers",
-		description:
-			"Build animated lessons your class will actually remember, in minutes instead of weekends.",
+		description: "Build lessons your class remembers, in minutes not weekends.",
 		icon: PresentationIcon,
 		decor: <DecorIcon position="bottom-left" />,
 	},
 	{
 		name: "The endlessly curious",
 		description:
-			"Ask the questions you never got answered and watch them become explainers that stick.",
+			"Ask what you never got answered, get an explainer that sticks.",
 		icon: SparklesIcon,
 	},
 	{
 		name: "Researchers",
-		description:
-			"Explain your paper or a hard idea to any audience, clearly, without simplifying it to death.",
+		description: "Explain your paper to any audience without dumbing it down.",
 		icon: MicIcon,
 	},
 	{
 		name: "Creators",
 		description:
-			"Produce polished explainer videos for your audience without touching animation software.",
+			"Ship polished explainers without touching animation software.",
 		icon: VideoIcon,
 	},
 	{
 		name: "Teams",
-		description:
-			"Make complex ideas land in onboarding, docs, and presentations everyone has to sit through.",
+		description: "Make complex ideas land in onboarding, docs, and decks.",
 		icon: UsersIcon,
 		decor: <DecorIcon position="top-left" />,
 	},
@@ -61,11 +57,11 @@ const data: UseCase[] = [
 export function UseCases() {
 	return (
 		<section className="mx-auto w-full max-w-5xl px-4 py-20 md:px-8 md:py-28">
-			<div className="mx-auto mb-14 max-w-2xl space-y-3 text-center">
-				<h2 className="font-medium text-3xl tracking-tight md:text-5xl">
+			<div className="mx-auto mb-14 space-y-3 text-center">
+				<h2 className="mx-auto w-fit text-nowrap font-medium text-xl tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
 					Made for anyone who'd rather understand
 				</h2>
-				<p className="text-muted-foreground leading-relaxed md:text-lg">
+				<p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed md:text-lg">
 					If you can ask the question, animus can turn the answer into something
 					you'll actually remember.
 				</p>

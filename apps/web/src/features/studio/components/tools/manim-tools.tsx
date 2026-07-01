@@ -32,7 +32,7 @@ export function ManimStep({
 	detail?: string;
 }) {
 	return (
-		<div className="my-1.5 flex items-center gap-2 rounded-md border bg-card px-2.5 py-1.5">
+		<div className="my-1.5 flex items-center gap-2 rounded-sm border bg-card px-2.5 py-1.5">
 			<span className="text-muted-foreground">{icon}</span>
 			<span className="font-medium text-sm">{title}</span>
 			{detail ? (
@@ -56,7 +56,7 @@ export function RunCommandTool({
 	const failed = output ? output.exitCode !== 0 : false;
 
 	return (
-		<Collapsible className="group my-1.5 w-full overflow-hidden rounded-md border bg-card">
+		<Collapsible className="group my-1.5 w-full overflow-hidden rounded-sm border bg-card">
 			<CollapsibleTrigger className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left">
 				<TerminalIcon className="size-3.5 shrink-0 text-muted-foreground" />
 				<span className="shrink-0 font-medium text-sm">Ran command</span>
@@ -67,21 +67,21 @@ export function RunCommandTool({
 			</CollapsibleTrigger>
 			<CollapsibleContent className="space-y-2 border-t px-2.5 py-2">
 				<div className="space-y-1">
-					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+					<p className="font-mono text-muted-foreground text-xs uppercase tracking-wider">
 						Command
 					</p>
-					<pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-md bg-muted/50 p-2 font-mono text-foreground text-xs">
+					<pre className="overflow-x-auto whitespace-pre-wrap break-all rounded-sm bg-muted/50 p-2 font-mono text-foreground text-xs">
 						{input.command}
 					</pre>
 				</div>
 				{output ? (
 					<div className="space-y-1">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+						<p className="font-mono text-muted-foreground text-xs uppercase tracking-wider">
 							{failed ? `Output · exit ${output.exitCode}` : "Output"}
 						</p>
 						<pre
 							className={cn(
-								"max-h-48 overflow-auto whitespace-pre-wrap break-all rounded-md p-2 font-mono text-xs",
+								"max-h-48 overflow-auto whitespace-pre-wrap break-all rounded-sm p-2 font-mono text-xs",
 								failed
 									? "bg-destructive/10 text-destructive"
 									: "bg-muted/50 text-muted-foreground",
@@ -110,7 +110,7 @@ export function EditFileTool({
 }) {
 	if (failed) {
 		return (
-			<div className="my-1.5 rounded-md border border-destructive/40 bg-destructive/5 px-2.5 py-1.5">
+			<div className="my-1.5 rounded-sm border border-destructive/40 bg-destructive/5 px-2.5 py-1.5">
 				<div className="flex items-center gap-2">
 					<TriangleAlertIcon className="size-3.5 shrink-0 text-destructive" />
 					<span className="shrink-0 font-medium text-sm">Edit failed</span>
@@ -148,11 +148,11 @@ function RenderedVideoCard({
 	const { url } = useSignedMediaUrl(videoKey);
 	return (
 		<button
-			className="group my-3 flex w-full items-center gap-3 rounded-lg border bg-card p-2.5 text-left transition-colors hover:bg-accent"
+			className="group my-3 flex w-full items-center gap-3 rounded-sm border bg-card p-2.5 text-left transition-colors hover:bg-accent"
 			onClick={() => onOpen?.(videoKey)}
 			type="button"
 		>
-			<span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-black">
+			<span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-sm border bg-black">
 				{/* A muted, controls-free frame as the artifact's thumbnail; playback
 				    happens in the side panel. biome-ignore lint/a11y/useMediaCaption: preview frame only. */}
 				<video
@@ -197,12 +197,12 @@ export function RenderSceneTool({
 	}
 
 	return (
-		<div className="my-3 overflow-hidden rounded-lg border border-destructive/40 bg-destructive/5 p-2.5">
+		<div className="my-3 overflow-hidden rounded-sm border border-destructive/40 bg-destructive/5 p-2.5">
 			<div className="mb-2 flex items-center gap-2">
 				<TriangleAlertIcon className="size-4 text-destructive" />
 				<p className="font-medium text-sm">Render failed: {input.scene}</p>
 			</div>
-			<pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-md bg-muted/50 p-2 text-muted-foreground text-xs">
+			<pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-sm bg-muted/50 p-2 text-muted-foreground text-xs">
 				{output.logs || "No output."}
 			</pre>
 		</div>

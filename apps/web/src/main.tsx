@@ -13,7 +13,7 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
 	<StrictMode>
-		<ThemeProvider defaultTheme="light" storageKey="animus-theme">
+		<ThemeProvider defaultTheme="dark" storageKey="animus-theme">
 			<App />
 			<Toaster position="bottom-right" />
 		</ThemeProvider>

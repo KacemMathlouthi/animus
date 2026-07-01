@@ -10,6 +10,7 @@ import { StudioStage } from "@/features/studio/components/studio-view";
 import { useConversationDetail } from "@/features/studio/hooks/use-conversation-detail";
 import { useStudioChat } from "@/features/studio/hooks/use-studio-chat";
 import type { AnimusUIMessage } from "@/features/studio/types";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import {
 	type ConversationDetail,
 	createConversation,
@@ -133,9 +134,10 @@ export function StudioPage() {
 
 	// On the new-video screen there's no conversation to title; StudioChat owns
 	// the title for every loaded/loading/error state once a chatId is present.
-	const breadcrumbs: AppBreadcrumbSegment[] = [
-		{ title: chatId ? title : "New video" },
-	];
+	const pageTitle = chatId ? title : "New video";
+	useDocumentTitle(pageTitle);
+
+	const breadcrumbs: AppBreadcrumbSegment[] = [{ title: pageTitle }];
 
 	return (
 		<AppShell breadcrumbs={breadcrumbs}>
