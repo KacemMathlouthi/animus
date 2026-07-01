@@ -8,8 +8,11 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "@/components/ui/empty";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export function NotFoundPage() {
+	useDocumentTitle("Page not found");
+
 	return (
 		<div className="relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-background">
 			<Empty>

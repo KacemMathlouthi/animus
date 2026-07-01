@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthBackdrop } from "@/features/auth/components/auth-backdrop";
 import { AuthDivider } from "@/features/auth/components/auth-divider";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { signIn, useSession } from "@/lib/auth-client";
 
 const STUDIO_PATH = "/studio";
@@ -46,6 +47,8 @@ export function AuthPage() {
 	const [error, setError] = useState<string | null>(() =>
 		searchParams.get("error") ? DEFAULT_ERROR : null,
 	);
+
+	useDocumentTitle("Sign in");
 
 	// Already signed in — skip the form entirely.
 	if (!isPending && session) {
