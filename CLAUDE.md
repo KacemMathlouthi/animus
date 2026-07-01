@@ -42,7 +42,7 @@ packages/
   core/   # shared contracts: zod schemas, types, constants (pure root) + server env (/env subpath)
   auth/   # Better Auth (magic link via Resend, GitHub + Google OAuth, sessions)
   db/     # Drizzle + Postgres (schema, client, migrations)
-  agent/  # the AI SDK agent loop + tools (HITL + Exa web research) + prompts; Manim/sandbox tools land with generation work
+  agent/  # the AI SDK agent loop, prompts, and the full tool set: HITL (askUserQuestion, finalizeVideoPlan), Exa web research (webSearch/webFetch), and the Manim sandbox tools (writeFile/editFile/runCommand/readFile/listFiles/renderScene). Ships the manim-video skill (skills/manim-video) and the prebaked snapshot Dockerfile.
 ```
 
 Packages are **source-first**: no per-package build step. `apps/api` and the
@@ -61,13 +61,20 @@ Cross-package "does it compile" = `bun run typecheck`.
   Sandboxes boot from a **prebaked snapshot** with Manim + ffmpeg + LaTeX already
   installed (no per-turn bootstrap). The snapshot is built from
   `packages/agent/snapshot/Dockerfile` via `bun run snapshot:build` (registers it
-  as `animus-manim:<tag>`). The lifecycle lives in `packages/agent/src/sandbox`
-  as plain functions (`ensureSandbox`/`destroySandbox`) returning the Daytona
-  handle directly — the tools call the SDK natively (no wrapper adapter).
-- **Models: Anthropic (Claude) default**, via the AI SDK (provider-agnostic).
-  Free tier on our keys with a per-user quota → then pay or **bring your own key
-  (BYOK)**. BYO keys stored AES-256-GCM-encrypted in Postgres, never returned to
-  the client (only a masked `provider + last4` preview).
+  as `animus-manim:<tag>`; the tag currently in use is `SNAPSHOT_NAME` in
+  `packages/agent/src/sandbox/index.ts` — `animus-manim:0.6`). The lifecycle lives
+  in `packages/agent/src/sandbox` as plain functions
+  (`ensureSandbox`/`destroySandbox`) returning the Daytona handle directly — the
+  tools call the SDK natively (no wrapper adapter).
+- **Models: Claude via Amazon Bedrock.** The agent resolves its model through
+  `@ai-sdk/amazon-bedrock` — a Bedrock inference-profile id (`BEDROCK_MODEL`,
+  e.g. `us.anthropic.claude-opus-4-6-v1`), with AWS credentials/region from the
+  `AWS_*` env vars or the AWS credential chain (EC2/ECS IAM role). Still
+  provider-agnostic at the AI SDK layer. BYOK is scaffolded — the settings UI and
+  schema store AES-256-GCM-encrypted provider keys (never returned to the client,
+  only a masked `provider + last4` preview) — but the agent's model selection does
+  **not** yet consume them; every turn currently runs on Bedrock. Free-tier
+  quota/billing is future work.
 - **Runtime:** `apps/api` (Hono/Bun) hosts the loop as a **long-running
   container** (streaming + live sandbox handles need a persistent process — not
   serverless). No separate worker/queue in v1.
@@ -96,11 +103,17 @@ ElevenLabs; the agent writes a VoiceoverScene that auto-syncs to the speech, key
 injected into the sandbox, music ducked under it) → share & export ✓ (Publish
 menu downloads the mp4 via an attachment-disposition presign and mints a
 permanent unlisted public share — `video_share` token → `/v/:token` branded page
-served by the public `GET /api/share/:token`, with share-to-socials) → **next:**
-playback polish → generalize the render/repair loop
-→ later: quota/billing, autonomous mode. (Outstanding before the chat phase fully
-closes: an atomic title-generation claim. HTTP-level route tests for
-`conversations` + the `/api/chat` sync contract now exist.)
+served by the public `GET /api/share/:token`, with share-to-socials) →
+observability ✓ (Braintrust LLM tracing over OpenTelemetry, gated on
+`BRAINTRUST_API_KEY`) → prompt & craft alignment ✓ (the system prompt restructured
+into a persona/operating prompt + always-on `manim-craft` rules, kept in lockstep
+with the `manim-video` skill; snapshot bumped to 0.6) → landing/UX polish ✓
+(dark-mode default, painted feature/hero backgrounds, use-cases section, 404 page,
+per-route document titles via `useDocumentTitle`) → **next:** playback polish →
+generalize the render/repair loop → later: quota/billing (wire BYOK into model
+selection), autonomous mode. (Outstanding before the chat phase fully closes: an
+atomic title-generation claim. HTTP-level route tests for `conversations` + the
+`/api/chat` sync contract now exist.)
 
 ---
 
@@ -110,7 +123,8 @@ closes: an atomic title-generation claim. HTTP-level route tests for
 - **Monorepo:** Turborepo
 - **Web:** React 19 + Vite, React Router v7, Tailwind v4, shadcn/ai-elements
 - **API:** Hono
-- **LLM:** Vercel AI SDK (`ai`)
+- **LLM:** Vercel AI SDK (`ai`), Claude served via Amazon Bedrock
+  (`@ai-sdk/amazon-bedrock`)
 - **Streaming markdown:** Streamdown
 - **Validation:** Zod (all external input is schema-validated)
 - **DB:** Drizzle ORM + Postgres
