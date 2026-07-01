@@ -44,7 +44,7 @@ export function AskUserQuestionTool({
 		});
 
 	return (
-		<div className="tool-enter space-y-3 rounded-lg border bg-card p-3">
+		<div className="tool-enter space-y-3 rounded-sm border bg-card p-3">
 			<p className="font-medium text-sm">{input.question}</p>
 
 			<div className="flex flex-col gap-1.5">
@@ -53,8 +53,10 @@ export function AskUserQuestionTool({
 					return (
 						<button
 							className={cn(
-								"rounded-md border px-3 py-2 text-left text-sm transition-colors",
-								isSelected ? "border-primary bg-primary/10" : "hover:bg-muted",
+								"rounded-sm border px-3 py-2 text-left text-sm transition-colors",
+								isSelected
+									? "border-primary bg-primary/10 text-primary"
+									: "hover:bg-muted",
 							)}
 							disabled={isAnswered}
 							key={option.label}

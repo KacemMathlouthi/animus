@@ -15,7 +15,7 @@ export function StudioEmptyState({
 			<MorphLogo className="h-32" />
 			<div className="animate-in space-y-2 text-center fade-in slide-in-from-bottom-2 fill-mode-backwards delay-75 duration-500 ease-snappy">
 				<h1 className="font-medium text-2xl tracking-tight">
-					What do you want to explain?
+					What do you want to understand?
 				</h1>
 				<p className="text-muted-foreground text-sm">
 					Describe a topic and animus will research it and produce a narrated,

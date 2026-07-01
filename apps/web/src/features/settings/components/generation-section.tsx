@@ -91,12 +91,12 @@ export function GenerationSection() {
 					description="The look of the rendered video canvas."
 					title="Video theme"
 				>
-					<div className="flex gap-1 rounded-lg border p-0.5">
+					<div className="flex gap-1 rounded-sm border p-0.5">
 						{VIDEO_THEMES.map((option) => (
 							<button
 								aria-pressed={config.videoTheme === option}
 								className={cn(
-									"rounded-md px-3 py-1 text-sm capitalize transition-colors",
+									"rounded-xs px-3 py-1 text-sm capitalize transition-colors",
 									config.videoTheme === option
 										? "bg-muted text-foreground"
 										: "text-muted-foreground hover:text-foreground",

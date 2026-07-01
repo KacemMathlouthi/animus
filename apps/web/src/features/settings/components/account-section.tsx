@@ -163,7 +163,9 @@ export function AccountSection() {
 
 function cnTheme(selected: boolean): string {
 	return [
-		"relative flex flex-col items-center gap-2 rounded-md border p-4 text-sm transition-colors",
-		selected ? "border-primary bg-accent" : "hover:bg-accent/50",
+		"relative flex flex-col items-center gap-2 rounded-sm border p-4 text-sm transition-colors",
+		selected
+			? "border-primary bg-primary/10 text-primary"
+			: "hover:bg-accent/50",
 	].join(" ");
 }

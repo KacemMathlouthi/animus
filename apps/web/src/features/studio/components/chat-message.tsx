@@ -43,7 +43,7 @@ const STREAM_ANIMATION = {
 
 function AgentAvatar() {
 	return (
-		<div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-card">
+		<div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-sm border bg-card">
 			<LogoMark className="h-5 w-auto" />
 		</div>
 	);

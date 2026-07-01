@@ -23,7 +23,7 @@ export function SettingsLayout() {
 		<div className="flex h-svh flex-col bg-background md:flex-row">
 			<aside className="flex shrink-0 flex-col gap-4 border-b p-4 md:w-64 md:border-r md:border-b-0 md:p-5">
 				<Link
-					className="-mx-1 inline-flex w-fit items-center gap-1.5 rounded-md px-1.5 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted hover:text-foreground"
+					className="-mx-1 inline-flex w-fit items-center gap-1.5 rounded-sm px-1.5 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted hover:text-foreground"
 					to="/studio"
 				>
 					<ChevronLeftIcon className="size-4" />
@@ -39,9 +39,9 @@ export function SettingsLayout() {
 							<NavLink
 								className={({ isActive }) =>
 									cn(
-										"flex shrink-0 items-center gap-2 rounded-md px-2.5 py-1.5 font-medium text-xs transition-colors",
+										"flex shrink-0 items-center gap-2 rounded-sm px-2.5 py-1.5 font-medium text-xs transition-colors",
 										isActive
-											? "bg-muted text-foreground"
+											? "bg-primary/10 text-primary"
 											: "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
 									)
 								}

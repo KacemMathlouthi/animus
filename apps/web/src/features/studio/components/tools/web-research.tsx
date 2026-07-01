@@ -14,7 +14,7 @@ import {
 import { Shimmer } from "@/components/ai-elements/shimmer";
 
 const resultCardClassName =
-	"block w-full min-w-0 rounded-md border bg-background/70 py-1.5 pr-3 pl-2 transition-colors hover:bg-muted/60";
+	"block w-full min-w-0 rounded-sm border bg-background/70 py-1.5 pr-3 pl-2 transition-colors hover:bg-muted/60";
 
 function httpUrl(url: string): string | undefined {
 	try {
@@ -56,7 +56,7 @@ function faviconUrl(result: WebResult): string | undefined {
 function Favicon({ result }: { result: WebResult }) {
 	const src = faviconUrl(result);
 	return (
-		<span className="flex size-6 items-center justify-center rounded-md border bg-background shadow-xs">
+		<span className="flex size-6 items-center justify-center rounded-sm border bg-background shadow-xs">
 			{src ? (
 				<img
 					alt=""
@@ -136,7 +136,7 @@ export function WebSearchTool({
 	}
 
 	return (
-		<div className="my-3 max-w-full overflow-hidden rounded-lg border bg-card p-2.5">
+		<div className="my-3 max-w-full overflow-hidden rounded-sm border bg-card p-2.5">
 			<div className="mb-2 flex items-center gap-2">
 				<SearchIcon className="size-4 text-muted-foreground" />
 				<div className="min-w-0">
@@ -163,7 +163,7 @@ export function WebFetchTool({
 	}
 
 	return (
-		<div className="my-3 max-w-full overflow-hidden rounded-lg border bg-card p-2.5">
+		<div className="my-3 max-w-full overflow-hidden rounded-sm border bg-card p-2.5">
 			<div className="mb-2 flex items-center gap-2">
 				<FileTextIcon className="size-4 text-muted-foreground" />
 				<div className="min-w-0">
