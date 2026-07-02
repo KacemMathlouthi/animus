@@ -100,7 +100,7 @@ export function AuthPage() {
 					<AuthBackdrop />
 				</div>
 				<div className="absolute inset-0 bg-linear-to-b from-background/30 via-transparent to-background" />
-				<div className="absolute inset-0 bg-[linear-gradient(170deg,theme(--color-background)_0%,transparent_15%)]" />
+				<div className="absolute inset-0 bg-[linear-gradient(170deg,var(--background)_0%,transparent_15%)]" />
 				<Link className="z-10 mr-auto" to="/">
 					<Wordmark className="text-2xl" />
 				</Link>
@@ -108,8 +108,7 @@ export function AuthPage() {
 				<div className="z-10 mt-auto">
 					<blockquote className="space-y-2">
 						<p className="text-xl">
-							&ldquo;I described a topic over coffee and had a narrated,
-							animated explainer before the cup was empty.&rdquo;
+							&ldquo;I described it over coffee — it animated the rest.&rdquo;
 						</p>
 						<footer className="font-mono font-semibold text-muted-foreground text-sm">
 							~ an early animus user
