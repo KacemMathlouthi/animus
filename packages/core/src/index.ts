@@ -9,4 +9,6 @@ export * from "./generation.ts";
 export * from "./keys.ts";
 export * from "./providers.ts";
 export * from "./share.ts";
+export * from "./share-card.ts";
+export * from "./share-meta.ts";
 export * from "./tools/index.ts";
