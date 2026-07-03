@@ -37,5 +37,5 @@ npm-debug.log*
 # personal scratch tracker
 todo.md
 
-# Assets Experimentation
-assets
+# Assets Experimentation (root scratch dir only — not apps/*/assets)
+/assets
