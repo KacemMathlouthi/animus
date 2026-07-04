@@ -298,3 +298,46 @@
 		animation: tool-in 200ms ease-out both;
 	}
 }
+
+/* Landing hero send button — a dotted double-chevron (points right) whose dots
+   shimmer left-to-right and march faster on hover/focus. Ported from the
+   pixel-perfect book-demo button; static for reduced-motion users. */
+@keyframes send-dot-wave {
+	0%,
+	65%,
+	100% {
+		opacity: 0.35;
+		transform: translateX(0) scale(0.8);
+	}
+	32% {
+		opacity: 1;
+		transform: translateX(0.5px) scale(1.08);
+	}
+}
+.send-dot {
+	transform-box: fill-box;
+	transform-origin: center;
+}
+/* Static at rest; the dots only shimmer while the button is hovered/focused. */
+@media (prefers-reduced-motion: no-preference) {
+	.send-btn:hover .send-dot,
+	.send-btn:focus-visible .send-dot {
+		animation: send-dot-wave 1s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+	}
+}
+
+/* Landing hero prompt frame — a warm brand-tinted halo + a soft inner glow (via
+   the primary token, so it adapts per theme) over a matte drop shadow. Inspired
+   by the pixel-perfect orange-premium button's halo/inner-glow. */
+.hero-prompt-frame {
+	box-shadow:
+/* inside glow — a bright inner top edge + a soft interior wash */
+		inset 0 1px 2px color-mix(in srgb, var(--primary) 42%, transparent),
+		inset 0 0 26px color-mix(in srgb, var(--primary) 12%, transparent),
+		/* halo — a tight bloom plus a wide brand-tinted glow */
+		0 0 22px color-mix(in srgb, var(--primary) 24%, transparent),
+		0 0 60px color-mix(in srgb, var(--primary) 15%, transparent),
+		/* matte depth */
+		0 20px 30px rgba(0, 0, 0, 0.3),
+		0 6px 10px rgba(0, 0, 0, 0.15);
+}
