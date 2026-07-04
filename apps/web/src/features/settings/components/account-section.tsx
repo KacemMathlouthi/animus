@@ -20,7 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { UserAvatar } from "@/components/user-avatar";
 import { signOut, useSession } from "@/lib/auth-client";
 import { displayNameFrom } from "@/lib/user";
-import { SectionHeading } from "./settings-ui";
+import { SectionHeading } from "./section-heading";
 
 const THEME_OPTIONS = [
 	{ value: "light", label: "Light", icon: SunIcon },

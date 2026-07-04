@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api";
 import { PROVIDERS } from "../data/providers";
-import { SectionHeading, SettingsSaveBar } from "./settings-ui";
+import { SectionHeading } from "./section-heading";
+import { SettingsSaveBar } from "./settings-save-bar";
 
 export function SecretsSection() {
 	const [providerId, setProviderId] = useState(PROVIDERS[0].id);

@@ -21,7 +21,9 @@ import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { MUSIC_TRACKS } from "../data/music";
 import { VOICES } from "../data/voices";
-import { SectionHeading, SettingRow, SettingsSaveBar } from "./settings-ui";
+import { SectionHeading } from "./section-heading";
+import { SettingRow } from "./setting-row";
+import { SettingsSaveBar } from "./settings-save-bar";
 
 // Reuse the voice picker for music by describing tracks in the same shape.
 const MUSIC_OPTIONS: ElevenLabs.Voice[] = MUSIC_TRACKS.map((track) => ({
