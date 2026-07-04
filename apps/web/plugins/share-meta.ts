@@ -14,7 +14,11 @@ import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { join } from "node:path";
 import { buildShareMetaTags, injectShareMeta } from "@animus/core";
-import type { Plugin, ViteDevServer } from "vite";
+import type { Logger, Plugin, ViteDevServer } from "vite";
+
+function describe(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
 
 const SHARE_DESCRIPTION =
 	"A narrated explainer, researched and animated by animus. Make your own in minutes.";
@@ -37,6 +41,7 @@ function requestOrigin(req: IncomingMessage): string {
 async function fetchShareTitle(
 	apiTarget: string,
 	token: string,
+	logger: Logger,
 ): Promise<string | null> {
 	try {
 		const res = await fetch(
@@ -47,7 +52,12 @@ async function fetchShareTitle(
 		}
 		const data = (await res.json()) as { title?: string };
 		return typeof data.title === "string" ? data.title : null;
-	} catch {
+	} catch (error) {
+		// A network/parse failure (e.g. the API is down) — surface it so a broken
+		// preview isn't a silent mystery, then fall back to the default meta.
+		logger.warn(
+			`[animus-share-meta] share lookup failed for "${token}": ${describe(error)}`,
+		);
 		return null;
 	}
 }
@@ -73,7 +83,7 @@ async function serveInjected(
 
 	const token = match[1] ?? "";
 	try {
-		const title = await fetchShareTitle(apiTarget, token);
+		const title = await fetchShareTitle(apiTarget, token, server.config.logger);
 		let html = readFileSync(indexPath, "utf8");
 		if (title) {
 			const origin = requestOrigin(req);
@@ -93,7 +103,10 @@ async function serveInjected(
 		html = await server.transformIndexHtml(url, html);
 		res.setHeader("Content-Type", "text/html");
 		res.end(html);
-	} catch {
+	} catch (error) {
+		server.config.logger.warn(
+			`[animus-share-meta] meta injection failed for ${url}: ${describe(error)}`,
+		);
 		next();
 	}
 }

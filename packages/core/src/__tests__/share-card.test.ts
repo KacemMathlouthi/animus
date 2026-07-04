@@ -91,4 +91,23 @@ describe("buildShareCardSvg", () => {
     expect(tspans.length).toBeLessThanOrEqual(3);
     expect(svg).toContain("…");
   });
+
+  it("clamps a single word too long even at the smallest size", () => {
+    // A single overlong word is accepted unconditionally by the wrapper; it must
+    // still be ellipsized so it can't spill past the column into the painting.
+    const svg = buildShareCardSvg({
+      ...base,
+      title: "Immunoelectrophoresisantibodyantigenprecipitationreactionassay",
+    });
+    const tspans = svg.match(TSPAN_TAG) ?? [];
+    expect(tspans.length).toBe(1);
+    expect(svg).toContain("…");
+  });
+
+  it("keeps a moderately long single word whole by shrinking to fit", () => {
+    // "Electromagnetism" fits at a smaller font, so it renders whole (no "…").
+    const svg = buildShareCardSvg({ ...base, title: "Electromagnetism" });
+    expect(svg).toContain("Electromagnetism");
+    expect(svg).not.toContain("…");
+  });
 });

@@ -93,14 +93,20 @@ function wrapTitle(
     lines.push(current);
   }
 
+  // Ellipsize the last line when content was dropped (more words remain) OR when
+  // the final line is itself wider than the column — the latter catches a single
+  // overlong word, which is accepted unconditionally above and would otherwise
+  // overflow. `fitTitle` sees the "…" and keeps shrinking, so only a word too
+  // long even at the smallest size ends up clamped.
   const consumed = lines.join(" ").split(WHITESPACE_RUN).filter(Boolean).length;
   const lastIdx = lines.length - 1;
-  if (consumed < words.length && lastIdx >= 0) {
-    let last = lines[lastIdx] ?? "";
-    while (last.length > 1 && last.length + 1 > maxChars) {
-      last = last.slice(0, -1);
+  const last = lastIdx >= 0 ? (lines[lastIdx] ?? "") : "";
+  if (lastIdx >= 0 && (consumed < words.length || last.length > maxChars)) {
+    let clamped = last;
+    while (clamped.length > 1 && clamped.length + 1 > maxChars) {
+      clamped = clamped.slice(0, -1);
     }
-    lines[lastIdx] = `${last.replace(TRAILING_WHITESPACE, "")}…`;
+    lines[lastIdx] = `${clamped.replace(TRAILING_WHITESPACE, "")}…`;
   }
   return lines;
 }

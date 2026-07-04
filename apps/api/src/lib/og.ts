@@ -13,6 +13,7 @@ import {
   buildShareCardSvg,
   OG_HEIGHT,
   OG_WIDTH,
+  SHARE_IMAGES,
   shareImageName,
 } from "@animus/core";
 import { Resvg } from "@resvg/resvg-js";
@@ -23,23 +24,25 @@ const FONT_FILES = ["Geist-SemiBold.ttf", "Geist-Regular.ttf"].map((name) =>
   fileURLToPath(new URL(`../../assets/fonts/${name}`, import.meta.url))
 );
 
-/** Cache the painting data-URIs (small, fixed set) so we read each jpg once. */
-const imageCache = new Map<string, string>();
-
-function paintingDataUri(seed: string): string {
-  const name = shareImageName(seed);
-  const cached = imageCache.get(name);
-  if (cached) {
-    return cached;
-  }
+function loadPaintingDataUri(name: string): string {
   const bytes = readFileSync(
     fileURLToPath(
       new URL(`../../assets/share-images/${name}.jpg`, import.meta.url)
     )
   );
-  const uri = `data:image/jpeg;base64,${bytes.toString("base64")}`;
-  imageCache.set(name, uri);
-  return uri;
+  return `data:image/jpeg;base64,${bytes.toString("base64")}`;
+}
+
+/** Preload the curated painting data-URIs once at module init (the set is small
+ * and fixed), so rendering an OG image never touches the disk on the request
+ * path — the rasterize itself is the only synchronous work per request. */
+const PAINTING_DATA_URIS: Map<string, string> = new Map(
+  SHARE_IMAGES.map((name) => [name, loadPaintingDataUri(name)])
+);
+
+function paintingDataUri(seed: string): string {
+  const name = shareImageName(seed);
+  return PAINTING_DATA_URIS.get(name) ?? loadPaintingDataUri(name);
 }
 
 /** Render the share card for a title + seed to PNG bytes at Open Graph size. */
