@@ -11,6 +11,8 @@ import {
 import { ChatPanel } from "@/features/studio/components/chat-panel";
 import { VisualizationPanel } from "@/features/studio/components/visualization-panel";
 import type { AnimusUIMessage, RespondToTool } from "@/features/studio/types";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export function StudioWorkspace({
 	messages,
@@ -31,8 +33,12 @@ export function StudioWorkspace({
 	onSubmit: (text: string) => void;
 	onStop: () => void;
 }) {
+	const isMobile = useIsMobile();
 	const videoPanelRef = useRef<PanelImperativeHandle>(null);
 	const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
+	// On phones the two panels can't sit side by side; a single view swaps between
+	// them instead of resizing.
+	const [mobileView, setMobileView] = useState<"chat" | "video">("chat");
 	// A video pinned by clicking its chat card; falls back to the latest render.
 	// Clear the pin when a newer render lands (previous-value pattern, not an
 	// effect) so the panel follows the latest again.
@@ -64,9 +70,63 @@ export function StudioWorkspace({
 	const openVideo = useCallback((key: string) => {
 		setPinnedVideoKey(key);
 		setPlayToken((token) => token + 1);
+		setMobileView("video");
 		videoPanelRef.current?.expand();
 		setIsVideoCollapsed(false);
 	}, []);
+
+	const chatPanel = (
+		<ChatPanel
+			messages={messages}
+			onOpenVideo={openVideo}
+			onStop={onStop}
+			onSubmit={onSubmit}
+			respondToTool={respondToTool}
+			status={status}
+		/>
+	);
+
+	const visualizationPanel = (
+		<VisualizationPanel
+			playToken={playToken}
+			seed={seed}
+			title={title}
+			videoKey={pinnedVideoKey ?? videoKey}
+		/>
+	);
+
+	if (isMobile) {
+		return (
+			<div className="flex h-full min-h-0 flex-col">
+				<div className="flex shrink-0 items-center gap-1 border-b p-1.5">
+					<Button
+						className="flex-1"
+						onClick={() => setMobileView("chat")}
+						size="sm"
+						variant={mobileView === "chat" ? "secondary" : "ghost"}
+					>
+						Chat
+					</Button>
+					<Button
+						className="flex-1"
+						onClick={() => setMobileView("video")}
+						size="sm"
+						variant={mobileView === "video" ? "secondary" : "ghost"}
+					>
+						Video
+					</Button>
+				</div>
+				<div className="relative min-h-0 flex-1">
+					<div className={cn("h-full", mobileView === "chat" ? "" : "hidden")}>
+						{chatPanel}
+					</div>
+					<div className={cn("h-full", mobileView === "video" ? "" : "hidden")}>
+						{visualizationPanel}
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<ResizablePanelGroup
@@ -86,14 +146,7 @@ export function StudioWorkspace({
 				</Button>
 			) : null}
 			<ResizablePanel defaultSize={50} minSize={35}>
-				<ChatPanel
-					messages={messages}
-					onOpenVideo={openVideo}
-					onStop={onStop}
-					onSubmit={onSubmit}
-					respondToTool={respondToTool}
-					status={status}
-				/>
+				{chatPanel}
 			</ResizablePanel>
 			<ResizableHandle withHandle />
 			<ResizablePanel
@@ -117,12 +170,7 @@ export function StudioWorkspace({
 						<PanelRightClose data-icon="inline-start" />
 						Hide video
 					</Button>
-					<VisualizationPanel
-						playToken={playToken}
-						seed={seed}
-						title={title}
-						videoKey={pinnedVideoKey ?? videoKey}
-					/>
+					{visualizationPanel}
 				</div>
 			</ResizablePanel>
 		</ResizablePanelGroup>
