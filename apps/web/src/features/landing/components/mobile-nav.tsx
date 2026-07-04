@@ -2,7 +2,7 @@ import { MenuIcon, XIcon } from "lucide-react";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { AuthActions } from "@/features/landing/components/auth-actions";
-import { navLinks } from "@/features/landing/components/header";
+import { navLinks } from "@/features/landing/components/nav-links";
 import { Portal, PortalBackdrop } from "@/features/landing/components/portal";
 import { cn } from "@/lib/utils";
 
@@ -20,13 +20,13 @@ export function MobileNav() {
 		}
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key === "Escape") {
-				close();
+				setOpen(false);
 			}
 		};
 		document.addEventListener("keydown", onKeyDown);
 		panelRef.current?.focus();
 		return () => document.removeEventListener("keydown", onKeyDown);
-	}, [open, close]);
+	}, [open]);
 
 	return (
 		<div className="md:hidden">
