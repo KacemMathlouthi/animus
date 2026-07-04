@@ -142,6 +142,7 @@ export function GenerationSection() {
 					title="Background music"
 				>
 					<Switch
+						aria-label="Background music"
 						checked={config.backgroundMusic}
 						onCheckedChange={(checked) => update({ backgroundMusic: checked })}
 					/>
@@ -174,7 +175,7 @@ export function GenerationSection() {
 						}
 						value={config.font}
 					>
-						<SelectTrigger className="w-44">
+						<SelectTrigger aria-label="Font" className="w-44">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>

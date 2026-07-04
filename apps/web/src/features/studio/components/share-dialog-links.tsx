@@ -116,6 +116,7 @@ export function ShareDialogLinks({
 				<div className="relative flex-1">
 					<LinkIcon className="-translate-y-1/2 absolute top-1/2 left-3 size-4 text-muted-foreground" />
 					<Input
+						aria-label="Share link"
 						className="pl-9"
 						readOnly
 						value={link.status === "ready" ? link.url : "Creating link…"}

@@ -124,7 +124,7 @@ export function AuthPage() {
 					</Link>
 				</Button>
 
-				<div className="mx-auto space-y-4 sm:w-md">
+				<div className="mx-auto w-full space-y-4 sm:max-w-md">
 					<Link className="lg:hidden" to="/">
 						<Wordmark />
 					</Link>

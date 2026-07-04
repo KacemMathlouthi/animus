@@ -69,7 +69,7 @@ export function VideoControlBar({
 				<SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-white/25">
 					<SliderPrimitive.Range className="absolute h-full bg-primary" />
 				</SliderPrimitive.Track>
-				<SliderPrimitive.Thumb className="block size-3 rounded-full bg-white opacity-0 transition-opacity focus-visible:opacity-100 focus-visible:outline-none group-hover/seek:opacity-100" />
+				<SliderPrimitive.Thumb className="block size-3 rounded-full bg-white opacity-0 transition-opacity focus-visible:opacity-100 focus-visible:outline-none pointer-coarse:opacity-100 group-hover/seek:opacity-100" />
 			</SliderPrimitive.Root>
 
 			<div className="flex items-center gap-1 text-white">
