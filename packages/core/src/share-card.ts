@@ -27,8 +27,7 @@ export const SHARE_IMAGES = [
 const WHITESPACE_RUN = /\s+/;
 const TRAILING_WHITESPACE = /\s+$/;
 
-/** FNV-1a, a small deterministic string hash. Returns a non-negative integer.
- * Bitwise ops are intrinsic to the algorithm. */
+/** FNV-1a, a small deterministic string hash. Returns a non-negative integer. */
 export function hashSeed(seed: string): number {
   let hash = 0x81_1c_9d_c5;
   for (let i = 0; i < seed.length; i++) {

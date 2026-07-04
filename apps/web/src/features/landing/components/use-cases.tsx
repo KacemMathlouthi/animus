@@ -58,7 +58,7 @@ export function UseCases() {
 	return (
 		<section className="mx-auto w-full max-w-5xl px-4 py-20 md:px-8 md:py-28">
 			<div className="mx-auto mb-14 space-y-3 text-center">
-				<h2 className="mx-auto w-fit text-nowrap font-medium text-xl tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+				<h2 className="mx-auto max-w-xl text-balance font-medium text-xl tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
 					Made for anyone who'd rather understand
 				</h2>
 				<p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed md:text-lg">

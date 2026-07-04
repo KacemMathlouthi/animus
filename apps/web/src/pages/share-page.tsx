@@ -214,7 +214,7 @@ export function SharePage() {
 
 							<h1
 								className={cn(
-									"text-balance font-semibold text-5xl text-foreground tracking-tight md:text-6xl lg:text-7xl",
+									"text-balance break-words font-semibold text-4xl text-foreground tracking-tight sm:text-5xl md:text-6xl lg:text-7xl",
 									"fade-in slide-in-from-bottom-6 animate-in fill-mode-backwards delay-100 duration-500 ease-snappy",
 								)}
 							>

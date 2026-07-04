@@ -7,16 +7,16 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
-/** The "Got any questions?" cascade: bold repeats stepping diagonally, the way
- * a16z's FAQ does it. Indents wave out and back so it reads as motion, not a list. */
+/** The "Got any questions?" cascade: bold repeats stepping diagonally (a16z-style),
+ * indents waving out and back so it reads as motion, not a list. */
 const CASCADE = [
-	{ id: "c1", indent: "pl-0" },
-	{ id: "c2", indent: "pl-3 md:pl-6" },
-	{ id: "c3", indent: "pl-6 md:pl-12" },
-	{ id: "c4", indent: "pl-9 md:pl-20" },
-	{ id: "c5", indent: "pl-6 md:pl-12" },
-	{ id: "c6", indent: "pl-3 md:pl-6" },
-	{ id: "c7", indent: "pl-0" },
+	{ id: "c1", indent: "" },
+	{ id: "c2", indent: "md:pl-6" },
+	{ id: "c3", indent: "md:pl-12" },
+	{ id: "c4", indent: "md:pl-20" },
+	{ id: "c5", indent: "md:pl-12" },
+	{ id: "c6", indent: "md:pl-6" },
+	{ id: "c7", indent: "" },
 ];
 
 export function FaqsSection() {
@@ -25,7 +25,7 @@ export function FaqsSection() {
 			className="mx-auto grid w-full max-w-5xl grid-cols-1 px-4 py-20 md:grid-cols-2 md:px-8 md:py-28"
 			id="faq"
 		>
-			<div className="flex flex-col justify-center gap-0.5 pb-8 md:pr-8 md:pb-0">
+			<div className="flex flex-col justify-center gap-0.5 pb-8 text-center md:pr-8 md:pb-0 md:text-left">
 				{CASCADE.map((line, i) => (
 					<p
 						className={cn(

@@ -4,6 +4,8 @@ import { XIcon } from "@/components/icons/x-icon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export function Footer() {
 	return (
 		<footer
@@ -68,12 +70,11 @@ export function Footer() {
 
 			<div className="flex items-center justify-center gap-2 py-4">
 				<p className="text-center font-light text-muted-foreground text-sm">
-					&copy; {new Date().getFullYear()} animus · All rights reserved
+					&copy; {CURRENT_YEAR} animus · All rights reserved
 				</p>
 			</div>
 
-			{/* Oversized wordmark sign-off: clear, solid crowns up top resolving and
-			    sinking into the page toward the base. Framed by edge-fading rules. */}
+			{/* Oversized wordmark sign-off, sinking into the page, framed by edge-fading rules. */}
 			<div className="relative overflow-hidden">
 				<Separator />
 				<p
@@ -87,8 +88,7 @@ export function Footer() {
 	);
 }
 
-/** A horizontal rule that dissolves toward both edges, reading as a seam
-    rather than a box edge. */
+/** A horizontal rule that dissolves toward both edges, reading as a seam. */
 function Separator() {
 	return (
 		<div className="h-px w-full bg-linear-to-r from-transparent via-border to-transparent" />

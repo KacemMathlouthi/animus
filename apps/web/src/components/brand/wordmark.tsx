@@ -13,7 +13,7 @@ export function Wordmark({
 			)}
 			{...props}
 		>
-			<LogoMark className="h-[1.5em] w-auto shrink-0" />
+			<LogoMark aria-hidden className="h-[1.5em] w-auto shrink-0" />
 			animus
 		</span>
 	);

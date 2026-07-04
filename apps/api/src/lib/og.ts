@@ -1,11 +1,8 @@
 /** Renders the animus share card to a PNG for Open Graph link previews. The card
- * (layout, brand, split) is built by the pure `buildShareCardSvg` in
- * `@animus/core`; here we resolve the seed's curated painting to a base64 jpg
- * data-URI (resvg can't fetch or decode webp, so we embed a pre-converted jpg)
- * and rasterize the SVG with the bundled Geist fonts.
- *
- * The PNG is generated on demand per request and never stored — it is a pure
- * function of the video's title and a seed. */
+ * SVG comes from the pure `buildShareCardSvg` in `@animus/core`; here we resolve
+ * the seed's painting to a base64 jpg data-URI (resvg can't fetch or decode webp,
+ * hence the pre-converted jpg) and rasterize with the bundled Geist fonts.
+ * Generated per request, never stored — a pure function of title + seed. */
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -33,9 +30,8 @@ function loadPaintingDataUri(name: string): string {
   return `data:image/jpeg;base64,${bytes.toString("base64")}`;
 }
 
-/** Preload the curated painting data-URIs once at module init (the set is small
- * and fixed), so rendering an OG image never touches the disk on the request
- * path — the rasterize itself is the only synchronous work per request. */
+/** Preload the painting data-URIs once at module init (small, fixed set) so
+ * rendering an OG image never touches disk on the request path. */
 const PAINTING_DATA_URIS: Map<string, string> = new Map(
   SHARE_IMAGES.map((name) => [name, loadPaintingDataUri(name)])
 );

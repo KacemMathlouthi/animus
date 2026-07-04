@@ -1,10 +1,8 @@
 import { DecorIcon } from "@/components/decor-icon";
 import { FullWidthDivider } from "@/features/landing/components/full-width-divider";
 
-/** The "See animus in action" section — hosts the product's launch video. Drop
- * the file at `public/launch.mp4` (the poster currently borrows the dark hero
- * image until a dedicated one is added). The hero's "Watch the video" button
- * scrolls here via `#video`. */
+/** The "See animus in action" section. Expects the launch video at
+ * `public/launch.mp4`; the hero's "Watch the video" button scrolls here via `#video`. */
 export function LaunchVideo() {
 	return (
 		<section
@@ -41,8 +39,8 @@ export function LaunchVideo() {
 					<DecorIcon className="size-4" position="top-right" />
 					<DecorIcon className="size-4" position="bottom-left" />
 					<DecorIcon className="size-4" position="bottom-right" />
-					{/* biome-ignore lint/a11y/useMediaCaption: launch video; captions to follow */}
 					<video
+						aria-label="animus launch video"
 						className="h-full w-full object-cover"
 						controls
 						playsInline
@@ -50,6 +48,7 @@ export function LaunchVideo() {
 						preload="metadata"
 					>
 						<source src="/launch.mp4" type="video/mp4" />
+						<track kind="captions" />
 					</video>
 				</div>
 			</div>

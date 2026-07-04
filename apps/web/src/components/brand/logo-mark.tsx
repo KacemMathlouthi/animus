@@ -2,8 +2,7 @@ import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 type LogoMarkProps = React.ComponentProps<"svg"> & {
-	/** Idle expression. "loading" ponders (floats, scans, blinks) for use as a
-	 * working/loading indicator. */
+	/** "loading" floats/scans/blinks as a working indicator. */
 	animate?: "none" | "loading";
 };
 

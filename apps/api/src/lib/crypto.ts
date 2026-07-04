@@ -1,7 +1,6 @@
-/** Symmetric encryption for secrets at rest (BYO provider keys).
- * AES-256-GCM with a server-held key from `ENCRYPTION_KEY`.
- * The output bundles the random IV and auth tag with the
- * ciphertext so a single column round-trips. */
+/** AES-256-GCM encryption for secrets at rest (BYO provider keys), keyed by
+ * `ENCRYPTION_KEY`. Output bundles the IV and auth tag with the ciphertext so a
+ * single column round-trips. */
 
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { getServerEnv } from "@animus/core/env";
@@ -24,8 +23,7 @@ function getKey(): Buffer {
   return key;
 }
 
-/** Encrypts `plaintext` into a self-contained
- * `iv.tag.ciphertext` string (each part base64). */
+/** Encrypts `plaintext` into a self-contained `iv.tag.ciphertext` string (each part base64). */
 export function encryptSecret(plaintext: string): string {
   const iv = randomBytes(IV_BYTES);
   const cipher = createCipheriv(ALGORITHM, getKey(), iv);
@@ -41,9 +39,8 @@ export function encryptSecret(plaintext: string): string {
   ].join(".");
 }
 
-/** Reverses {@link encryptSecret}: splits the payload, then decrypts with the
- * same key + IV and verifies the auth tag. Throws if the payload is malformed
- * or the tag fails (tampering / wrong key). */
+/** Reverses {@link encryptSecret}. Throws if the payload is malformed or the
+ * auth tag fails (tampering / wrong key). */
 export function decryptSecret(payload: string): string {
   const [ivPart, tagPart, ctPart] = payload.split(".");
   if (!(ivPart && tagPart && ctPart)) {

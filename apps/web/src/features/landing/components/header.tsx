@@ -3,26 +3,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { AuthActions } from "@/features/landing/components/auth-actions";
 import { MobileNav } from "@/features/landing/components/mobile-nav";
+import { navLinks } from "@/features/landing/components/nav-links";
 import { useScroll } from "@/hooks/use-scroll";
 import { cn } from "@/lib/utils";
-
-// Absolute hrefs so the links resolve to the landing sections from any route
-// (e.g. the legal pages), not the current path. On the landing page itself
-// these stay same-page hash scrolls.
-export const navLinks = [
-	{
-		label: "Features",
-		href: "/#features",
-	},
-	{
-		label: "How it works",
-		href: "/#how",
-	},
-	{
-		label: "FAQ",
-		href: "/#faq",
-	},
-];
 
 export function Header() {
 	const scrolled = useScroll(10);

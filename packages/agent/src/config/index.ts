@@ -1,8 +1,7 @@
-/** Resolves the language model the agent runs on: Anthropic Claude served via
- * Amazon Bedrock. Credentials and region come from the AWS_* env vars or the
- * AWS credential chain (e.g. an EC2/ECS IAM role), so nothing is passed
- * explicitly. The model id is a Bedrock region inference profile, set via env
- * unless a caller passes a specific lightweight helper model. */
+/** Resolves the agent's model: Claude via Amazon Bedrock. Credentials/region
+ * come from AWS_* env vars or the AWS credential chain (nothing passed
+ * explicitly). The id is a Bedrock inference profile from env, unless a caller
+ * passes a specific lightweight helper model. */
 
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
 import { getServerEnv } from "@animus/core/env";

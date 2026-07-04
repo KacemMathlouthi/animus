@@ -1,6 +1,5 @@
-/** Liveness + readiness. Returns 200 when the API and its database are both
- * reachable, 503 if the database round-trip fails. Useful for local sanity
- * checks and, later, container/orchestrator health probes. */
+/** Liveness + readiness. 200 when the API and its database are both reachable,
+ * 503 if the database round-trip fails. */
 
 import { sql } from "@animus/db";
 import { Hono } from "hono";

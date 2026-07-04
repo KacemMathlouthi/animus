@@ -2,15 +2,11 @@ import { useEffect } from "react";
 
 const APP_NAME = "animus";
 
-/** The fallback used on the landing page and whenever a route has no
- * page-specific title yet. */
+/** Fallback for the landing page and any route without a page-specific title. */
 const DEFAULT_DOCUMENT_TITLE = "animus";
 
-/**
- * Sets `document.title` for the current route. Pass a page-specific title to
- * render `"<title> · animus"`; pass nothing (or an empty/whitespace string) to
- * fall back to the marketing default.
- */
+/** Sets `document.title` for the current route: a page-specific title renders
+ * `"<title> · animus"`; empty/whitespace falls back to the marketing default. */
 export function useDocumentTitle(title?: string | null): void {
 	useEffect(() => {
 		const trimmed = title?.trim();

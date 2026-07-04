@@ -17,8 +17,7 @@ import {
 import { ShareDialog } from "@/features/studio/components/share-dialog";
 import { downloadVideo } from "@/lib/share";
 
-/** Header action to publish the current video. Disabled until a render is ready
- * (no publish target), so it's inert on the new-video screen and other pages. */
+/** Header action to publish the current video; disabled until a render is ready (no target). */
 export function PublishMenu() {
 	const target = usePublishTarget();
 	const [shareOpen, setShareOpen] = useState(false);

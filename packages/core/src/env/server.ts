@@ -1,6 +1,6 @@
 /** Server-only environment: the single validated source of truth for every
  * secret and runtime setting the backend reads. Consumed by `apps/api`,
- * `packages/auth`, and (later) the agent.
+ * `packages/auth`, and the agent.
  *
  * NEVER import this from the web — it reads `process.env` and carries secrets.
  * The boundary is enforced by the package's `exports` map (this is the `/env`

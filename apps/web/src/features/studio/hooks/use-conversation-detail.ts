@@ -33,8 +33,6 @@ export function useConversationDetail(chatId: string): ConversationDetailState {
 				});
 		};
 
-		setDetail(null);
-		setError(false);
 		load();
 		window.addEventListener("animus:conversations-changed", load);
 		return () => {

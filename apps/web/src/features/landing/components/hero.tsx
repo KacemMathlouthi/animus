@@ -13,7 +13,7 @@ export function HeroSection() {
 				<img
 					alt=""
 					className={cn(
-						"absolute inset-x-0 bottom-0 h-auto w-full",
+						"absolute bottom-0 left-1/2 h-auto w-[180%] max-w-none -translate-x-1/2 md:left-0 md:w-full md:max-w-full md:translate-x-0",
 						"opacity-100 transition-opacity duration-700 ease-fluid dark:opacity-0",
 						"[-webkit-mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
 						"[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
@@ -24,7 +24,7 @@ export function HeroSection() {
 				<img
 					alt=""
 					className={cn(
-						"absolute inset-x-0 bottom-0 h-auto w-full",
+						"absolute bottom-0 left-1/2 h-auto w-[180%] max-w-none -translate-x-1/2 md:left-0 md:w-full md:max-w-full md:translate-x-0",
 						"opacity-0 transition-opacity duration-700 ease-fluid dark:opacity-100",
 						"[-webkit-mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
 						"[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",

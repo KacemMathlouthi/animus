@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api";
 import { PROVIDERS } from "../data/providers";
-import { SectionHeading, SettingsSaveBar } from "./settings-ui";
+import { SectionHeading } from "./section-heading";
+import { SettingsSaveBar } from "./settings-save-bar";
 
 export function SecretsSection() {
 	const [providerId, setProviderId] = useState(PROVIDERS[0].id);
@@ -113,6 +114,7 @@ export function SecretsSection() {
 						<ModelSelectorTrigger asChild>
 							<Button
 								aria-expanded={pickerOpen}
+								aria-label="Provider"
 								className="w-full justify-between"
 								role="combobox"
 								variant="outline"
@@ -168,7 +170,7 @@ export function SecretsSection() {
 						/>
 						<button
 							aria-label={reveal ? "Hide key" : "Show key"}
-							className="-translate-y-1/2 absolute top-1/2 right-2 text-muted-foreground hover:text-foreground"
+							className="-translate-y-1/2 absolute top-1/2 right-1 p-1.5 text-muted-foreground hover:text-foreground"
 							onClick={() => setReveal((value) => !value)}
 							type="button"
 						>

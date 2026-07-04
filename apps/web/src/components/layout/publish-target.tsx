@@ -1,9 +1,7 @@
-/** Shares "what, if anything, can be published right now" between the studio
- * (which knows the current video) and the app header's Publish menu (which lives
- * above the routed page). The studio sets a target when a render is ready and
- * clears it otherwise; the menu is disabled whenever the target is null. */
+/** Shares the current publish target between the studio and the header's Publish
+ * menu, which lives above the routed page. Null when nothing is publishable. */
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, use, useEffect, useMemo, useState } from "react";
 
 export type PublishTarget = { videoKey: string; title: string };
 
@@ -32,13 +30,12 @@ export function PublishTargetProvider({
 
 /** The current publish target (null when nothing is publishable). */
 export function usePublishTarget(): PublishTarget | null {
-	return useContext(PublishTargetContext)?.target ?? null;
+	return use(PublishTargetContext)?.target ?? null;
 }
 
-/** Register the publish target for as long as the calling component is mounted
- * with a defined target; clears it on unmount or when the target goes away. */
+/** Registers the publish target while mounted; clears it on unmount or when null. */
 export function useRegisterPublishTarget(target: PublishTarget | null): void {
-	const ctx = useContext(PublishTargetContext);
+	const ctx = use(PublishTargetContext);
 	const setTarget = ctx?.setTarget;
 	const videoKey = target?.videoKey;
 	const title = target?.title;

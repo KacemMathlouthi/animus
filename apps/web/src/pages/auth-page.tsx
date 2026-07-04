@@ -36,8 +36,7 @@ export function AuthPage() {
 	const location = useLocation();
 	const [searchParams] = useSearchParams();
 
-	// Where to land after signing in: the page the guard bounced us from, else
-	// the studio.
+	// Where to land after signing in: the page the guard bounced us from, else the studio.
 	const destination = safeRedirect(
 		(location.state as { from?: string } | null)?.from,
 	);
@@ -125,7 +124,7 @@ export function AuthPage() {
 					</Link>
 				</Button>
 
-				<div className="mx-auto space-y-4 sm:w-md">
+				<div className="mx-auto w-full space-y-4 sm:max-w-md">
 					<Link className="lg:hidden" to="/">
 						<Wordmark />
 					</Link>

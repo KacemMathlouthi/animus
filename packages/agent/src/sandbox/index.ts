@@ -1,11 +1,8 @@
 /** Daytona sandbox lifecycle for a conversation: create-or-resume from the
- * prebaked Manim snapshot and destroy on delete. This module owns the provider
- * SDK and nothing else — the agent's tools act on the returned Daytona sandbox
- * handle directly.
- *
- * The toolchain (Manim + ffmpeg + LaTeX) is baked into a snapshot ahead of time
- * (see ../../snapshot/Dockerfile and ../../scripts/build-snapshot.ts), so
- * sandboxes boot ready with no per-sandbox bootstrap. */
+ * prebaked Manim snapshot, destroy on delete. Owns the provider SDK; the agent's
+ * tools act on the returned handle directly. The toolchain (Manim + ffmpeg +
+ * LaTeX) is baked into the snapshot (see ../../snapshot/Dockerfile), so sandboxes
+ * boot ready with no per-sandbox bootstrap. */
 
 import { getServerEnv } from "@animus/core/env";
 import { Daytona, type Sandbox } from "@daytonaio/sdk";
@@ -64,10 +61,9 @@ export async function ensureSandbox(input: {
     }
   }
 
-  // Inject the ElevenLabs key so manim-voiceover can synthesize narration during
-  // render — set on the sandbox env so every command (test renders via
-  // runCommand and the final renderScene alike) inherits it. Both names are set
-  // because the elevenlabs SDK and manim-voiceover have used either over time.
+  // Inject the ElevenLabs key on the sandbox env so every command (test renders
+  // and the final renderScene) inherits it for narration synthesis. Both names
+  // are set because the elevenlabs SDK and manim-voiceover have each used either.
   const elevenLabsKey = getServerEnv().elevenLabsApiKey;
   return daytona.create(
     {
