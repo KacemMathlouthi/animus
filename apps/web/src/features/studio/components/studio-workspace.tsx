@@ -17,6 +17,7 @@ export function StudioWorkspace({
 	status,
 	videoKey,
 	title,
+	seed,
 	respondToTool,
 	onSubmit,
 	onStop,
@@ -25,6 +26,7 @@ export function StudioWorkspace({
 	status: ChatStatus;
 	videoKey?: string;
 	title: string;
+	seed: string;
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 	onStop: () => void;
@@ -117,6 +119,7 @@ export function StudioWorkspace({
 					</Button>
 					<VisualizationPanel
 						playToken={playToken}
+						seed={seed}
 						title={title}
 						videoKey={pinnedVideoKey ?? videoKey}
 					/>
