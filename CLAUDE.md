@@ -39,7 +39,7 @@ apps/
   web/    # React 19 + Vite SPA — landing, auth, studio (chat + conversation sidebar), settings, legal
   api/    # Hono/Bun — auth, settings, conversations, and the streaming agent loop (/api/chat). Long-running.
 packages/
-  core/   # shared contracts: zod schemas, types, constants (pure root) + server env (/env subpath)
+  core/   # shared contracts: zod schemas, types, constants + the deterministic share-card SVG builder (pure root) + server env (/env subpath)
   auth/   # Better Auth (magic link via Resend, GitHub + Google OAuth, sessions)
   db/     # Drizzle + Postgres (schema, client, migrations)
   agent/  # the AI SDK agent loop, prompts, and the full tool set: HITL (askUserQuestion, finalizeVideoPlan), Exa web research (webSearch/webFetch), and the Manim sandbox tools (writeFile/editFile/runCommand/readFile/listFiles/renderScene). Ships the manim-video skill (skills/manim-video) and the prebaked snapshot Dockerfile.
@@ -104,7 +104,23 @@ injected into the sandbox, music ducked under it) → share & export ✓ (Publis
 menu downloads the mp4 via an attachment-disposition presign and mints a
 permanent unlisted public share — `video_share` token → `/v/:token` branded page
 served by the public `GET /api/share/:token`, with share-to-socials) →
-observability ✓ (Braintrust LLM tracing over OpenTelemetry, gated on
+link-preview card ✓ (a deterministic, brand-only "share card" — an auth-style
+50/50 split: title + "Made with animus" on the left, a curated painting picked by
+hash on the right, derived at runtime from the title, nothing stored,
+agent-independent — built once by `buildShareCardSvg` in
+`@animus/core` and used on three surfaces: the studio player poster, the
+share-page poster, and the Open Graph link-preview image rasterized via resvg +
+bundled Geist at the public `GET /api/share/:token/og.png`. Real link previews are
+served at the **natural `/v/:token` URL**: because a static SPA can't emit per-URL
+meta, per-share OG/Twitter tags (`buildShareMetaTags`/`injectShareMeta` in
+`@animus/core`) are injected into index.html server-side — a Vite dev plugin +
+`/api` proxy today so it works over a `cloudflared` tunnel, an edge function /
+meta-injecting proxy in prod (seam left; ties to the open hosting decision).
+Previews include `og:video` + a `twitter:player` iframe embed
+(`GET /api/share/:token/embed`) backed by a stable mp4 URL
+(`GET /api/share/:token/video.mp4` → presigned redirect), so they play inline
+where platforms allow — Discord/Telegram/Slack — and fall back to the card image +
+click-through elsewhere) → observability ✓ (Braintrust LLM tracing over OpenTelemetry, gated on
 `BRAINTRUST_API_KEY`) → prompt & craft alignment ✓ (the system prompt restructured
 into a persona/operating prompt + always-on `manim-craft` rules, kept in lockstep
 with the `manim-video` skill; snapshot bumped to 0.6) → landing/UX polish ✓
