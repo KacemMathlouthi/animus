@@ -1,7 +1,6 @@
 import { LayoutGroup } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useLocation, useParams } from "react-router";
-import type { AppBreadcrumbSegment } from "@/components/layout/app-breadcrumbs";
 import { AppShell } from "@/components/layout/app-shell";
 import { useRegisterPublishTarget } from "@/components/layout/publish-target";
 import { StudioEmptyState } from "@/features/studio/components/studio-empty-state";
@@ -83,66 +82,51 @@ function LoadedStudioChat({
 	);
 }
 
-function StudioChat({
-	chatId,
-	onTitleChange,
-}: {
-	chatId: string;
-	onTitleChange: (title: string) => void;
-}) {
+// Loads a conversation and derives its title for the document + breadcrumb
+// directly from the loaded detail — no effect syncing state up to the page.
+function StudioConversation({ chatId }: { chatId: string }) {
 	const { detail, error } = useConversationDetail(chatId);
+	const title = error
+		? "Conversation not found"
+		: (detail?.conversation.title ?? "New video");
+	useDocumentTitle(title);
 
-	// Report the breadcrumb title for every state. On mount (and whenever the
-	// keyed chatId changes) detail is null, so this resets to a neutral title
-	// before the conversation loads.
-	useEffect(() => {
-		if (error) {
-			onTitleChange("Conversation not found");
-		} else {
-			onTitleChange(detail?.conversation.title ?? "New video");
-		}
-	}, [detail, error, onTitleChange]);
-
+	let content: ReactNode;
 	if (error) {
-		return (
+		content = (
 			<div className="flex flex-1 items-center justify-center px-4 text-center text-muted-foreground text-sm">
 				Conversation not found.
 			</div>
 		);
+	} else if (detail) {
+		content = <LoadedStudioChat chatId={chatId} detail={detail} />;
+	} else {
+		content = <StudioLoading />;
 	}
 
-	if (!detail) {
-		return <StudioLoading />;
-	}
+	return (
+		<AppShell breadcrumbs={[{ title }]}>
+			<LayoutGroup>{content}</LayoutGroup>
+		</AppShell>
+	);
+}
 
-	return <LoadedStudioChat chatId={chatId} detail={detail} />;
+function NewStudioShell() {
+	useDocumentTitle("New video");
+	return (
+		<AppShell breadcrumbs={[{ title: "New video" }]}>
+			<LayoutGroup>
+				<NewStudio />
+			</LayoutGroup>
+		</AppShell>
+	);
 }
 
 export function StudioPage() {
 	const { chatId } = useParams<{ chatId?: string }>();
-	const [title, setTitle] = useState("New video");
-	const onTitleChange = useCallback((next: string) => setTitle(next), []);
-
-	// On the new-video screen there's no conversation to title; StudioChat owns
-	// the title for every loaded/loading/error state once a chatId is present.
-	const pageTitle = chatId ? title : "New video";
-	useDocumentTitle(pageTitle);
-
-	const breadcrumbs: AppBreadcrumbSegment[] = [{ title: pageTitle }];
-
-	return (
-		<AppShell breadcrumbs={breadcrumbs}>
-			<LayoutGroup>
-				{chatId ? (
-					<StudioChat
-						chatId={chatId}
-						key={chatId}
-						onTitleChange={onTitleChange}
-					/>
-				) : (
-					<NewStudio />
-				)}
-			</LayoutGroup>
-		</AppShell>
+	return chatId ? (
+		<StudioConversation chatId={chatId} key={chatId} />
+	) : (
+		<NewStudioShell />
 	);
 }
