@@ -36,10 +36,10 @@ state** (the Manim project files live across turns).
 
 ```
 apps/
-  web/    # React 19 + Vite SPA — landing, auth, studio (chat + conversation sidebar), settings, legal
-  api/    # Hono/Bun — auth, settings, conversations, and the streaming agent loop (/api/chat). Long-running.
+  web/    # React 19 + Vite SPA — landing, auth, studio (chat + conversation sidebar), settings, legal, /v/:token share page. plugins/ holds the dev link-preview meta-injection plugin (see the meta-injection seam decision).
+  api/    # Hono/Bun — auth, settings, conversations, the streaming agent loop (/api/chat), and the public share endpoints (share-card og.png, video.mp4, embed). Long-running.
 packages/
-  core/   # shared contracts: zod schemas, types, constants + the deterministic share-card SVG builder (pure root) + server env (/env subpath)
+  core/   # shared contracts: zod schemas, types, constants + the deterministic share-card SVG builder + link-preview meta builders (pure root) + server env (/env subpath)
   auth/   # Better Auth (magic link via Resend, GitHub + Google OAuth, sessions)
   db/     # Drizzle + Postgres (schema, client, migrations)
   agent/  # the AI SDK agent loop, prompts, and the full tool set: HITL (askUserQuestion, finalizeVideoPlan), Exa web research (webSearch/webFetch), and the Manim sandbox tools (writeFile/editFile/runCommand/readFile/listFiles/renderScene). Ships the manim-video skill (skills/manim-video) and the prebaked snapshot Dockerfile.
@@ -89,6 +89,23 @@ Cross-package "does it compile" = `bun run typecheck`.
   the narration (`tracker.duration`, bookmarks). The ElevenLabs key is injected into
   the render sandbox via `envVars`. Background music is mixed under the narration in
   the post-render ffmpeg step.
+- **Link previews & the SPA meta-injection seam (revisit at deploy).** A static SPA
+  serves one `index.html` for every route, so per-share Open Graph / Twitter meta
+  must be written **server-side at the real `/v/:token` URL** — crawlers don't run
+  JS. The durable, deployment-agnostic parts live in `@animus/core`
+  (`buildShareCardSvg`, `buildShareMetaTags`, `injectShareMeta`) and in the public
+  API endpoints (`GET /api/share/:token/og.png` PNG card, `…/video.mp4` presigned
+  redirect for `og:video`, `…/embed` iframe for `twitter:player`) — these never
+  change with hosting. The **only** hosting-coupled piece is the *injection layer*:
+  today it's a **Vite dev plugin** (`apps/web/plugins/share-meta.ts`) + an `/api`
+  proxy in `vite.config.ts`, both of which exist only under `vite dev`. In prod that
+  becomes an **edge function / meta-injecting reverse proxy / the API serving
+  `/v/:token`** (or vanishes entirely on an SSR migration), and it reuses the same
+  pure core builders — so the swap is ~30 lines of glue, not a rebuild. The related
+  gap that resolves itself at deploy: the SPA still calls `VITE_API_URL` (absolute)
+  rather than a same-origin `/api`, so external viewers can preview but not yet
+  *play* a shared video until web + API sit behind one origin (the dev `/api` proxy
+  previews that world).
 
 **Roadmap:** shell ✓ (settings backend; conversation persistence with generated
 titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` →
@@ -147,6 +164,9 @@ atomic title-generation claim. HTTP-level route tests for `conversations` + the
 - **Auth:** Better Auth
 - **Sandbox:** Daytona
 - **Object storage:** Cloudflare R2
+- **Link-preview image:** `@resvg/resvg-js` rasterizes the `@animus/core`
+  share-card SVG to PNG for Open Graph (bundled Geist fonts + curated paintings in
+  `apps/api/assets`)
 - **Logging:** Pino (structured)
 - **LLM observability:** Braintrust via OpenTelemetry (AI SDK
   `experimental_telemetry` → OTLP). Gated on `BRAINTRUST_API_KEY`; no-op when
