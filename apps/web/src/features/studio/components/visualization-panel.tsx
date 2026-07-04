@@ -1,5 +1,6 @@
 import { BellIcon } from "lucide-react";
 import { useState } from "react";
+import { ShareCard } from "@/components/share-card";
 import { Button } from "@/components/ui/button";
 import { MorphLogo } from "@/features/studio/components/morph-logo";
 import { VideoPlayer } from "@/features/studio/components/video-player";
@@ -51,17 +52,25 @@ function RenderingStage() {
 export function VisualizationPanel({
 	videoKey,
 	title,
+	seed,
 	playToken = 0,
 }: {
 	videoKey?: string;
 	title: string;
+	/** Stable seed for the branded poster card (the conversation id). */
+	seed: string;
 	playToken?: number;
 }) {
 	const { url } = useSignedMediaUrl(videoKey);
 	return (
 		<div className="flex h-full flex-col bg-muted/30">
 			{videoKey ? (
-				<VideoPlayer playToken={playToken} src={url} title={title} />
+				<VideoPlayer
+					playToken={playToken}
+					poster={<ShareCard seed={seed} title={title} />}
+					src={url}
+					title={title}
+				/>
 			) : (
 				<div className="flex flex-1 items-center justify-center overflow-auto p-6">
 					<RenderingStage />

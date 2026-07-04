@@ -1,68 +1,53 @@
-import { useEffect, useState } from "react";
+import { GrainGradient } from "@paper-design/shaders-react";
 import { useTheme } from "@/components/theme-provider";
-import Grainient from "@/features/auth/components/grainient";
 
-// Source the gradient from the same tokens that carry the brand's single
-// chromatic accent (--primary, --chart-2) plus the page's own --background,
-// so the backdrop reads as an extension of the site rather than a generic
-// SaaS gradient blob.
-const TOKENS = {
-	color1: "--primary",
-	color2: "--chart-2",
-	color3: "--background",
+// Dark: warm sand accent (--primary, dark) blooming over the near-black studio
+// neutrals (--background/--card, dark) with a loam midtone (--chart-5, dark).
+const DARK = {
+	back: "#0a0a0a",
+	colors: ["#d8b98a", "#4a3212", "#141414"],
 };
-const FALLBACK = { color1: "#4a3212", color2: "#203b14", color3: "#fbfdf6" };
+// Light: the same warm brand family, lightened — a soft sand-paper base with
+// loam and sand accents. Kept off-white (never pure white) so the panel still
+// reads warm rather than blank.
+const LIGHT = {
+	back: "#eae2d4",
+	colors: ["#4a3212", "#c2a878", "#ddceb0"],
+};
 
-function readTokenColors() {
-	if (typeof window === "undefined") {
-		return FALLBACK;
+// Resolve the theme to a concrete light/dark, handling "system" via the OS
+// preference so the palette matches whatever `.light`/`.dark` is on <html>.
+function resolveIsLight(theme: string): boolean {
+	if (theme === "light") {
+		return true;
 	}
-	const styles = getComputedStyle(document.documentElement);
-	const read = (token: string, fallback: string) =>
-		styles.getPropertyValue(token).trim() || fallback;
-	return {
-		color1: read(TOKENS.color1, FALLBACK.color1),
-		color2: read(TOKENS.color2, FALLBACK.color2),
-		color3: read(TOKENS.color3, FALLBACK.color3),
-	};
+	if (theme === "dark") {
+		return false;
+	}
+	return (
+		typeof window !== "undefined" &&
+		!window.matchMedia("(prefers-color-scheme: dark)").matches
+	);
 }
 
 export function AuthBackdrop() {
 	const { theme } = useTheme();
-	const [colors, setColors] = useState(readTokenColors);
-
-	// Re-read after the theme class lands on <html> (next frame). `theme` is in
-	// deps so a toggle re-runs this once the .dark class has been applied.
-	useEffect(() => {
-		if (!theme) {
-			return;
-		}
-		const frame = requestAnimationFrame(() => setColors(readTokenColors()));
-		return () => cancelAnimationFrame(frame);
-	}, [theme]);
+	const isLight = resolveIsLight(theme);
+	const palette = isLight ? LIGHT : DARK;
 
 	return (
-		<Grainient
-			{...colors}
-			blendAngle={-12}
-			blendSoftness={0.32}
-			centerX={0}
-			centerY={0}
-			colorBalance={0.1}
-			contrast={1.1}
-			gamma={1.05}
-			grainAmount={0.1}
-			grainAnimated={false}
-			grainScale={1.4}
-			noiseScale={1.7}
-			rotationAmount={340}
-			saturation={0.65}
-			timeSpeed={0.12}
-			warpAmplitude={40}
-			warpFrequency={4}
-			warpSpeed={1.2}
-			warpStrength={1.1}
-			zoom={1.25}
+		<GrainGradient
+			colorBack={palette.back}
+			colors={palette.colors}
+			height="100%"
+			intensity={0.5}
+			key={isLight ? "light" : "dark"}
+			noise={0.25}
+			shape="corners"
+			softness={0.5}
+			speed={1}
+			style={{ height: "100%", width: "100%" }}
+			width="100%"
 		/>
 	);
 }

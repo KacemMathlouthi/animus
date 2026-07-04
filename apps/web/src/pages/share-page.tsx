@@ -10,6 +10,7 @@ import { Link, useParams } from "react-router";
 import { LogoMark } from "@/components/brand/logo-mark";
 import { Wordmark } from "@/components/brand/wordmark";
 import { DecorIcon } from "@/components/decor-icon";
+import { ShareCard } from "@/components/share-card";
 import { Button } from "@/components/ui/button";
 import { useCtaTarget } from "@/features/landing/hooks/use-cta-target";
 import { VideoPlayer } from "@/features/studio/components/video-player";
@@ -81,8 +82,15 @@ function CopyLinkButton() {
 }
 
 /** The video, framed as the hero: border + decor corners, sitting on a pooled
- * glow with a heavy shadow. */
-function VideoHero({ share }: { share: PublicShareResponse }) {
+ * glow with a heavy shadow. The resting poster is the same branded card the API
+ * rasterizes for this share's link preview (seeded by the token so they match). */
+function VideoHero({
+	share,
+	seed,
+}: {
+	share: PublicShareResponse;
+	seed: string;
+}) {
 	return (
 		<div
 			className={cn(
@@ -99,7 +107,12 @@ function VideoHero({ share }: { share: PublicShareResponse }) {
 				<DecorIcon className="size-4" position="top-right" />
 				<DecorIcon className="size-4" position="bottom-left" />
 				<DecorIcon className="size-4" position="bottom-right" />
-				<VideoPlayer playToken={0} src={share.videoUrl} title={share.title} />
+				<VideoPlayer
+					playToken={0}
+					poster={<ShareCard seed={seed} title={share.title} />}
+					src={share.videoUrl}
+					title={share.title}
+				/>
 			</div>
 		</div>
 	);
@@ -240,7 +253,7 @@ export function SharePage() {
 							</div>
 						</div>
 
-						<VideoHero share={state.share} />
+						<VideoHero seed={token ?? ""} share={state.share} />
 					</div>
 				) : null}
 			</main>

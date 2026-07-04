@@ -6,7 +6,8 @@ import type { CreateShareResponse } from "@animus/core";
 import { apiFetch } from "@/lib/api";
 
 /** Create (or re-fetch) the permanent unlisted share for a video and return the
- * public URL to post — `<origin>/v/<token>`. */
+ * public URL to post — `<origin>/v/<token>`. Served so crawlers get per-share
+ * link-preview meta (the branded card + inline video) and humans get the player. */
 export async function createShareLink(videoKey: string): Promise<string> {
 	const { token } = await apiFetch<CreateShareResponse>("/api/media/share", {
 		method: "POST",

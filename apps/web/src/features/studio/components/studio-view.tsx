@@ -42,6 +42,7 @@ export function StudioStage({
 	status,
 	videoKey,
 	title,
+	seed,
 	respondToTool,
 	onSubmit,
 	onStop,
@@ -51,6 +52,7 @@ export function StudioStage({
 	status: ChatStatus;
 	videoKey?: string;
 	title: string;
+	seed: string;
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 	onStop: () => void;
@@ -69,6 +71,7 @@ export function StudioStage({
 					onStop={onStop}
 					onSubmit={onSubmit}
 					respondToTool={respondToTool}
+					seed={seed}
 					status={status}
 					title={title}
 					videoKey={videoKey}

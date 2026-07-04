@@ -11,6 +11,7 @@ import {
 import {
 	type KeyboardEvent as ReactKeyboardEvent,
 	type MouseEvent as ReactMouseEvent,
+	type ReactNode,
 	useCallback,
 	useEffect,
 	useRef,
@@ -50,15 +51,28 @@ export function VideoPlayer({
 	src,
 	title,
 	playToken,
+	poster,
 }: {
 	src: string | undefined;
 	title: string;
 	playToken: number;
+	/** Resting overlay shown over the frame until the video first plays (e.g. the
+	 * branded share card). Cleared on first play and when the source changes. */
+	poster?: ReactNode;
 }) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const hideTimerRef = useRef<number | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
+	const [hasStarted, setHasStarted] = useState(false);
+	// A new source (or none) is back at its resting state — show the poster again.
+	// Render-phase reset (not an effect) so it lands before paint, matching the
+	// pin-reset pattern in StudioWorkspace.
+	const [lastSrc, setLastSrc] = useState(src);
+	if (src !== lastSrc) {
+		setLastSrc(src);
+		setHasStarted(false);
+	}
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const [muted, setMuted] = useState(false);
@@ -74,7 +88,10 @@ export function VideoPlayer({
 		if (!video) {
 			return;
 		}
-		const onPlay = () => setIsPlaying(true);
+		const onPlay = () => {
+			setIsPlaying(true);
+			setHasStarted(true);
+		};
 		const onPause = () => setIsPlaying(false);
 		const onTime = () => setCurrentTime(video.currentTime);
 		const onDuration = () => setDuration(video.duration);
@@ -308,6 +325,11 @@ export function VideoPlayer({
 				ref={videoRef}
 				src={src}
 			/>
+
+			{/* Branded resting poster, shown until the video first plays. */}
+			{poster && !hasStarted ? (
+				<div className="pointer-events-none absolute inset-0">{poster}</div>
+			) : null}
 
 			{/* Title, top gradient. Right padding clears the panel's Hide button. */}
 			<div className="pointer-events-none absolute inset-x-0 top-0 bg-linear-to-b from-black/70 to-transparent px-5 pt-4 pb-12 opacity-0 transition-opacity group-data-[controls=true]:opacity-100">

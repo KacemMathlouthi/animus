@@ -24,6 +24,7 @@ See [`CLAUDE.md`](CLAUDE.md) for the full decision record, stack, and contributo
 - **Persistence: Drizzle + managed Postgres** — conversations, messages, per-user settings, sandbox handles, usage. Generation settings are global per-user.
 - **Storage: Cloudflare R2** (S3-compatible) for rendered videos. The web streams them via short-lived presigned URLs; public share links resolve through their own unauthenticated route. Multi-cloud posture: managed Postgres + a container host, no single-cloud lock-in.
 - **Narration via `manim-voiceover` + ElevenLabs** — the agent writes a `VoiceoverScene` that synthesizes speech in-scene during render, so animation timing auto-syncs to the narration; background music is ducked under it in a post-render ffmpeg step.
+- **Share & link previews** — a finished video gets a permanent unlisted `/v/:token` page plus a deterministic, brand-only **share card** (title + a curated painting, derived at runtime, nothing stored) used as the player poster and, rasterized to PNG, the Open Graph image. Real previews (with inline `og:video` / `twitter:player`) are injected into `/v/:token` server-side — a Vite dev plugin today, an edge function / proxy in prod (the pure builders in `@animus/core` are shared, so the swap is small). See [`CLAUDE.md`](CLAUDE.md).
 - **LLM observability via Braintrust** — the agent's AI SDK calls emit OpenTelemetry traces exported to Braintrust when `BRAINTRUST_API_KEY` is set; a no-op otherwise.
 
 ## Layout

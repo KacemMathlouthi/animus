@@ -85,6 +85,7 @@ function LoadedStudioChat({
 			onSubmit={send}
 			phase={phase}
 			respondToTool={respondToTool}
+			seed={chatId}
 			status={status}
 			title={detail.conversation.title}
 			videoKey={videoKey}

@@ -10,6 +10,15 @@ This is the only workspace Vite builds; everything else runs `.ts` directly via
 Bun. Run it from the repo root with `bun run dev` (Turborepo starts the web and
 API together).
 
+The video player's resting poster (studio + share page) is the deterministic
+brand **share card** (`src/components/share-card.tsx`, rendering
+`@animus/core`'s `buildShareCardSvg` inline). `plugins/share-meta.ts` is a **dev
+Vite plugin** that injects per-share Open Graph / Twitter meta into `index.html`
+for `/v/:token` requests (crawlers don't run JS), and `vite.config.ts` proxies
+`/api` so one origin serves the app and the crawler-fetched card/video/embed
+URLs. In production that injection moves to an edge function / proxy — see the
+meta-injection seam decision in [`CLAUDE.md`](../../CLAUDE.md).
+
 ## Conventions
 
 - **Tabs** for indentation (the rest of the repo uses 2 spaces); enforced by
