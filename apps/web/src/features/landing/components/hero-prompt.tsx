@@ -29,8 +29,8 @@ export function HeroPrompt({ className }: { className?: string }) {
 	const { start, creating } = useStartConversation();
 	const [text, setText] = useState("");
 
-	// Grow the textarea with its content (up to a cap, then it scrolls). Driven off
-	// the input event's element, which already carries the new value — no effect.
+	// Grow the textarea with its content up to a cap, then scroll. Driven off the
+	// input event's element (already carries the new value) — no effect needed.
 	const onChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
 		setText(event.target.value);
 		const el = event.target;

@@ -153,8 +153,7 @@ function RenderedVideoCard({
 			type="button"
 		>
 			<span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-sm border bg-black">
-				{/* A muted, controls-free frame as the artifact's thumbnail; playback
-				    happens in the side panel. biome-ignore lint/a11y/useMediaCaption: preview frame only. */}
+				{/* Muted, controls-free thumbnail; playback happens in the side panel. biome-ignore lint/a11y/useMediaCaption: preview frame only. */}
 				<video
 					className="pointer-events-none h-full w-full object-cover"
 					muted

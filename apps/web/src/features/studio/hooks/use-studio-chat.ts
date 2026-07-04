@@ -24,15 +24,10 @@ type StudioChat = {
 	respondToTool: RespondToTool;
 };
 
-/**
- * The studio's chat session, backed by the real streaming /api/chat endpoint.
- * Keyed by chatId so each conversation has its own state; an optional initial
- * prompt (a freshly created conversation) is sent once on mount.
- *
- * Interactive (human-in-the-loop) tool calls pause the agent until the user
- * answers in the UI; `respondToTool` sends the answer back, and
- * `sendAutomaticallyWhen` resubmits so the agent continues.
- */
+/** The studio's chat session over the streaming /api/chat endpoint. Keyed by
+ * chatId; an optional initial prompt is sent once on mount. HITL tool calls pause
+ * the agent until the user answers — `respondToTool` sends the answer back and
+ * `sendAutomaticallyWhen` resubmits so the agent continues. */
 export function useStudioChat({
 	chatId,
 	initialPrompt,

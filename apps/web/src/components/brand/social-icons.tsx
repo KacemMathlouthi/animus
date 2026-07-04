@@ -1,8 +1,5 @@
-/** Brand glyphs for the social networks we offer as share targets. lucide
- * dropped its brand icons, so these are the official marks (single-path,
- * `currentColor`) sized to sit in a button like any lucide icon. They're
- * decorative — the surrounding button carries the accessible label — so each is
- * `aria-hidden`. */
+/** Official brand marks for share targets (lucide dropped its brand icons).
+ * Single-path, `currentColor`, `aria-hidden` — the button carries the label. */
 
 type IconProps = React.ComponentProps<"svg">;
 

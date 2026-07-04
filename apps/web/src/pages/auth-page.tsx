@@ -36,8 +36,7 @@ export function AuthPage() {
 	const location = useLocation();
 	const [searchParams] = useSearchParams();
 
-	// Where to land after signing in: the page the guard bounced us from, else
-	// the studio.
+	// Where to land after signing in: the page the guard bounced us from, else the studio.
 	const destination = safeRedirect(
 		(location.state as { from?: string } | null)?.from,
 	);

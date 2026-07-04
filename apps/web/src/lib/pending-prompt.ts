@@ -1,9 +1,8 @@
-/** A one-shot handoff for a prompt typed on the landing page by a signed-out
- * visitor: stash it, send them through auth, then replay it in the studio once
- * they land back. Uses localStorage (not router state) because OAuth and magic
- * links fully reload the page — and the magic link may even open a new tab — so
- * in-memory state wouldn't survive. Read-once + a short TTL keep a stale prompt
- * from firing on some unrelated later visit. */
+/** One-shot handoff for a prompt a signed-out visitor typed on the landing page:
+ * stash it, send them through auth, replay it in the studio. Uses localStorage
+ * (not router state) because OAuth/magic links fully reload the page — possibly
+ * in a new tab — so in-memory state wouldn't survive. Read-once + a short TTL
+ * keep a stale prompt from firing on some unrelated later visit. */
 
 const KEY = "animus:pending-prompt";
 const TTL_MS = 60 * 60 * 1000; // 1 hour

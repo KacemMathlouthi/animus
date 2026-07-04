@@ -1,6 +1,4 @@
-/** Route guard for authenticated areas. Shows a brief loader while the session
- * resolves, redirects to /auth when signed out, and renders the protected tree
- * when signed in. */
+/** Route guard: loader while the session resolves, /auth when signed out, protected tree when signed in. */
 
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";

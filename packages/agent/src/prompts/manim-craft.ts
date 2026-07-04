@@ -1,10 +1,8 @@
-/** Always-on Manim craft rules — the highest-value, every-render guidance
- * synthesized from the bundled manim-video skill (SKILL.md +
- * production-quality.md + visual-design.md), rewritten for animus's flow (one
- * narrated VoiceoverScene rendered once via renderScene). The skill's long-tail
- * references stay in the sandbox for on-demand reading; this is the core that
- * must apply to every render, so it lives in the system prompt rather than
- * behind a tool the model might not consult. */
+/** Always-on Manim craft rules — the every-render core synthesized from the
+ * bundled manim-video skill, rewritten for animus's flow (one narrated
+ * VoiceoverScene rendered once via renderScene). Long-tail references stay in
+ * the sandbox for on-demand reading; this core lives in the system prompt rather
+ * than behind a tool the model might not consult. */
 
 export const MANIM_CRAFT = `## Visual craft — apply on every render; this is what makes a video look finished instead of broken
 

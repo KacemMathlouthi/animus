@@ -1,22 +1,19 @@
 import { GrainGradient } from "@paper-design/shaders-react";
 import { useTheme } from "@/components/theme-provider";
 
-// Dark: warm sand accent (--primary, dark) blooming over the near-black studio
-// neutrals (--background/--card, dark) with a loam midtone (--chart-5, dark).
+// Dark: warm sand accent over near-black studio neutrals with a loam midtone.
 const DARK = {
 	back: "#0a0a0a",
 	colors: ["#d8b98a", "#4a3212", "#141414"],
 };
-// Light: the same warm brand family, lightened — a soft sand-paper base with
-// loam and sand accents. Kept off-white (never pure white) so the panel still
-// reads warm rather than blank.
+// Light: the same warm brand family, lightened. Off-white (never pure white) so
+// the panel reads warm rather than blank.
 const LIGHT = {
 	back: "#eae2d4",
 	colors: ["#4a3212", "#c2a878", "#ddceb0"],
 };
 
-// Resolve the theme to a concrete light/dark, handling "system" via the OS
-// preference so the palette matches whatever `.light`/`.dark` is on <html>.
+// Resolve "system" via OS preference so the palette matches `.light`/`.dark` on <html>.
 function resolveIsLight(theme: string): boolean {
 	if (theme === "light") {
 		return true;

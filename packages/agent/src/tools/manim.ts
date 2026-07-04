@@ -88,11 +88,10 @@ function outputPath(
   return `${PROJECT_DIR}/media/videos/${stem}/${QUALITY_DIR[quality]}/${scene}.mp4`;
 }
 
-/** Download the background track from R2 into the sandbox (presigned URL, no byte
- * round-trip through the API) and mix it UNDER the narration with ffmpeg (looped,
- * ducked, faded in, amix'd). Returns the path to deliver: the mixed file on
- * success, or the untouched master (which already carries the narration) if the
- * track is missing or the step fails, so music never blocks delivery. */
+/** Download the background track from R2 into the sandbox and mix it UNDER the
+ * narration with ffmpeg (looped, ducked, faded in, amix'd). Returns the mixed
+ * file on success, or the untouched master (which already carries the narration)
+ * if the track is missing or the step fails — music never blocks delivery. */
 async function muxBackgroundMusic(
   sandbox: Sandbox,
   masterPath: string,
@@ -101,9 +100,9 @@ async function muxBackgroundMusic(
   const url = await backgroundMusicUrl();
   const finalPath = masterPath.replace(MP4_SUFFIX, ".music.mp4");
   // Download then mix in one shell step; the URL rides in the env (not the
-  // command string) so its signature query params can't break quoting. A
-  // missing object 404s the download, short-circuiting before ffmpeg. The music
-  // is ducked and amix'd with the narration (normalize=0 keeps the voice full).
+  // command string) so its signature query params can't break quoting. A missing
+  // object 404s the download, short-circuiting before ffmpeg. normalize=0 keeps
+  // the voice full in the amix.
   const command =
     `python3 -c "import os,urllib.request; urllib.request.urlretrieve(os.environ['MUSIC_URL'], '${MUSIC_TRACK}')" && ` +
     `ffmpeg -y -i ${masterPath} -stream_loop -1 -i ${MUSIC_TRACK} ` +

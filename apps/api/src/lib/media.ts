@@ -1,8 +1,7 @@
-/** Media storage on Cloudflare R2 (S3-compatible). Rendered videos are uploaded
- * here by the agent's renderScene tool; the browser streams them straight from
- * R2 via short-lived presigned URLs minted by the media route. The renderScene
- * output stores only the object KEY, so a saved conversation keeps working on
- * replay (we re-sign on demand rather than baking an expiring URL into it). */
+/** Media storage on Cloudflare R2 (S3-compatible). renderScene uploads mp4s here;
+ * the browser streams them via short-lived presigned URLs. renderScene stores only
+ * the object KEY, so a saved conversation keeps working on replay — we re-sign on
+ * demand rather than baking an expiring URL into it. */
 
 import { getServerEnv } from "@animus/core/env";
 import {
@@ -14,8 +13,8 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-/** How long a presigned playback URL is valid. The web re-signs on load, so a
- * window comfortably longer than a viewing session is plenty. */
+/** Presigned playback URL lifetime. The web re-signs on load, so a window longer
+ * than a viewing session is plenty. */
 const SIGNED_URL_TTL_SEC = 3600;
 /** R2 delete-objects accepts up to 1000 keys per request. */
 const DELETE_BATCH = 1000;
@@ -23,8 +22,7 @@ const UNSAFE_NAME_CHARS = /[^a-zA-Z0-9_-]/g;
 const MEDIA_PREFIX = "videos";
 /** videos/<conversationId>/<file>.mp4 — pins the shape we mint and accept. */
 const MEDIA_KEY = /^videos\/([a-zA-Z0-9_-]+)\/[a-zA-Z0-9_-]+\.mp4$/;
-/** Fixed object key for the background track muxed under every render. Hardcoded
- * for now; a user-configurable key is a later iteration. */
+/** Background track muxed under every render. Fixed for now; user-configurable later. */
 const MUSIC_KEY = "music/The_Merchants_Of_Death.mp3";
 
 let client: S3Client | null = null;
@@ -81,9 +79,9 @@ export async function saveVideo(input: {
   return key;
 }
 
-/** Presigned GET URL for the background track, so the sandbox can download it
- * straight from R2 (no byte round-trip through the API). If the object is
- * absent the download simply fails and renderScene delivers a silent video. */
+/** Presigned GET URL for the background track, so the sandbox downloads it
+ * straight from R2 (no round-trip through the API). If absent, renderScene just
+ * delivers a silent video. */
 export function backgroundMusicUrl(): Promise<string> {
   return signMediaUrl(MUSIC_KEY);
 }
@@ -97,9 +95,9 @@ export function signMediaUrl(key: string): Promise<string> {
   );
 }
 
-/** Mint a short-lived presigned GET URL that forces a download with a friendly
- * filename (R2 echoes `ResponseContentDisposition` into the response headers), so
- * the browser saves the mp4 straight from R2 with no round-trip through us. */
+/** Presigned GET URL that forces a download with a friendly filename (R2 echoes
+ * `ResponseContentDisposition` into the response headers), so the browser saves
+ * the mp4 straight from R2. */
 export function signDownloadUrl(
   key: string,
   filename: string

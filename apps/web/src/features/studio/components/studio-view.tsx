@@ -9,10 +9,8 @@ import type {
 	StudioPhase,
 } from "@/features/studio/types";
 
-/**
- * Notify the user when the explainer finishes (a rendered video appears) while
- * they're on another tab — the "leave and come back" promise from the panel.
- */
+/** Notify the user when the explainer finishes while they're on another tab —
+ * the "leave and come back" promise from the panel. */
 function useRenderNotification(videoKey: string | undefined) {
 	const previous = useRef(videoKey);
 

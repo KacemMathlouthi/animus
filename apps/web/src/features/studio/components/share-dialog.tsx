@@ -19,8 +19,7 @@ import { createShareLink } from "@/lib/share";
 
 const COPIED_RESET_MS = 2000;
 
-/** Where the share link can be posted — each opens the network's share intent in
- * a new tab, prefilled with the link (and title where the network supports it). */
+/** Share targets — each opens the network's share intent prefilled with the link (and title where supported). */
 const SOCIALS: {
 	label: string;
 	Icon: React.ComponentType<{ className?: string }>;
@@ -57,9 +56,8 @@ type LinkState =
 	| { status: "error" }
 	| { status: "ready"; url: string };
 
-/** Creates the permanent public share link (once, when opened) and offers copy +
- * social-share actions for it. The link is created lazily so merely having a
- * video doesn't publish it — only opening this dialog does. */
+/** Creates the permanent public share link lazily (only on open, so having a
+ * video doesn't publish it) and offers copy + social-share actions for it. */
 export function ShareDialog({
 	videoKey,
 	title,

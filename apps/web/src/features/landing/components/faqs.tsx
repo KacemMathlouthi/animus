@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
-/** The "Got any questions?" cascade: bold repeats stepping diagonally, the way
- * a16z's FAQ does it. Indents wave out and back so it reads as motion, not a list. */
+/** The "Got any questions?" cascade: bold repeats stepping diagonally (a16z-style),
+ * indents waving out and back so it reads as motion, not a list. */
 const CASCADE = [
 	{ id: "c1", indent: "pl-0" },
 	{ id: "c2", indent: "pl-3 md:pl-6" },
