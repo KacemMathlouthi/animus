@@ -5,7 +5,7 @@ import {
 	MessageSquareText,
 	PencilLine,
 } from "lucide-react";
-import { type JSX, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,8 +26,8 @@ function PlanHeader({
 }: {
 	input: VideoPlan;
 	label: string;
-	status: JSX.Element;
-}): JSX.Element {
+	status: ReactNode;
+}): ReactNode {
 	return (
 		<div className="flex items-start justify-between gap-3">
 			<div className="min-w-0">
@@ -48,7 +48,7 @@ function SceneList({
 }: {
 	scenes: VideoPlan["scenes"];
 	variant: "pending" | "resolved";
-}): JSX.Element {
+}): ReactNode {
 	return (
 		<ol
 			className={cn(
@@ -81,7 +81,7 @@ function SceneList({
 	);
 }
 
-function PlanStatusBadge({ approved }: { approved: boolean }): JSX.Element {
+function PlanStatusBadge({ approved }: { approved: boolean }): ReactNode {
 	const Icon = approved ? CheckCircle2 : MessageSquareText;
 
 	return (
@@ -92,7 +92,7 @@ function PlanStatusBadge({ approved }: { approved: boolean }): JSX.Element {
 	);
 }
 
-function RequestedChanges({ feedback }: { feedback: string }): JSX.Element {
+function RequestedChanges({ feedback }: { feedback: string }): ReactNode {
 	return (
 		<div className="rounded-sm border bg-background/60 p-3">
 			<p className="flex items-center gap-1.5 font-medium text-xs">
@@ -112,7 +112,7 @@ export function FinalizeVideoPlanTool({
 	input: VideoPlan;
 	output?: FinalizeVideoPlanOutput;
 	onRespond: (output: FinalizeVideoPlanOutput) => void;
-}): JSX.Element {
+}): ReactNode {
 	const [feedback, setFeedback] = useState("");
 
 	if (output) {

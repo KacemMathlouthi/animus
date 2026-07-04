@@ -2,7 +2,7 @@ import type {
 	AskUserQuestionInput,
 	AskUserQuestionOutput,
 } from "@animus/core/tools";
-import { type JSX, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ export function AskUserQuestionTool({
 	input: AskUserQuestionInput;
 	output?: AskUserQuestionOutput;
 	onRespond: (output: AskUserQuestionOutput) => void;
-}): JSX.Element {
+}): ReactNode {
 	const [selected, setSelected] = useState<string[]>([]);
 	const [freeText, setFreeText] = useState("");
 	const isAnswered = output != null;

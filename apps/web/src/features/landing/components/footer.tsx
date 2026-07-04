@@ -4,6 +4,8 @@ import { XIcon } from "@/components/icons/x-icon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export function Footer() {
 	return (
 		<footer
@@ -68,7 +70,7 @@ export function Footer() {
 
 			<div className="flex items-center justify-center gap-2 py-4">
 				<p className="text-center font-light text-muted-foreground text-sm">
-					&copy; {new Date().getFullYear()} animus · All rights reserved
+					&copy; {CURRENT_YEAR} animus · All rights reserved
 				</p>
 			</div>
 

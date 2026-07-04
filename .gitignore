@@ -39,3 +39,6 @@ todo.md
 
 # Assets Experimentation (root scratch dir only — not apps/*/assets)
 /assets
+
+# react-doctor installed skill files
+.claude/
