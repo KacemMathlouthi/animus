@@ -5,6 +5,7 @@ import { Footer } from "@/features/landing/components/footer";
 import { Header } from "@/features/landing/components/header";
 import { HeroSection } from "@/features/landing/components/hero";
 import { HowItWorks } from "@/features/landing/components/how-it-works";
+import { LaunchVideo } from "@/features/landing/components/launch-video";
 import { UseCases } from "@/features/landing/components/use-cases";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
@@ -16,6 +17,7 @@ export function LandingPage() {
 			<Header />
 			<main>
 				<HeroSection />
+				<LaunchVideo />
 				<FeatureSection />
 				<HowItWorks />
 				<UseCases />

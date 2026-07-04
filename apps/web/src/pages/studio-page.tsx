@@ -1,6 +1,6 @@
 import { LayoutGroup } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useLocation, useParams } from "react-router";
 import type { AppBreadcrumbSegment } from "@/components/layout/app-breadcrumbs";
 import { AppShell } from "@/components/layout/app-shell";
 import { useRegisterPublishTarget } from "@/components/layout/publish-target";
@@ -8,43 +8,33 @@ import { StudioEmptyState } from "@/features/studio/components/studio-empty-stat
 import { StudioLoading } from "@/features/studio/components/studio-loading";
 import { StudioStage } from "@/features/studio/components/studio-view";
 import { useConversationDetail } from "@/features/studio/hooks/use-conversation-detail";
+import { useStartConversation } from "@/features/studio/hooks/use-start-conversation";
 import { useStudioChat } from "@/features/studio/hooks/use-studio-chat";
 import type { AnimusUIMessage } from "@/features/studio/types";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import {
 	type ConversationDetail,
-	createConversation,
 	notifyConversationsChanged,
 } from "@/lib/conversations";
+import { takePendingPrompt } from "@/lib/pending-prompt";
 
 function NewStudio() {
-	const navigate = useNavigate();
-	const [creating, setCreating] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const { start, creating, error } = useStartConversation();
 
-	const submit = useCallback(
-		(text: string) => {
-			setCreating(true);
-			setError(null);
-			void createConversation()
-				.then((conversation) => {
-					notifyConversationsChanged();
-					navigate(`/studio/c/${conversation.id}`, {
-						state: { prompt: text },
-					});
-				})
-				.catch(() => {
-					setError("Could not create a conversation. Try again.");
-					setCreating(false);
-				});
-		},
-		[navigate],
-	);
+	// A signed-out visitor who typed a prompt on the landing page was routed
+	// through auth; replay it now that they've landed. takePendingPrompt is
+	// read-once, which also guards against a double-invoked effect (strict mode).
+	useEffect(() => {
+		const pending = takePendingPrompt();
+		if (pending) {
+			start(pending);
+		}
+	}, [start]);
 
 	return (
 		<>
 			<StudioEmptyState
-				onSubmit={submit}
+				onSubmit={start}
 				status={creating ? "submitted" : "ready"}
 			/>
 			{error ? (
