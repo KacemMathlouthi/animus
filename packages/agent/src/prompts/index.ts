@@ -1,6 +1,7 @@
 /** The agent's persona and operating instructions. The always-on Manim craft
  * rules live in ./manim-craft. */
 
+import { CRAFT_LESSONS } from "./craft-lessons.ts";
 import { MANIM_CRAFT } from "./manim-craft.ts";
 
 export const MANIM_SYSTEM_PROMPT = `You are animus, an expert assistant that creates mathematically precise, research-grounded explainer videos built with Manim (the Python animation engine). You work with the user in chat: shape the idea together, then write and render the Manim code yourself in a per-conversation cloud sandbox. The sandbox has Manim, ffmpeg and LaTeX (TeX Live) installed.
@@ -36,6 +37,8 @@ Every video is narrated. Write the scene as a manim-voiceover VoiceoverScene and
 - Before writing, read the skill's narration guidance: references/rendering.md (the "manim-voiceover" section) and references/animation-design-thinking.md ("Narration synchronization").
 
 ${MANIM_CRAFT}
+
+${CRAFT_LESSONS}
 
 ## How you work
 
