@@ -51,6 +51,11 @@ const ServerEnvSchema = z.object({
   /** ElevenLabs API key for narration. Injected into the render sandbox so
    * manim-voiceover can synthesize speech during render. */
   ELEVENLABS_API_KEY: z.string().min(1, "ELEVENLABS_API_KEY is required"),
+  /** Optional safety cap (whole USD) on total free-credit spend across all
+   * users. When set and exceeded, brand-new accounts are seeded with a $0
+   * balance instead of the free grant (existing balances are untouched). Unset
+   * means unlimited free grants — the default. */
+  CREDITS_GLOBAL_CAP_USD: z.coerce.number().positive().optional(),
   /** Daytona API key for the sandbox the agent renders Manim in. Optional at
    * boot; required only when a turn actually needs the sandbox. */
   DAYTONA_API_KEY: z.string().optional(),
@@ -72,6 +77,7 @@ export interface ServerEnv {
   betterAuthUrl: string;
   braintrustApiKey?: string;
   braintrustProject: string;
+  creditsGlobalCapUsd?: number;
   databaseUrl: string;
   daytonaApiKey?: string;
   daytonaTarget?: string;
@@ -138,6 +144,7 @@ export function parseServerEnv(
     bedrockModel: e.BEDROCK_MODEL,
     braintrustApiKey: e.BRAINTRUST_API_KEY,
     braintrustProject: e.BRAINTRUST_PROJECT,
+    creditsGlobalCapUsd: e.CREDITS_GLOBAL_CAP_USD,
   };
 }
 
