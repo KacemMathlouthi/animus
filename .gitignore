@@ -42,3 +42,6 @@ todo.md
 
 # react-doctor installed skill files
 .claude/
+
+# local planning docs (not part of the repo)
+docs/cost-control.md
