@@ -9,6 +9,9 @@ export {
   exists,
   ilike,
   or,
+  // drizzle's SQL-fragment builder (for aggregates / raw arithmetic). Named to
+  // avoid colliding with the postgres.js client also exported as `sql`.
+  sql as sqlExpr,
 } from "drizzle-orm";
 export { type Database, db, schema, sql } from "./client.ts";
 export {
@@ -16,4 +19,5 @@ export {
   conversationMessage,
   videoShare,
 } from "./schema/conversations.ts";
+export { usageEvent, userCredits } from "./schema/credits.ts";
 export { providerKey, userSettings } from "./schema/settings.ts";

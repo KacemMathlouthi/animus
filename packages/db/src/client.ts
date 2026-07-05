@@ -19,6 +19,7 @@ import {
   conversationRelations,
   videoShare,
 } from "./schema/conversations.ts";
+import { usageEvent, userCredits } from "./schema/credits.ts";
 import { providerKey, userSettings } from "./schema/settings.ts";
 
 /** Every table + relation, in one object — passed to Drizzle (for `db.query.*`)
@@ -30,6 +31,8 @@ export const schema = {
   verification,
   userSettings,
   providerKey,
+  userCredits,
+  usageEvent,
   conversation,
   conversationMessage,
   videoShare,
