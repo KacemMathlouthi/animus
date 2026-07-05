@@ -20,6 +20,7 @@ import {
   type BackgroundMusicUrl,
   createManimTools,
   type SaveVideo,
+  type TurnMeter,
 } from "./manim.ts";
 
 interface ToolDependencies {
@@ -30,6 +31,8 @@ interface ToolDependencies {
     conversationId: string;
     saveVideo: SaveVideo;
     backgroundMusicUrl: BackgroundMusicUrl;
+    elevenLabsApiKey: string;
+    meter: TurnMeter;
   };
 }
 

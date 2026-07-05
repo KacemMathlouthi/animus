@@ -60,6 +60,8 @@ function editTool(initial: Record<string, string>) {
     conversationId: "conv-1",
     saveVideo: vi.fn(() => Promise.resolve("https://example.com/v.mp4")),
     backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
+    elevenLabsApiKey: "el-test-key",
+    meter: { ttsChars: 0 },
   });
   const edit = tools.editFile;
   if (!edit?.execute) {
@@ -75,6 +77,8 @@ function runTool(commandOut: string) {
     conversationId: "conv-1",
     saveVideo: vi.fn(() => Promise.resolve("https://example.com/v.mp4")),
     backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
+    elevenLabsApiKey: "el-test-key",
+    meter: { ttsChars: 0 },
   });
   const run = tools.runCommand;
   if (!run?.execute) {
@@ -211,8 +215,15 @@ const STAGED_TRACK = "/home/daytona/project/.background-music.mp3";
 const MUSIC_URL = "https://r2.example/music?sig=abc";
 const MUSIC_SKIPPED = /background music skipped/;
 
-function renderSandbox(opts: { renderExit?: number; muxExit?: number }) {
+const SCENE_PATH = "/home/daytona/project/scene.py";
+
+function renderSandbox(opts: {
+  renderExit?: number;
+  muxExit?: number;
+  sceneSource?: string;
+}) {
   const downloadCalls: string[] = [];
+  const meter = { ttsChars: 0 };
   const saveVideo = vi.fn(() =>
     Promise.resolve("videos/conv/Main-ab12cd34.mp4")
   );
@@ -234,6 +245,11 @@ function renderSandbox(opts: { renderExit?: number; muxExit?: number }) {
     fs: {
       downloadFile: vi.fn((path: string) => {
         downloadCalls.push(path);
+        // The scene source is read for narration metering; everything else is
+        // the rendered video.
+        if (path === SCENE_PATH) {
+          return Promise.resolve(Buffer.from(opts.sceneSource ?? "", "utf8"));
+        }
         return Promise.resolve(Buffer.from("video-bytes"));
       }),
     },
@@ -243,12 +259,20 @@ function renderSandbox(opts: { renderExit?: number; muxExit?: number }) {
     conversationId: "conv",
     saveVideo,
     backgroundMusicUrl,
+    elevenLabsApiKey: "el-test-key",
+    meter,
   });
   const render = tools.renderScene;
   if (!render?.execute) {
     throw new Error("renderScene tool is not executable");
   }
-  return { execute: render.execute, downloadCalls, saveVideo, executeCommand };
+  return {
+    execute: render.execute,
+    downloadCalls,
+    saveVideo,
+    executeCommand,
+    meter,
+  };
 }
 
 const RENDER_INPUT = {
@@ -277,8 +301,9 @@ describe("renderScene background music", () => {
     // Music is mixed UNDER the narration (amix), not replacing the audio.
     expect(muxCommand).toContain("amix");
     expect(muxEnv).toEqual({ MUSIC_URL });
-    // The muxed file (not the silent master) is what gets uploaded.
-    expect(downloadCalls).toEqual([MUSIC_MASTER]);
+    // The scene source is read first (for narration metering), then the muxed
+    // file (not the silent master) is what gets uploaded.
+    expect(downloadCalls).toEqual([SCENE_PATH, MUSIC_MASTER]);
     expect(saveVideo).toHaveBeenCalledTimes(1);
   });
 
@@ -290,8 +315,9 @@ describe("renderScene background music", () => {
     expect(output.ok).toBe(true);
     expect(output.videoKey).toBe("videos/conv/Main-ab12cd34.mp4");
     expect(output.logs).toMatch(MUSIC_SKIPPED);
-    // Delivers the silent master, never the (failed) muxed file.
-    expect(downloadCalls).toEqual([MASTER]);
+    // Scene source read for metering, then the silent master (never the failed
+    // muxed file).
+    expect(downloadCalls).toEqual([SCENE_PATH, MASTER]);
     expect(saveVideo).toHaveBeenCalledTimes(1);
   });
 
@@ -305,5 +331,45 @@ describe("renderScene background music", () => {
     expect(output.ok).toBe(false);
     expect(executeCommand).toHaveBeenCalledTimes(1);
     expect(saveVideo).not.toHaveBeenCalled();
+  });
+});
+
+describe("renderScene TTS metering", () => {
+  it("accumulates synthesized narration characters into the meter", async () => {
+    const sceneSource = `
+      with self.voiceover(text="Hello there") as t1:
+          self.play(Write(a))
+      with self.voiceover(text="Second line") as t2:
+          self.play(Write(b))
+    `;
+    const { execute, meter } = renderSandbox({ sceneSource });
+
+    await execute(RENDER_INPUT, EXEC_CTX);
+
+    expect(meter.ttsChars).toBe("Hello there".length + "Second line".length);
+  });
+
+  it("injects the effective ElevenLabs key into the render command env", async () => {
+    const { execute, executeCommand } = renderSandbox({});
+
+    await execute(RENDER_INPUT, EXEC_CTX);
+
+    const [renderCommand, , renderEnv] = executeCommand.mock.calls[0] ?? [];
+    expect(renderCommand).toContain("manim render");
+    expect(renderEnv).toEqual({
+      ELEVEN_API_KEY: "el-test-key",
+      ELEVENLABS_API_KEY: "el-test-key",
+    });
+  });
+
+  it("meters nothing when the render fails", async () => {
+    const { execute, meter } = renderSandbox({
+      renderExit: 1,
+      sceneSource: 'self.voiceover(text="unused")',
+    });
+
+    await execute(RENDER_INPUT, EXEC_CTX);
+
+    expect(meter.ttsChars).toBe(0);
   });
 });

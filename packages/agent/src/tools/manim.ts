@@ -14,6 +14,7 @@ import {
 } from "@animus/core/tools";
 import type { Sandbox } from "@daytonaio/sdk";
 import { type ToolSet, tool } from "ai";
+import { extractNarrationChars } from "../metering/narration.ts";
 import { commandOutput, PROJECT_DIR } from "../sandbox/index.ts";
 
 const MAX_LOG_CHARS = 16_000;
@@ -43,6 +44,12 @@ export type SaveVideo = (input: {
  * from R2, no byte round-trip through the API). Implemented by the API so the
  * track can change without a sandbox rebuild. */
 export type BackgroundMusicUrl = () => Promise<string>;
+
+/** A mutable per-turn accumulator the API owns. `renderScene` adds the narration
+ * characters it synthesizes so the API can meter TTS cost after the turn. */
+export interface TurnMeter {
+  ttsChars: number;
+}
 
 function resolvePath(path: string): string {
   return path.startsWith("/") ? path : `${PROJECT_DIR}/${path}`;
@@ -128,8 +135,21 @@ export function createManimTools(deps: {
   conversationId: string;
   saveVideo: SaveVideo;
   backgroundMusicUrl: BackgroundMusicUrl;
+  /** The effective ElevenLabs key for this turn (the user's own when they've
+   * brought one, otherwise ours). Injected into the render command so narration
+   * synthesizes against the right account. */
+  elevenLabsApiKey: string;
+  /** Accumulates synthesized narration characters for post-turn TTS metering. */
+  meter: TurnMeter;
 }): ToolSet {
-  const { sandbox, conversationId, saveVideo, backgroundMusicUrl } = deps;
+  const {
+    sandbox,
+    conversationId,
+    saveVideo,
+    backgroundMusicUrl,
+    elevenLabsApiKey,
+    meter,
+  } = deps;
 
   return {
     writeFile: tool({
@@ -224,10 +244,17 @@ export function createManimTools(deps: {
         // manim console script is on PATH (pip --user installs land in
         // ~/.local/bin, which non-login shells often don't include).
         const command = `python3 -m manim render ${QUALITY_FLAG[quality]} --format=mp4 --media_dir ${PROJECT_DIR}/media ${file} ${scene} 2>&1`;
+        // Inject the effective ElevenLabs key on the render command itself so it
+        // is authoritative even if the sandbox was created on a different key
+        // (e.g. the user added their own key mid-conversation). Both names are
+        // set because the ElevenLabs SDK and manim-voiceover have each used one.
         const res = await sandbox.process.executeCommand(
           command,
           PROJECT_DIR,
-          undefined,
+          {
+            ELEVEN_API_KEY: elevenLabsApiKey,
+            ELEVENLABS_API_KEY: elevenLabsApiKey,
+          },
           RENDER_TIMEOUT_SEC
         );
         const output = commandOutput(res);
@@ -235,6 +262,16 @@ export function createManimTools(deps: {
 
         if (res.exitCode !== 0) {
           return { ok: false, file, scene, exitCode: res.exitCode, logs };
+        }
+
+        // Count narration characters synthesized this render for TTS metering.
+        // Failure to read the source must never fail the render, so it is
+        // best-effort: on any error we simply meter nothing for this render.
+        try {
+          const sceneSource = await sandbox.fs.downloadFile(resolvePath(file));
+          meter.ttsChars += extractNarrationChars(sceneSource.toString("utf8"));
+        } catch {
+          // Leave the meter unchanged — under-charging is safer than failing.
         }
 
         const masterPath = outputPath(output, file, scene, quality);

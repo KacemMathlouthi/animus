@@ -47,10 +47,16 @@ function getClient(): Daytona {
 
 /** Create-or-resume the conversation's sandbox from the Manim snapshot. Pass the
  * persisted id to resume; the returned sandbox's `id` is the one to persist
- * (unchanged on resume, fresh if the old one was evicted or none existed). */
+ * (unchanged on resume, fresh if the old one was evicted or none existed).
+ *
+ * `elevenLabsApiKey` is the effective narration key (the user's own when they've
+ * brought one, otherwise ours) — baked into the sandbox env as a baseline. The
+ * render command re-injects the current effective key per turn, so a mid-
+ * conversation key change still takes effect without recreating the sandbox. */
 export async function ensureSandbox(input: {
   conversationId: string;
   sandboxId?: string | null;
+  elevenLabsApiKey: string;
 }): Promise<Sandbox> {
   const daytona = getClient();
 
@@ -61,18 +67,14 @@ export async function ensureSandbox(input: {
     }
   }
 
-  // Inject the ElevenLabs key on the sandbox env so every command (test renders
-  // and the final renderScene) inherits it for narration synthesis. Both names
-  // are set because the elevenlabs SDK and manim-voiceover have each used either.
-  const elevenLabsKey = getServerEnv().elevenLabsApiKey;
   return daytona.create(
     {
       snapshot: SNAPSHOT_NAME,
       autoStopInterval: AUTO_STOP_MINUTES,
       labels: { app: "animus", conversationId: input.conversationId },
       envVars: {
-        ELEVEN_API_KEY: elevenLabsKey,
-        ELEVENLABS_API_KEY: elevenLabsKey,
+        ELEVEN_API_KEY: input.elevenLabsApiKey,
+        ELEVENLABS_API_KEY: input.elevenLabsApiKey,
       },
     },
     { timeout: CREATE_TIMEOUT_SEC }
