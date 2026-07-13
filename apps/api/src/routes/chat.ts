@@ -67,23 +67,34 @@ chatRoute.post("/", async (c) => {
   const metered = isLlmMetered || isTtsMetered;
   const elevenLabsApiKey = ttsKey ?? env.elevenLabsApiKey;
 
+  const messages = mergeIncomingMessage(found.messages, body.message);
+
   // Pre-flight gate: a metered turn needs a positive balance to start. The
   // running turn is never killed, so the balance may end slightly negative.
   if (metered) {
     const { balanceMicros } = await getOrCreateCredits(uid);
     if (balanceMicros <= 0) {
+      // Persist the refused message: the client only ever sends the newest
+      // one, so without this save it would silently vanish from the thread
+      // once the user tops up and sends the next message.
+      await saveConversationMessages({ conversationId, messages });
+      // Name the key that actually unblocks them — a user who already brought
+      // an LLM key is metered only for narration, and vice versa.
+      let missingKeys = "model and ElevenLabs keys";
+      if (!isTtsMetered) {
+        missingKeys = "model key";
+      } else if (!isLlmMetered) {
+        missingKeys = "ElevenLabs narration key";
+      }
       return c.json(
         {
           code: OUT_OF_CREDITS,
-          message:
-            "You're out of credits. Add your own model key in settings to keep going.",
+          message: `You're out of credits. Add your own ${missingKeys} in settings to keep going.`,
         },
         402
       );
     }
   }
-
-  const messages = mergeIncomingMessage(found.messages, body.message);
 
   // Create-or-resume this conversation's sandbox and bind the Manim tools to it.
   // First creation bootstraps the toolchain and can take a few minutes.

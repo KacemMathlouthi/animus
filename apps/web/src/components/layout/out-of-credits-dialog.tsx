@@ -27,8 +27,10 @@ export function OutOfCreditsDialog() {
 				<DialogHeader>
 					<DialogTitle>You're out of credits</DialogTitle>
 					<DialogDescription>
-						Your free credits are used up. Add your own model key to keep
-						generating — it runs on your provider account, so there's no limit.
+						Your free credits are used up. Add your own keys to keep generating
+						for free: a model key for the writing and an ElevenLabs key for the
+						narration. Whichever you bring runs on your own account, with no
+						limit.
 					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
@@ -41,7 +43,7 @@ export function OutOfCreditsDialog() {
 							navigate("/settings/secrets");
 						}}
 					>
-						Add your key
+						Add your keys
 					</Button>
 				</DialogFooter>
 			</DialogContent>

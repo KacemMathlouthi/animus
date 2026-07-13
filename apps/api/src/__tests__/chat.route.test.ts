@@ -194,6 +194,61 @@ describe("POST /chat — credit gate", () => {
     expect(createManimAgent).not.toHaveBeenCalled();
   });
 
+  it("persists the refused message so it survives the 402", async () => {
+    getOrCreateCredits.mockResolvedValue({
+      balanceMicros: 0,
+      grantMicros: FREE_GRANT_MICROS,
+    });
+
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "make the graph blue") }
+    );
+
+    expect(res.status).toBe(402);
+    expect(saveConversationMessages).toHaveBeenCalledWith({
+      conversationId: "conv1",
+      messages: [userMessage("m1", "make the graph blue")],
+    });
+  });
+
+  it("names the missing narration key for an LLM-BYOK user", async () => {
+    getDecryptedLlmKey.mockResolvedValue({
+      provider: "anthropic",
+      model: "claude-opus-4-6",
+      apiKey: "sk-ant-user",
+    });
+    getOrCreateCredits.mockResolvedValue({
+      balanceMicros: 0,
+      grantMicros: FREE_GRANT_MICROS,
+    });
+
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "hi") }
+    );
+
+    expect(res.status).toBe(402);
+    const body = (await res.json()) as { message: string };
+    expect(body.message).toContain("ElevenLabs narration key");
+    expect(body.message).not.toContain("model key");
+  });
+
+  it("names both keys for a fully metered user at zero balance", async () => {
+    getOrCreateCredits.mockResolvedValue({
+      balanceMicros: 0,
+      grantMicros: FREE_GRANT_MICROS,
+    });
+
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "hi") }
+    );
+
+    const body = (await res.json()) as { message: string };
+    expect(body.message).toContain("model and ElevenLabs keys");
+  });
+
   it("does not gate a fully-BYOK user (both keys), skipping the balance check", async () => {
     getDecryptedLlmKey.mockResolvedValue({
       provider: "anthropic",
