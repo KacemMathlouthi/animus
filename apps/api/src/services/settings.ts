@@ -12,6 +12,30 @@ import type {
 import { TTS_KEY_PROVIDER } from "@animus/core";
 import { and, db, eq, providerKey, userSettings } from "@animus/db";
 import { decryptSecret, encryptSecret } from "../lib/crypto.ts";
+import { logger } from "../lib/logger.ts";
+
+/** Decrypt a stored key, treating an undecryptable row (rotated
+ * ENCRYPTION_KEY, corrupted ciphertext) as "no key" so the turn falls back to
+ * the metered platform path instead of failing every request with a 500. */
+function tryDecrypt(
+  userId: string,
+  kind: KeyKind,
+  encrypted: string
+): string | undefined {
+  try {
+    return decryptSecret(encrypted);
+  } catch (error) {
+    logger.warn(
+      {
+        userId,
+        kind,
+        reason: error instanceof Error ? error.message : "unknown",
+      },
+      "stored provider key could not be decrypted; treating as absent"
+    );
+    return;
+  }
+}
 
 export async function getGenerationSettings(userId: string) {
   const row = await db.query.userSettings.findFirst({
@@ -145,10 +169,14 @@ export async function getDecryptedLlmKey(
   if (!row?.model) {
     return;
   }
+  const apiKey = tryDecrypt(userId, "llm", row.keyEncrypted);
+  if (!apiKey) {
+    return;
+  }
   return {
     provider: row.provider as ProviderId,
     model: row.model,
-    apiKey: decryptSecret(row.keyEncrypted),
+    apiKey,
   };
 }
 
@@ -160,5 +188,5 @@ export async function getDecryptedTtsKey(
   const row = await db.query.providerKey.findFirst({
     where: and(eq(providerKey.userId, userId), eq(providerKey.kind, "tts")),
   });
-  return row ? decryptSecret(row.keyEncrypted) : undefined;
+  return row ? tryDecrypt(userId, "tts", row.keyEncrypted) : undefined;
 }

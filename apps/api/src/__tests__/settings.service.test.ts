@@ -49,6 +49,12 @@ vi.mock("../lib/crypto.ts", () => ({
   decryptSecret: vi.fn((value: string) => value.replace(ENCRYPTED_PREFIX, "")),
 }));
 
+const { loggerWarn } = vi.hoisted(() => ({ loggerWarn: vi.fn() }));
+
+vi.mock("../lib/logger.ts", () => ({
+  logger: { warn: loggerWarn, info: vi.fn(), error: vi.fn() },
+}));
+
 const {
   deleteProviderKey,
   getDecryptedLlmKey,
@@ -225,5 +231,36 @@ describe("provider keys", () => {
   it("returns undefined when there is no TTS key", async () => {
     mockFindFirstProviderKey.mockResolvedValue(undefined);
     await expect(getDecryptedTtsKey("user-1")).resolves.toBeUndefined();
+  });
+
+  it("treats an undecryptable LLM key as absent instead of throwing", async () => {
+    const { decryptSecret } = await import("../lib/crypto.ts");
+    vi.mocked(decryptSecret).mockImplementationOnce(() => {
+      throw new Error("Unsupported state or unable to authenticate data");
+    });
+    mockFindFirstProviderKey.mockResolvedValue({
+      kind: "llm",
+      provider: "openai",
+      model: "gpt-4.1",
+      keyEncrypted: "encrypted:sk-openai",
+    });
+
+    await expect(getDecryptedLlmKey("user-1")).resolves.toBeUndefined();
+    expect(loggerWarn).toHaveBeenCalledTimes(1);
+  });
+
+  it("treats an undecryptable TTS key as absent instead of throwing", async () => {
+    const { decryptSecret } = await import("../lib/crypto.ts");
+    vi.mocked(decryptSecret).mockImplementationOnce(() => {
+      throw new Error("bad ciphertext");
+    });
+    mockFindFirstProviderKey.mockResolvedValue({
+      kind: "tts",
+      provider: "elevenlabs",
+      keyEncrypted: "encrypted:sk_eleven",
+    });
+
+    await expect(getDecryptedTtsKey("user-1")).resolves.toBeUndefined();
+    expect(loggerWarn).toHaveBeenCalledTimes(1);
   });
 });
