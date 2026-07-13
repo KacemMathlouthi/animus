@@ -66,15 +66,31 @@ Cross-package "does it compile" = `bun run typecheck`.
   in `packages/agent/src/sandbox` as plain functions
   (`ensureSandbox`/`destroySandbox`) returning the Daytona handle directly — the
   tools call the SDK natively (no wrapper adapter).
-- **Models: Claude via Amazon Bedrock.** The agent resolves its model through
-  `@ai-sdk/amazon-bedrock` — a Bedrock inference-profile id (`BEDROCK_MODEL`,
-  e.g. `us.anthropic.claude-opus-4-6-v1`), with AWS credentials/region from the
-  `AWS_*` env vars or the AWS credential chain (EC2/ECS IAM role). Still
-  provider-agnostic at the AI SDK layer. BYOK is scaffolded — the settings UI and
-  schema store AES-256-GCM-encrypted provider keys (never returned to the client,
-  only a masked `provider + last4` preview) — but the agent's model selection does
-  **not** yet consume them; every turn currently runs on Bedrock. Free-tier
-  quota/billing is future work.
+- **Models: Claude via Amazon Bedrock (default), with BYOK.** By default the
+  agent resolves its model through `@ai-sdk/amazon-bedrock` — a Bedrock
+  inference-profile id (`BEDROCK_MODEL`, e.g. `us.anthropic.claude-opus-4-6-v1`),
+  with AWS credentials/region from the `AWS_*` env vars or the AWS credential
+  chain (EC2/ECS IAM role). Still provider-agnostic at the AI SDK layer.
+  **BYOK is now wired into model selection** (`resolveModel` in
+  `packages/agent/src/config`): a user may store an AES-256-GCM-encrypted LLM key
+  (Anthropic / OpenAI / Google, with a curated tool-capable model) and/or an
+  ElevenLabs narration key (`provider_key` rows discriminated by `kind`, never
+  returned to the client — only a masked `provider + last4` preview). A brought
+  key runs that component on the user's own account and is **not metered**.
+- **Cost control: free credits → BYOK (see `docs/cost-control.md`, gitignored).**
+  Each account starts with a $5 free grant (the `user_credits.balance_micros`
+  default, mirrored by `FREE_GRANT_MICROS` in `@animus/core`). Turns are metered
+  **per component** in integer micro-USD against a hardcoded price table
+  (`@animus/core` pricing): the LLM unless the user brought their own key, and
+  ElevenLabs TTS (narration chars, counted from the rendered scene) unless they
+  brought one. The chat route refuses a metered turn at a non-positive balance
+  (`402 OUT_OF_CREDITS`, surfaced by the web as a BYOK depletion dialog) and
+  settles the real cost on finish — idempotent on the completed assistant message
+  id (`usage_event`). Enforcement is **balance-only** (no mid-turn kill; a balance
+  may end slightly negative). Optional `CREDITS_GLOBAL_CAP_USD` withholds new
+  grants once total free spend is exceeded. The header shows the balance as a
+  gauge ring around the avatar. Provider keys are verified with a cheap test call
+  before they're stored. Quota tiers / paid billing remain future work.
 - **Runtime:** `apps/api` (Hono/Bun) hosts the loop as a **long-running
   container** (streaming + live sandbox handles need a persistent process — not
   serverless). No separate worker/queue in v1.
@@ -142,11 +158,14 @@ click-through elsewhere) → observability ✓ (Braintrust LLM tracing over Open
 into a persona/operating prompt + always-on `manim-craft` rules, kept in lockstep
 with the `manim-video` skill; snapshot bumped to 0.6) → landing/UX polish ✓
 (dark-mode default, painted feature/hero backgrounds, use-cases section, 404 page,
-per-route document titles via `useDocumentTitle`) → **next:** playback polish →
-generalize the render/repair loop → later: quota/billing (wire BYOK into model
-selection), autonomous mode. (Outstanding before the chat phase fully closes: an
-atomic title-generation claim. HTTP-level route tests for `conversations` + the
-`/api/chat` sync contract now exist.)
+per-route document titles via `useDocumentTitle`) → cost control ✓ (free-credit
+metering + BYOK for LLM and ElevenLabs, per-component; balance-only enforcement
+with a `402 OUT_OF_CREDITS` gate + depletion dialog; header balance gauge; see the
+Cost-control decision above) → **next:** playback polish → generalize the
+render/repair loop → later: paid quota tiers / billing, autonomous mode.
+(Outstanding before the chat phase fully closes: an atomic title-generation claim.
+HTTP-level route tests for `conversations` + the `/api/chat` sync contract now
+exist.)
 
 ---
 
