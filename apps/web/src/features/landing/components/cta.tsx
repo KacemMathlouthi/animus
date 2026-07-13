@@ -1,12 +1,12 @@
-import { ArrowRightIcon } from "lucide-react";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
 import { LogoMark } from "@/components/brand/logo-mark";
 import { DecorIcon } from "@/components/decor-icon";
-import { Button } from "@/components/ui/button";
+import { BookDemoButton } from "@/components/pixel-perfect/book-demo-button";
 import { useCtaTarget } from "@/features/landing/hooks/use-cta-target";
 
 export function CallToAction() {
 	const ctaTarget = useCtaTarget();
+	const navigate = useNavigate();
 
 	return (
 		<div className="relative mx-4 my-20 flex max-w-3xl flex-col items-center justify-between gap-y-5 border-y px-4 py-14 md:mx-auto md:my-28 dark:bg-[radial-gradient(35%_80%_at_25%_0%,theme(--color-foreground/.06),transparent)]">
@@ -30,11 +30,12 @@ export function CallToAction() {
 			</p>
 
 			<div className="flex items-center justify-center gap-2 pt-1">
-				<Button asChild size="lg">
-					<Link to={ctaTarget}>
-						Ask your first question <ArrowRightIcon data-icon="inline-end" />
-					</Link>
-				</Button>
+				<BookDemoButton
+					className="h-12 w-[13rem]"
+					onClick={() => navigate(ctaTarget)}
+				>
+					Ask your first question
+				</BookDemoButton>
 			</div>
 		</div>
 	);

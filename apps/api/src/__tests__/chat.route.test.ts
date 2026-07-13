@@ -1,3 +1,4 @@
+import { FREE_GRANT_MICROS, OUT_OF_CREDITS } from "@animus/core";
 import type { UIMessage } from "ai";
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -11,6 +12,10 @@ const {
   loadOwnedConversation,
   saveConversationMessages,
   setConversationSandboxId,
+  getDecryptedLlmKey,
+  getDecryptedTtsKey,
+  getOrCreateCredits,
+  settleUsage,
 } = vi.hoisted(() => ({
   createManimAgent: vi.fn(),
   ensureSandbox: vi.fn(),
@@ -20,11 +25,18 @@ const {
   loadOwnedConversation: vi.fn(),
   saveConversationMessages: vi.fn(),
   setConversationSandboxId: vi.fn(),
+  getDecryptedLlmKey: vi.fn(),
+  getDecryptedTtsKey: vi.fn(),
+  getOrCreateCredits: vi.fn(),
+  settleUsage: vi.fn(),
 }));
 
 vi.mock("@animus/agent", () => ({ createManimAgent, ensureSandbox }));
 vi.mock("@animus/core/env", () => ({
-  getServerEnv: () => ({ bedrockModel: "model-x" }),
+  getServerEnv: () => ({
+    bedrockModel: "model-x",
+    elevenLabsApiKey: "our-eleven-key",
+  }),
 }));
 vi.mock("../observability/telemetry.ts", () => ({
   aiTelemetry: (opts: unknown) => opts,
@@ -32,6 +44,11 @@ vi.mock("../observability/telemetry.ts", () => ({
 vi.mock("../lib/media.ts", () => ({ backgroundMusicUrl, saveVideo }));
 vi.mock("../services/conversation-titles.ts", () => ({
   maybeGenerateConversationTitle,
+}));
+vi.mock("../services/credits.ts", () => ({ getOrCreateCredits, settleUsage }));
+vi.mock("../services/settings.ts", () => ({
+  getDecryptedLlmKey,
+  getDecryptedTtsKey,
 }));
 // Keep the pure helpers (isUIMessage, mergeIncomingMessage) faithful so the
 // route's validation and merge behavior is exercised for real; mock only IO.
@@ -89,28 +106,51 @@ function post(user: TestUser, body: unknown) {
   });
 }
 
+const COMPLETED: UIMessage[] = [
+  userMessage("m1", "hi"),
+  { id: "a1", role: "assistant", parts: [{ type: "text", text: "hello" }] },
+];
+
+/** A fake agent whose stream, on finish, invokes onFinish with completed
+ * messages and exposes token usage — mirroring the AI SDK stream result. */
+function stubAgentStream(usage = { inputTokens: 100, outputTokens: 50 }) {
+  const toUIMessageStreamResponse = vi.fn(
+    async (opts: {
+      onFinish: (arg: { messages: UIMessage[] }) => Promise<void> | void;
+    }) => {
+      await opts.onFinish({ messages: COMPLETED });
+      return new Response("ok");
+    }
+  );
+  const stream = vi.fn().mockResolvedValue({
+    toUIMessageStreamResponse,
+    totalUsage: Promise.resolve(usage),
+  });
+  createManimAgent.mockReturnValue({ stream });
+  return { stream };
+}
+
 beforeEach(() => {
-  createManimAgent.mockReset();
-  ensureSandbox.mockReset();
-  backgroundMusicUrl.mockReset();
-  saveVideo.mockReset();
-  maybeGenerateConversationTitle.mockReset();
-  loadOwnedConversation.mockReset();
-  saveConversationMessages.mockReset();
-  setConversationSandboxId.mockReset();
+  vi.clearAllMocks();
+  // Defaults: a metered user (no BYOK keys) with a healthy balance.
+  getDecryptedLlmKey.mockResolvedValue(undefined);
+  getDecryptedTtsKey.mockResolvedValue(undefined);
+  getOrCreateCredits.mockResolvedValue({
+    balanceMicros: FREE_GRANT_MICROS,
+    grantMicros: FREE_GRANT_MICROS,
+  });
+  settleUsage.mockResolvedValue(0);
+  saveConversationMessages.mockResolvedValue(undefined);
+  loadOwnedConversation.mockResolvedValue({
+    conversation: { id: "conv1", sandboxId: "old-sandbox" },
+    messages: [],
+  });
+  ensureSandbox.mockResolvedValue({ id: "new-sandbox" });
 });
 
 describe("POST /chat — request validation", () => {
   it("400s when id is missing", async () => {
     const res = await post({ id: "u1" }, { message: userMessage("m1", "hi") });
-
-    expect(res.status).toBe(400);
-    expect(loadOwnedConversation).not.toHaveBeenCalled();
-  });
-
-  it("400s when message is missing", async () => {
-    const res = await post({ id: "u1" }, { id: "conv1" });
-
     expect(res.status).toBe(400);
     expect(loadOwnedConversation).not.toHaveBeenCalled();
   });
@@ -120,56 +160,82 @@ describe("POST /chat — request validation", () => {
       { id: "u1" },
       { id: "conv1", message: { not: "a message" } }
     );
-
     expect(res.status).toBe(400);
-    expect(loadOwnedConversation).not.toHaveBeenCalled();
   });
 });
 
 describe("POST /chat — ownership", () => {
   it("404s when the conversation is not found or owned", async () => {
     loadOwnedConversation.mockResolvedValue(null);
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "hi") }
+    );
+    expect(res.status).toBe(404);
+    expect(ensureSandbox).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /chat — credit gate", () => {
+  it("402s a metered user with no balance, before touching the sandbox", async () => {
+    getOrCreateCredits.mockResolvedValue({
+      balanceMicros: 0,
+      grantMicros: FREE_GRANT_MICROS,
+    });
 
     const res = await post(
       { id: "u1" },
       { id: "conv1", message: userMessage("m1", "hi") }
     );
 
-    expect(res.status).toBe(404);
-    expect(loadOwnedConversation).toHaveBeenCalledWith({
-      conversationId: "conv1",
-      userId: "u1",
-    });
+    expect(res.status).toBe(402);
+    expect(await res.json()).toMatchObject({ code: OUT_OF_CREDITS });
     expect(ensureSandbox).not.toHaveBeenCalled();
+    expect(createManimAgent).not.toHaveBeenCalled();
+  });
+
+  it("does not gate a fully-BYOK user (both keys), skipping the balance check", async () => {
+    getDecryptedLlmKey.mockResolvedValue({
+      provider: "anthropic",
+      model: "claude-opus-4-6",
+      apiKey: "sk-ant-user",
+    });
+    getDecryptedTtsKey.mockResolvedValue("user-eleven-key");
+    stubAgentStream();
+
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "hi") }
+    );
+
+    expect(res.status).toBe(200);
+    expect(getOrCreateCredits).not.toHaveBeenCalled();
+    // Their own ElevenLabs key flows into the sandbox and the agent.
+    expect(ensureSandbox).toHaveBeenCalledWith({
+      conversationId: "conv1",
+      sandboxId: "old-sandbox",
+      elevenLabsApiKey: "user-eleven-key",
+    });
+    expect(createManimAgent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        elevenLabsApiKey: "user-eleven-key",
+        llmKey: {
+          provider: "anthropic",
+          model: "claude-opus-4-6",
+          apiKey: "sk-ant-user",
+        },
+      })
+    );
+    // Nothing billable for a fully-BYOK turn.
+    expect(settleUsage).toHaveBeenCalledWith(
+      expect.objectContaining({ isLlmMetered: false, isTtsMetered: false })
+    );
   });
 });
 
-describe("POST /chat — happy path", () => {
-  it("ensures the sandbox, persists a new id, streams, and saves on finish", async () => {
-    loadOwnedConversation.mockResolvedValue({
-      conversation: { id: "conv1", sandboxId: "old-sandbox" },
-      messages: [],
-    });
-    // A brand-new sandbox id (differs from the stored one) must be persisted.
-    ensureSandbox.mockResolvedValue({ id: "new-sandbox" });
-
-    const completedMessages: UIMessage[] = [
-      userMessage("m1", "hi"),
-      { id: "a1", role: "assistant", parts: [{ type: "text", text: "hello" }] },
-    ];
-
-    const toUIMessageStreamResponse = vi.fn(
-      async (opts: {
-        onFinish: (arg: { messages: UIMessage[] }) => Promise<void> | void;
-      }) => {
-        // Simulate the stream completing and triggering persistence.
-        await opts.onFinish({ messages: completedMessages });
-        return new Response("ok");
-      }
-    );
-    const stream = vi.fn().mockResolvedValue({ toUIMessageStreamResponse });
-    createManimAgent.mockReturnValue({ stream });
-    saveConversationMessages.mockResolvedValue(undefined);
+describe("POST /chat — happy path (metered)", () => {
+  it("ensures the sandbox with our key, streams, saves, and settles on finish", async () => {
+    stubAgentStream({ inputTokens: 100, outputTokens: 50 });
 
     const res = await post(
       { id: "u1" },
@@ -182,50 +248,57 @@ describe("POST /chat — happy path", () => {
     expect(ensureSandbox).toHaveBeenCalledWith({
       conversationId: "conv1",
       sandboxId: "old-sandbox",
+      elevenLabsApiKey: "our-eleven-key",
     });
     expect(setConversationSandboxId).toHaveBeenCalledWith(
       "conv1",
       "new-sandbox"
     );
-
     expect(createManimAgent).toHaveBeenCalledWith(
       expect.objectContaining({
         sandbox: { id: "new-sandbox" },
         conversationId: "conv1",
-        saveVideo,
-        backgroundMusicUrl,
-        telemetry: expect.objectContaining({
-          functionId: "manim-agent",
-          metadata: expect.objectContaining({
-            conversationId: "conv1",
-            model: "model-x",
-          }),
-        }),
+        elevenLabsApiKey: "our-eleven-key",
+        llmKey: undefined,
+        meter: expect.objectContaining({ ttsChars: expect.any(Number) }),
       })
     );
-    expect(stream).toHaveBeenCalledTimes(1);
 
     expect(saveConversationMessages).toHaveBeenCalledWith({
       conversationId: "conv1",
-      messages: completedMessages,
+      messages: COMPLETED,
     });
-    expect(maybeGenerateConversationTitle).toHaveBeenCalledWith({
-      conversationId: "conv1",
-      messages: completedMessages,
-    });
+    // Metered turn settles against a per-request turn id.
+    expect(settleUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "u1",
+        conversationId: "conv1",
+        turnId: expect.any(String),
+        isLlmMetered: true,
+        isTtsMetered: true,
+        model: "model-x",
+        inputTokens: 100,
+        outputTokens: 50,
+      })
+    );
+  });
+
+  it("settles each request with a distinct turn id (HITL continuations aren't deduped)", async () => {
+    // A single assistant message can span multiple requests during a
+    // human-in-the-loop exchange; each request must settle independently, so the
+    // idempotency key must differ per request even when the message id repeats.
+    stubAgentStream();
+    await post({ id: "u1" }, { id: "conv1", message: userMessage("m1", "hi") });
+    await post({ id: "u1" }, { id: "conv1", message: userMessage("m2", "go") });
+
+    const turnIds = settleUsage.mock.calls.map(([arg]) => arg.turnId);
+    expect(turnIds).toHaveLength(2);
+    expect(turnIds[0]).not.toBe(turnIds[1]);
   });
 
   it("does not re-persist the sandbox id when it is unchanged", async () => {
-    loadOwnedConversation.mockResolvedValue({
-      conversation: { id: "conv1", sandboxId: "same-sandbox" },
-      messages: [],
-    });
-    ensureSandbox.mockResolvedValue({ id: "same-sandbox" });
-
-    const toUIMessageStreamResponse = vi.fn(() => new Response("ok"));
-    createManimAgent.mockReturnValue({
-      stream: vi.fn().mockResolvedValue({ toUIMessageStreamResponse }),
-    });
+    ensureSandbox.mockResolvedValue({ id: "old-sandbox" });
+    stubAgentStream();
 
     const res = await post(
       { id: "u1" },

@@ -1,6 +1,11 @@
 import { PlayIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { VideoControlBar } from "@/features/studio/components/video-control-bar";
+import {
+	AMBIENT_HEIGHT,
+	AMBIENT_WIDTH,
+	useAmbientGlow,
+} from "@/features/studio/hooks/use-ambient-glow";
 import { useVideoPlayer } from "@/features/studio/hooks/use-video-player";
 
 /** A video player styled to the app's UI that fills its container. Native
@@ -25,6 +30,7 @@ export function VideoPlayer({
 	poster?: ReactNode;
 }) {
 	const player = useVideoPlayer({ src, playToken });
+	const ambientRef = useAmbientGlow(player.videoRef);
 
 	return (
 		<div
@@ -40,9 +46,20 @@ export function VideoPlayer({
 			// biome-ignore lint/a11y/noNoninteractiveTabindex: the media player is a keyboard-driven widget and must be focusable to receive shortcuts.
 			tabIndex={0}
 		>
+			{/* Ambient glow — a live blurred mirror of the frame filling the
+			    letterbox behind the video (see useAmbientGlow). */}
+			<div aria-hidden="true" className="pointer-events-none absolute inset-0">
+				<canvas
+					className="h-full w-full scale-105 opacity-60 blur-3xl"
+					height={AMBIENT_HEIGHT}
+					ref={ambientRef}
+					width={AMBIENT_WIDTH}
+				/>
+			</div>
+
 			<video
 				aria-label={title}
-				className="h-full w-full object-contain"
+				className="relative h-full w-full object-contain"
 				playsInline
 				ref={player.videoRef}
 				src={src}

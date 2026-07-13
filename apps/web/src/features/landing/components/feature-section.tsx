@@ -1,9 +1,3 @@
-import {
-	AudioLinesIcon,
-	SearchIcon,
-	Share2Icon,
-	SigmaIcon,
-} from "lucide-react";
 import type React from "react";
 import { DecorIcon } from "@/components/decor-icon";
 import { FullWidthDivider } from "@/features/landing/components/full-width-divider";
@@ -35,49 +29,95 @@ export function FeatureSection() {
 				</p>
 			</div>
 
-			<div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2">
-				<FeatureCard className="h-80 p-0 md:h-96">
-					<PaintingCard
-						alt="Raphael, The School of Athens"
-						description="Every explainer starts from real sources, so the narration stays accurate instead of plausible."
-						icon={<SearchIcon className="size-4" />}
-						image="/features/research-grounded.webp"
-						objectPosition="50% 38%"
-						title="Research-grounded"
-					/>
+			<div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:h-[40rem] lg:grid-cols-3">
+				<FeatureCard className="h-96 p-0 md:h-[28rem] lg:h-full">
+					<div className="relative size-full overflow-hidden">
+						<img
+							alt="Raphael, The School of Athens"
+							className="absolute inset-0 size-full object-cover"
+							loading="lazy"
+							src="/features/research-grounded.webp"
+							style={{ objectPosition: "50% 38%" }}
+						/>
+						<div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-24">
+							<h3 className="font-medium text-white text-xl">
+								Research-grounded
+							</h3>
+							<p className="max-w-sm text-white/75">
+								Starts from real sources, so the narration stays accurate
+								instead of plausible.
+							</p>
+						</div>
+					</div>
 				</FeatureCard>
 
-				<FeatureCard className="h-80 p-0 md:h-96">
-					<PaintingCard
-						alt="Caravaggio, The Lute Player"
-						description="Studio-grade voiceover is written and timed to the motion, not bolted on afterwards."
-						icon={<AudioLinesIcon className="size-4" />}
-						image="/features/narration.webp"
-						objectPosition="50% 40%"
-						title="Real narration"
-					/>
-				</FeatureCard>
+				<div className="flex flex-col gap-6">
+					<FeatureCard className="h-80 flex-1 p-0 lg:h-auto">
+						<div className="relative size-full overflow-hidden">
+							<img
+								alt="Leonardo da Vinci, Vitruvian Man"
+								className="absolute inset-0 size-full object-cover"
+								loading="lazy"
+								src="/features/precision.webp"
+								style={{ objectPosition: "50% 30%" }}
+							/>
+							<div className="absolute inset-0 bg-black/45" />
+							<div className="absolute inset-0 flex items-center justify-center px-4 pb-16">
+								<p className="font-pixel-grid text-4xl text-white tracking-tight drop-shadow-lg sm:text-5xl">
+									e<sup className="text-2xl sm:text-3xl">iπ</sup>
+									{" + 1 = 0"}
+								</p>
+							</div>
+							<div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/85 to-transparent p-6 pt-16">
+								<h3 className="font-medium text-white text-xl">
+									Precise, not hand-wavy
+								</h3>
+								<p className="max-w-sm text-white/75">
+									Equations, graphs, and transforms are drawn exactly, never
+									rough approximations.
+								</p>
+							</div>
+						</div>
+					</FeatureCard>
 
-				<FeatureCard className="h-80 p-0 md:h-96">
-					<PaintingCard
-						alt="Leonardo da Vinci, Vitruvian Man"
-						description="Equations, graphs, and transforms are drawn exactly, so the visuals are accurate, never rough approximations."
-						icon={<SigmaIcon className="size-4" />}
-						image="/features/precision.webp"
-						objectPosition="50% 30%"
-						title="Precise, not hand-wavy"
-					/>
-				</FeatureCard>
+					<FeatureCard className="h-80 flex-1 p-0 lg:h-auto">
+						<div className="relative size-full overflow-hidden">
+							<img
+								alt="Claude Lorrain, Seaport with the Embarkation of the Queen of Sheba"
+								className="absolute inset-0 size-full object-cover"
+								loading="lazy"
+								src="/features/share.webp"
+								style={{ objectPosition: "50% 55%" }}
+							/>
+							<div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-6 pt-16">
+								<h3 className="font-medium text-white text-xl">
+									Ready to share
+								</h3>
+								<p className="max-w-sm text-white/75">
+									A polished video you can download, post, or send in a click.
+								</p>
+							</div>
+						</div>
+					</FeatureCard>
+				</div>
 
-				<FeatureCard className="h-80 p-0 md:h-96">
-					<PaintingCard
-						alt="Claude Lorrain, Seaport with the Embarkation of the Queen of Sheba"
-						description="Every explainer comes back as a polished video you can download, post, or send in a click."
-						icon={<Share2Icon className="size-4" />}
-						image="/features/share.webp"
-						objectPosition="50% 55%"
-						title="Ready to share"
-					/>
+				<FeatureCard className="h-96 p-0 md:col-span-2 md:h-[28rem] lg:col-span-1 lg:h-full">
+					<div className="relative size-full overflow-hidden">
+						<img
+							alt="Caravaggio, The Lute Player"
+							className="absolute inset-0 size-full object-cover"
+							loading="lazy"
+							src="/features/narration.webp"
+							style={{ objectPosition: "50% 40%" }}
+						/>
+						<div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-24">
+							<h3 className="font-medium text-white text-xl">Real narration</h3>
+							<p className="max-w-sm text-white/75">
+								Studio-grade voiceover, written and synced to the animation, not
+								bolted on afterwards.
+							</p>
+						</div>
+					</div>
 				</FeatureCard>
 			</div>
 
@@ -96,7 +136,7 @@ function FeatureCard({
 	return (
 		<div
 			className={cn(
-				"relative flex flex-col justify-between gap-6 bg-background px-6 pt-8 pb-6 shadow-xs",
+				"relative flex flex-col justify-between gap-6 bg-background shadow-xs",
 				"dark:bg-[radial-gradient(50%_80%_at_25%_0%,theme(--color-foreground/.08),transparent)]",
 				className,
 			)}
@@ -109,41 +149,6 @@ function FeatureCard({
 			<DecorIcon className="size-3.5" position="top-left" />
 
 			{children}
-		</div>
-	);
-}
-
-function PaintingCard({
-	image,
-	alt,
-	icon,
-	title,
-	description,
-	objectPosition = "center",
-}: {
-	image: string;
-	alt: string;
-	icon: React.ReactNode;
-	title: string;
-	description: string;
-	objectPosition?: string;
-}) {
-	return (
-		<div className="relative size-full overflow-hidden">
-			<img
-				alt={alt}
-				className="absolute inset-0 size-full object-cover"
-				loading="lazy"
-				src={image}
-				style={{ objectPosition }}
-			/>
-			<div className="absolute top-4 left-4 flex size-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm">
-				{icon}
-			</div>
-			<div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-6 pt-20">
-				<h3 className="font-medium text-white text-xl">{title}</h3>
-				<p className="max-w-sm text-white/75">{description}</p>
-			</div>
 		</div>
 	);
 }

@@ -52,22 +52,22 @@ export function HeroSection() {
 				)}
 			>
 				Turn any{" "}
-				<span className="font-pixel-grid text-primary italic uppercase">
+				<span className="-mr-3 hero-word pr-3 font-pixel-grid italic uppercase">
 					question
 				</span>{" "}
 				into a{" "}
-				<span className="font-pixel-grid font-bold text-primary uppercase">
+				<span className="hero-word font-pixel-grid font-bold uppercase">
 					video
 				</span>
 			</h1>
 
 			<p
 				className={cn(
-					"max-w-md text-balance text-center text-muted-foreground md:text-lg",
+					"text-center text-muted-foreground sm:whitespace-nowrap md:text-lg",
 					"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-150 duration-500 ease-snappy",
 				)}
 			>
-				Ask anything and get a narrated, animated explainer that makes it click.
+				Narrated, animated explainers that make anything click.
 			</p>
 
 			<HeroPrompt className="fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-snappy" />

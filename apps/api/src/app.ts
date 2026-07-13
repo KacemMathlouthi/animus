@@ -11,6 +11,7 @@ import { requestLogger } from "./middleware/logger.ts";
 import { initTelemetry } from "./observability/telemetry.ts";
 import { chatRoute } from "./routes/chat.ts";
 import { conversationsRoute } from "./routes/conversations.ts";
+import { creditsRoute } from "./routes/credits.ts";
 import { healthRoute } from "./routes/health.ts";
 import { mediaRoute } from "./routes/media.ts";
 import { settingsRoute } from "./routes/settings.ts";
@@ -51,6 +52,7 @@ app.get("/", (c) => c.json({ name: "animus-api", status: "ok" }));
 app.route("/health", healthRoute);
 app.route("/api/settings", settingsRoute);
 app.route("/api/conversations", conversationsRoute);
+app.route("/api/credits", creditsRoute);
 app.route("/api/chat", chatRoute);
 app.route("/api/media", mediaRoute);
 // Public (unauthenticated) — anyone with an unlisted token can resolve a share.

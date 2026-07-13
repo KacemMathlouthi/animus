@@ -12,43 +12,43 @@ import { cn } from "@/lib/utils";
 
 type UseCase = {
 	name: string;
-	description: string;
+	prompt: string;
 	icon: LucideIcon;
 	decor?: React.ReactNode;
 };
 
+/* Each audience is introduced by the prompt they'd actually type — the card
+   demos the product while it names who it's for. */
 const data: UseCase[] = [
 	{
 		name: "Students",
-		description: "Turn a confusing lecture into a video that finally clicks.",
+		prompt: "Explain eigenvalues like I'm seeing them for the first time.",
 		icon: GraduationCapIcon,
 	},
 	{
 		name: "Teachers",
-		description: "Build lessons your class remembers, in minutes not weekends.",
+		prompt: "Make a 3-minute intro to photosynthesis for my class.",
 		icon: PresentationIcon,
 		decor: <DecorIcon position="bottom-left" />,
 	},
 	{
 		name: "The endlessly curious",
-		description:
-			"Ask what you never got answered, get an explainer that sticks.",
+		prompt: "Why do mirrors flip left and right but not up and down?",
 		icon: SparklesIcon,
 	},
 	{
 		name: "Researchers",
-		description: "Explain your paper to any audience without dumbing it down.",
+		prompt: "Turn my paper's core result into a 2-minute explainer.",
 		icon: MicIcon,
 	},
 	{
 		name: "Creators",
-		description:
-			"Ship polished explainers without touching animation software.",
+		prompt: "Animate how gradient descent finds a minimum.",
 		icon: VideoIcon,
 	},
 	{
 		name: "Teams",
-		description: "Make complex ideas land in onboarding, docs, and decks.",
+		prompt: "Explain our caching architecture to new engineers.",
 		icon: UsersIcon,
 		decor: <DecorIcon position="top-left" />,
 	},
@@ -97,18 +97,20 @@ function UseCaseCard({
 	return (
 		<div
 			className={cn(
-				"relative flex flex-col items-start gap-4 bg-background p-5 text-start md:p-6 md:even:bg-background/75",
+				"relative flex flex-col gap-5 bg-background p-5 text-start md:p-6",
 				className,
 			)}
 			{...props}
 		>
-			<div className="flex size-10 items-center justify-center rounded-lg border bg-muted/40 text-foreground [&_svg]:size-5 [&_svg]:stroke-[1.5]">
-				<Icon />
+			<div className="flex items-center gap-2.5">
+				<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/40 text-foreground [&_svg]:size-4 [&_svg]:stroke-[1.5]">
+					<Icon />
+				</div>
+				<h3 className="font-medium text-foreground text-sm">{useCase.name}</h3>
 			</div>
-			<div className="space-y-1">
-				<h3 className="font-medium">{useCase.name}</h3>
-				<p className="text-muted-foreground text-sm">{useCase.description}</p>
-			</div>
+			<p className="text-pretty font-medium text-foreground/90 leading-snug md:text-lg">
+				&ldquo;{useCase.prompt}&rdquo;
+			</p>
 			{children}
 		</div>
 	);
