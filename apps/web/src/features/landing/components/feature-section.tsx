@@ -44,8 +44,8 @@ export function FeatureSection() {
 								Research-grounded
 							</h3>
 							<p className="max-w-sm text-white/75">
-								Every explainer starts from real sources, so the narration stays
-								accurate instead of plausible.
+								Starts from real sources, so the narration stays accurate
+								instead of plausible.
 							</p>
 						</div>
 					</div>
@@ -94,8 +94,7 @@ export function FeatureSection() {
 									Ready to share
 								</h3>
 								<p className="max-w-sm text-white/75">
-									Every explainer comes back as a polished video you can
-									download, post, or send in a click.
+									A polished video you can download, post, or send in a click.
 								</p>
 							</div>
 						</div>
