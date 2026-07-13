@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { cn } from "@/lib/utils";
 
 /* Adapted from pixel-perfect's book-demo button: the sliding pill picks up the
@@ -48,24 +49,21 @@ function DoubleChevron({ index }: { index: number }) {
 	);
 }
 
-export function BookDemoButton({
-	className,
+const rootClasses = cn(
+	"group/btn bd-root relative inline-flex h-11 w-36 overflow-hidden rounded-[12px]",
+	"bg-gradient-to-b from-[#1f1f1f] to-[#0a0a0a] dark:from-[#2c2c2c] dark:to-[#161616]",
+	"shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.18)]",
+	"transition-transform active:scale-[0.97]",
+	"focus-visible:outline-2 focus-visible:outline-offset-2",
+);
+
+function ButtonBody({
 	children,
-	...props
-}: React.ComponentProps<"button">): React.JSX.Element {
+}: {
+	children: React.ReactNode;
+}): React.JSX.Element {
 	return (
-		<button
-			className={cn(
-				"group/btn bd-root relative inline-flex h-11 w-36 overflow-hidden rounded-[12px]",
-				"bg-gradient-to-b from-[#1f1f1f] to-[#0a0a0a] dark:from-[#2c2c2c] dark:to-[#161616]",
-				"shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.18)]",
-				"transition-transform active:scale-[0.97]",
-				"focus-visible:outline-2 focus-visible:outline-offset-2",
-				className,
-			)}
-			type="button"
-			{...props}
-		>
+		<>
 			<span
 				className={cn(
 					"absolute inset-y-0 right-4 flex items-center font-medium text-[14px] text-white tracking-tight",
@@ -94,6 +92,28 @@ export function BookDemoButton({
 					<DoubleChevron index={index} key={id} />
 				))}
 			</span>
+		</>
+	);
+}
+
+/** With `to`, renders a real router link (middle-click, link role, crawlable);
+ * without it, a plain button for onClick use. */
+export function BookDemoButton({
+	className,
+	children,
+	to,
+	...props
+}: React.ComponentProps<"button"> & { to?: string }): React.JSX.Element {
+	if (to) {
+		return (
+			<Link className={cn(rootClasses, className)} to={to}>
+				<ButtonBody>{children}</ButtonBody>
+			</Link>
+		);
+	}
+	return (
+		<button className={cn(rootClasses, className)} type="button" {...props}>
+			<ButtonBody>{children}</ButtonBody>
 		</button>
 	);
 }
