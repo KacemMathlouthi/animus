@@ -6,6 +6,7 @@ import {
 	SunIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { BalanceSection } from "@/components/balance-section";
 import { useTheme } from "@/components/theme-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { UserAvatar } from "@/components/user-avatar";
+import { useCredits } from "@/hooks/use-credits";
 import { signOut, useSession } from "@/lib/auth-client";
 import { displayNameFrom } from "@/lib/user";
 import { SectionHeading } from "./section-heading";
@@ -47,6 +49,7 @@ export function AccountSection() {
 	const { data } = useSession();
 	const { theme, setTheme } = useTheme();
 	const navigate = useNavigate();
+	const { balance, fraction } = useCredits();
 	const user = data?.user;
 
 	if (!user) {
@@ -105,6 +108,15 @@ export function AccountSection() {
 						</div>
 					</CardContent>
 				</Card>
+
+				{balance ? (
+					<BalanceSection
+						balance={balance}
+						fraction={fraction}
+						onNavigateToKeys={() => navigate("/settings/secrets")}
+						variant="card"
+					/>
+				) : null}
 
 				<Card>
 					<CardHeader>
