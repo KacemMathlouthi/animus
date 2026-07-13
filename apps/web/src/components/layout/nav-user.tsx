@@ -1,5 +1,8 @@
 import { LogOutIcon, SettingsIcon, UserIcon } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
+import { BalanceSection } from "@/components/balance-section";
+import { CreditGauge } from "@/components/credit-gauge";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -10,12 +13,15 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/user-avatar";
+import { useCredits } from "@/hooks/use-credits";
 import { signOut, useSession } from "@/lib/auth-client";
 import { displayNameFrom } from "@/lib/user";
 
 export function NavUser() {
 	const { data } = useSession();
 	const navigate = useNavigate();
+	const { balance, fraction } = useCredits();
+	const [open, setOpen] = useState(false);
 	const user = data?.user;
 
 	if (!user) {
@@ -23,26 +29,39 @@ export function NavUser() {
 	}
 
 	const displayName = displayNameFrom(user.name, user.email);
+	const pct = Math.round(fraction * 100);
 
 	async function handleLogout() {
 		await signOut();
 		navigate("/");
 	}
 
+	function goToKeys() {
+		setOpen(false);
+		navigate("/settings/secrets");
+	}
+
 	return (
-		<DropdownMenu>
+		<DropdownMenu onOpenChange={setOpen} open={open}>
 			<DropdownMenuTrigger asChild>
 				<button
 					aria-label="Account menu"
-					className="rounded-full"
+					className="group cursor-pointer rounded-full"
 					type="button"
 				>
-					<UserAvatar
-						className="size-8"
-						email={user.email}
-						image={user.image}
-						name={user.name}
-					/>
+					<CreditGauge value={fraction}>
+						<span className="relative block size-8">
+							<UserAvatar
+								className="size-8 transition duration-200 group-hover:blur-[2px]"
+								email={user.email}
+								image={user.image}
+								name={user.name}
+							/>
+							<span className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-background/50 font-semibold text-[10px] text-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+								{pct}%
+							</span>
+						</span>
+					</CreditGauge>
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-64">
@@ -79,6 +98,17 @@ export function NavUser() {
 						Settings
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
+				{balance ? (
+					<>
+						<DropdownMenuSeparator />
+						<BalanceSection
+							balance={balance}
+							fraction={fraction}
+							onNavigateToKeys={goToKeys}
+							variant="menu"
+						/>
+					</>
+				) : null}
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuItem
