@@ -407,8 +407,8 @@
 	0%,
 	65%,
 	100% {
-		opacity: 0.3;
-		transform: translateX(0) scale(0.8);
+		opacity: 0.75;
+		transform: translateX(0) scale(0.9);
 	}
 	32% {
 		opacity: 1;
