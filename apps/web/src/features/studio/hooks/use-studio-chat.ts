@@ -10,6 +10,7 @@ import type {
 	StudioPhase,
 } from "@/features/studio/types";
 import { chatTransport } from "@/lib/chat";
+import { notifyCreditsChanged } from "@/lib/credit-events";
 
 type StudioChat = {
 	messages: AnimusUIMessage[];
@@ -47,6 +48,8 @@ export function useStudioChat({
 			sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
 			onFinish: () => {
 				onConversationUpdated?.();
+				// A completed turn may have drawn down the balance — refresh the gauge.
+				notifyCreditsChanged();
 			},
 		});
 

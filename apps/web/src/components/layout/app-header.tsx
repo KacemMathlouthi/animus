@@ -5,6 +5,7 @@ import {
 } from "@/components/layout/app-breadcrumbs";
 import { CustomSidebarTrigger } from "@/components/layout/custom-sidebar-trigger";
 import { NavUser } from "@/components/layout/nav-user";
+import { OutOfCreditsDialog } from "@/components/layout/out-of-credits-dialog";
 import { PublishMenu } from "@/components/layout/publish-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
@@ -40,6 +41,7 @@ export function AppHeader({
 				/>
 				<NavUser />
 			</div>
+			<OutOfCreditsDialog />
 		</header>
 	);
 }
