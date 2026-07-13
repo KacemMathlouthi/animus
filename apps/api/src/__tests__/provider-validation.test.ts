@@ -63,6 +63,22 @@ describe("validateLlmKey", () => {
     await expect(validateLlmKey("anthropic", "bad")).resolves.toBe(false);
   });
 
+  it("never logs the key when a Google validation request throws", async () => {
+    const { logger } = await import("../lib/logger.ts");
+    const warn = vi.mocked(logger.warn);
+    warn.mockClear();
+    fetchMock.mockRejectedValue(new Error("network down"));
+
+    await expect(validateLlmKey("google", "AIza-super-secret")).resolves.toBe(
+      false
+    );
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    // The key rides in the Google URL's query string; assert nothing logged
+    // contains it (endpoint is origin+path only, error reduced to its name).
+    expect(JSON.stringify(warn.mock.calls[0])).not.toContain("super-secret");
+  });
+
   it("returns false when the request throws (network/timeout)", async () => {
     fetchMock.mockRejectedValue(new Error("network down"));
     await expect(validateLlmKey("openai", "sk")).resolves.toBe(false);

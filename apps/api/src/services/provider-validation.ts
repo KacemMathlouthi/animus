@@ -23,7 +23,18 @@ async function isOk(
     });
     return res.ok;
   } catch (error) {
-    logger.warn({ err: error, url }, "provider key validation request failed");
+    // Deliberately log neither the URL nor the raw error: Google's validation
+    // endpoint carries the plaintext key in its query string, and runtime
+    // fetch errors can echo the full URL back. Origin+path plus the error name
+    // (TimeoutError vs TypeError) is enough to diagnose.
+    const { origin, pathname } = new URL(url);
+    logger.warn(
+      {
+        endpoint: `${origin}${pathname}`,
+        reason: error instanceof Error ? error.name : "unknown",
+      },
+      "provider key validation request failed"
+    );
     return false;
   }
 }
