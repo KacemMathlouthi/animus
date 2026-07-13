@@ -1,5 +1,6 @@
+import { ArrowUpIcon, LightbulbIcon } from "lucide-react";
 import type { ChangeEvent, KeyboardEvent } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useStartConversation } from "@/features/studio/hooks/use-start-conversation";
 import { useSession } from "@/lib/auth-client";
@@ -8,19 +9,14 @@ import { cn } from "@/lib/utils";
 
 const MAX_TEXTAREA_HEIGHT = 168;
 
-/** Two rightward chevrons made of dots — the send arrow (see `.send-dot` in
- * index.css for the shimmer). `d` staggers each dot's wave. */
-const SEND_DOTS = [
-	{ cx: 2, cy: 2, d: 0 },
-	{ cx: 5, cy: 5, d: 0.05 },
-	{ cx: 8, cy: 8, d: 0.1 },
-	{ cx: 5, cy: 11, d: 0.15 },
-	{ cx: 2, cy: 14, d: 0.2 },
-	{ cx: 6, cy: 2, d: 0.05 },
-	{ cx: 9, cy: 5, d: 0.1 },
-	{ cx: 12, cy: 8, d: 0.15 },
-	{ cx: 9, cy: 11, d: 0.2 },
-	{ cx: 6, cy: 14, d: 0.25 },
+/** Ready-made questions the "Prompts" button cycles into the input — a nudge
+ * for visitors who don't know what to ask yet. */
+const EXAMPLE_PROMPTS = [
+	"Why is the sky blue?",
+	"How do neural networks learn?",
+	"What is a Fourier transform?",
+	"How does RSA keep a secret?",
+	"Why do planets orbit in ellipses?",
 ];
 
 export function HeroPrompt({ className }: { className?: string }) {
@@ -28,14 +24,32 @@ export function HeroPrompt({ className }: { className?: string }) {
 	const navigate = useNavigate();
 	const { start, creating } = useStartConversation();
 	const [text, setText] = useState("");
+	const [exampleIndex, setExampleIndex] = useState(0);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+	const syncHeight = (el: HTMLTextAreaElement) => {
+		el.style.height = "0px";
+		el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
+	};
 
 	// Grow the textarea with its content up to a cap, then scroll. Driven off the
 	// input event's element (already carries the new value) — no effect needed.
 	const onChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
 		setText(event.target.value);
-		const el = event.target;
-		el.style.height = "0px";
-		el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
+		syncHeight(event.target);
+	};
+
+	// Fills the input with the next example; the height sync runs next frame,
+	// once the new value has rendered into the element.
+	const cyclePrompt = () => {
+		setText(EXAMPLE_PROMPTS[exampleIndex % EXAMPLE_PROMPTS.length]);
+		setExampleIndex(exampleIndex + 1);
+		const el = textareaRef.current;
+		if (!el) {
+			return;
+		}
+		el.focus();
+		requestAnimationFrame(() => syncHeight(el));
 	};
 
 	const submit = useCallback(
@@ -69,50 +83,53 @@ export function HeroPrompt({ className }: { className?: string }) {
 	const canSubmit = text.trim().length > 0 && !creating;
 
 	return (
-		<div className={cn("w-full max-w-xl", className)}>
-			<form
-				className="hero-prompt-frame flex items-center gap-2 rounded-2xl border-[2.5px] border-primary bg-card p-2"
-				onSubmit={(event) => {
-					event.preventDefault();
-					submit(text);
-				}}
-			>
-				<textarea
-					aria-label="Describe what you want explained"
-					className="min-h-11 flex-1 resize-none self-center bg-transparent px-2.5 py-2.5 text-base outline-none placeholder:text-muted-foreground"
-					onChange={onChange}
-					onKeyDown={onKeyDown}
-					placeholder="Explain how…"
-					rows={1}
-					value={text}
-				/>
-				<button
-					aria-label="Create video"
-					className="send-btn grid size-9 shrink-0 place-items-center self-center rounded-[11px] bg-primary text-primary-foreground shadow-sm transition-transform active:scale-95 disabled:pointer-events-none disabled:opacity-40"
-					disabled={!canSubmit}
-					type="submit"
+		<div className={cn("w-full max-w-2xl", className)}>
+			<div className="prompt-shell flex flex-col gap-2 rounded-2xl p-2.5">
+				<div className="flex items-center px-1.5 pt-0.5 font-medium text-muted-foreground text-xs">
+					<span>$5.00 in free credits</span>
+				</div>
+
+				<form
+					className={cn(
+						"prompt-well flex flex-col gap-2.5 rounded-xl border p-3",
+						"transition-[border-color] duration-200 ease-snappy focus-within:border-ring/50",
+					)}
+					onSubmit={(event) => {
+						event.preventDefault();
+						submit(text);
+					}}
 				>
-					<svg
-						aria-hidden="true"
-						className="overflow-visible"
-						fill="currentColor"
-						height="16"
-						viewBox="0 0 14 16"
-						width="14"
-					>
-						{SEND_DOTS.map((p) => (
-							<circle
-								className="send-dot"
-								cx={p.cx}
-								cy={p.cy}
-								key={`${p.cx}-${p.cy}`}
-								r="1"
-								style={{ animationDelay: `${p.d}s` }}
-							/>
-						))}
-					</svg>
-				</button>
-			</form>
+					<textarea
+						aria-label="Describe what you want explained"
+						className="min-h-20 w-full resize-none bg-transparent px-1.5 py-2 text-base outline-none placeholder:text-muted-foreground"
+						onChange={onChange}
+						onKeyDown={onKeyDown}
+						placeholder="Explain how…"
+						ref={textareaRef}
+						rows={2}
+						value={text}
+					/>
+
+					<div className="flex items-center justify-between">
+						<button
+							className="prompt-chip flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-medium text-muted-foreground text-xs transition-[filter,color] duration-200 ease-snappy hover:brightness-105 hover:text-foreground"
+							onClick={cyclePrompt}
+							type="button"
+						>
+							<LightbulbIcon aria-hidden="true" className="size-3.5" />
+							Prompts
+						</button>
+						<button
+							aria-label="Create video"
+							className="prompt-send grid size-9 shrink-0 place-items-center rounded-full text-primary-foreground transition-transform active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+							disabled={!canSubmit}
+							type="submit"
+						>
+							<ArrowUpIcon aria-hidden="true" className="size-4" />
+						</button>
+					</div>
+				</form>
+			</div>
 		</div>
 	);
 }

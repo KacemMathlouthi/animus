@@ -299,45 +299,87 @@
 	}
 }
 
-/* Landing hero send button — a dotted double-chevron (points right) whose dots
-   shimmer left-to-right and march faster on hover/focus. Ported from the
-   pixel-perfect book-demo button; static for reduced-motion users. */
-@keyframes send-dot-wave {
-	0%,
-	65%,
-	100% {
-		opacity: 0.35;
-		transform: translateX(0) scale(0.8);
-	}
-	32% {
-		opacity: 1;
-		transform: translateX(0.5px) scale(1.08);
-	}
-}
-.send-dot {
-	transform-box: fill-box;
-	transform-origin: center;
-}
-/* Static at rest; the dots only shimmer while the button is hovered/focused. */
-@media (prefers-reduced-motion: no-preference) {
-	.send-btn:hover .send-dot,
-	.send-btn:focus-visible .send-dot {
-		animation: send-dot-wave 1s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-	}
+/* Hero prompt — skeuomorphic treatment (technique from pixel-perfect's
+   silver button): gradient borders painted with the padding-box/border-box
+   double-background trick so the rim reads as lit from above, plus layered
+   contact + drop shadows. All colors derive from theme tokens via color-mix,
+   so light and dark both get a correct bevel. */
+
+/* Raised outer plate. */
+.prompt-shell {
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--card) 90%, white) 0%,
+			var(--card) 100%
+		)
+		padding-box,
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--border) 50%, white) 0%,
+			var(--border) 50%,
+			color-mix(in srgb, var(--border) 75%, black) 100%
+		)
+		border-box;
+	box-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.14),
+		0 10px 24px -8px rgba(0, 0, 0, 0.22);
 }
 
-/* Landing hero prompt frame — a warm brand-tinted halo + a soft inner glow (via
-   the primary token, so it adapts per theme) over a matte drop shadow. Inspired
-   by the pixel-perfect orange-premium button's halo/inner-glow. */
-.hero-prompt-frame {
+/* Recessed input well — slightly darker at the top with an inner shadow, like
+   a plate milled into the shell. */
+.prompt-well {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--background) 97%, black) 0%,
+		var(--background) 45%
+	);
 	box-shadow:
-/* inside glow — a bright inner top edge + a soft interior wash */
-		inset 0 1px 2px color-mix(in srgb, var(--primary) 42%, transparent),
-		inset 0 0 26px color-mix(in srgb, var(--primary) 12%, transparent),
-		/* halo — a tight bloom plus a wide brand-tinted glow */
-		0 0 22px color-mix(in srgb, var(--primary) 24%, transparent),
-		0 0 60px color-mix(in srgb, var(--primary) 15%, transparent),
-		/* matte depth */
-		0 20px 30px rgba(0, 0, 0, 0.3),
-		0 6px 10px rgba(0, 0, 0, 0.15);
+		inset 0 1.5px 3px rgba(0, 0, 0, 0.1),
+		inset 0 -1px 0 color-mix(in srgb, white 7%, transparent);
+}
+
+/* Polished primary send button — lighter crown, darker base, beveled rim. */
+.prompt-send {
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--primary) 78%, white) 0%,
+			var(--primary) 55%,
+			color-mix(in srgb, var(--primary) 86%, black) 100%
+		)
+		padding-box,
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--primary) 55%, white) 0%,
+			color-mix(in srgb, var(--primary) 70%, black) 100%
+		)
+		border-box;
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.35),
+		0 1px 2px rgba(0, 0, 0, 0.25),
+		0 4px 10px -3px rgba(0, 0, 0, 0.2);
+}
+
+/* Soft-raised chip for secondary actions. */
+.prompt-chip {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--muted) 88%, white) 0%,
+			var(--muted) 100%
+		)
+		padding-box,
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--border) 55%, white) 0%,
+			var(--border) 100%
+		)
+		border-box;
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.2),
+		0 1px 1.5px rgba(0, 0, 0, 0.12);
 }
