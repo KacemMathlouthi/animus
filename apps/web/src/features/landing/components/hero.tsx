@@ -51,8 +51,14 @@ export function HeroSection() {
 					"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-100 duration-500 ease-snappy",
 				)}
 			>
-				Turn any <span className="text-primary italic">question</span> into a{" "}
-				<span className="text-primary italic">video</span>
+				Turn any{" "}
+				<span className="-mr-3 hero-word pr-3 font-pixel-grid italic uppercase">
+					question
+				</span>{" "}
+				into a{" "}
+				<span className="hero-word font-pixel-grid font-bold uppercase">
+					video
+				</span>
 			</h1>
 
 			<p

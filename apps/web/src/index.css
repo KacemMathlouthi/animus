@@ -299,6 +299,22 @@
 	}
 }
 
+/* Hero headline keywords — Geist Pixel Grid filled with a vertical primary
+   gradient (lit crown, deep base), matching the polished finish of the
+   prompt's send button below. Clipped to the glyphs, so the pixel blocks
+   themselves carry the shading. */
+.hero-word {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--primary) 65%, white) 0%,
+		var(--primary) 55%,
+		color-mix(in srgb, var(--primary) 72%, black) 100%
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
 /* Hero prompt — skeuomorphic treatment (technique from pixel-perfect's
    silver button): gradient borders painted with the padding-box/border-box
    double-background trick so the rim reads as lit from above, plus layered
