@@ -3,16 +3,6 @@ import { DecorIcon } from "@/components/decor-icon";
 import { FullWidthDivider } from "@/features/landing/components/full-width-divider";
 import { cn } from "@/lib/utils";
 
-const waveformBars = [
-	{ id: "w1", height: "40%" },
-	{ id: "w2", height: "75%" },
-	{ id: "w3", height: "100%" },
-	{ id: "w4", height: "60%" },
-	{ id: "w5", height: "85%" },
-	{ id: "w6", height: "50%" },
-	{ id: "w7", height: "70%" },
-];
-
 export function FeatureSection() {
 	return (
 		<div
@@ -121,25 +111,12 @@ export function FeatureSection() {
 							src="/features/narration.webp"
 							style={{ objectPosition: "50% 40%" }}
 						/>
-						<div className="absolute inset-x-0 bottom-0 space-y-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-24">
-							<div aria-hidden="true" className="flex h-6 items-end gap-1">
-								{waveformBars.map((bar) => (
-									<span
-										className="w-1 rounded-full bg-white/80"
-										key={bar.id}
-										style={{ height: bar.height }}
-									/>
-								))}
-							</div>
-							<div className="space-y-1.5">
-								<h3 className="font-medium text-white text-xl">
-									Real narration
-								</h3>
-								<p className="max-w-sm text-white/75">
-									Studio-grade voiceover, written and synced to the animation,
-									not bolted on afterwards.
-								</p>
-							</div>
+						<div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-24">
+							<h3 className="font-medium text-white text-xl">Real narration</h3>
+							<p className="max-w-sm text-white/75">
+								Studio-grade voiceover, written and synced to the animation, not
+								bolted on afterwards.
+							</p>
 						</div>
 					</div>
 				</FeatureCard>
