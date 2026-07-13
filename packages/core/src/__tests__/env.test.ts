@@ -38,6 +38,25 @@ describe("parseServerEnv", () => {
     expect(env.port).toBe(9000);
   });
 
+  it("coerces CREDITS_GLOBAL_CAP_USD to a number", () => {
+    const env = parseServerEnv({ ...MINIMAL, CREDITS_GLOBAL_CAP_USD: "500" });
+    expect(env.creditsGlobalCapUsd).toBe(500);
+  });
+
+  it("defaults CREDITS_GLOBAL_CAP_USD to 0 (no cap), including when empty", () => {
+    expect(parseServerEnv(MINIMAL).creditsGlobalCapUsd).toBe(0);
+    expect(
+      parseServerEnv({ ...MINIMAL, CREDITS_GLOBAL_CAP_USD: "" })
+        .creditsGlobalCapUsd
+    ).toBe(0);
+  });
+
+  it("rejects a negative CREDITS_GLOBAL_CAP_USD", () => {
+    expect(() =>
+      parseServerEnv({ ...MINIMAL, CREDITS_GLOBAL_CAP_USD: "-5" })
+    ).toThrow();
+  });
+
   it("passes optional secrets through", () => {
     const env = parseServerEnv({
       ...MINIMAL,
