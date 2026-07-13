@@ -2,9 +2,16 @@
  * tool-loop and streams the result back as a UI-message stream the web's
  * useChat consumes. The database is authoritative: the client sends only the
  * newest changed UI message, and the completed stream snapshot is persisted
- * once the turn finishes. */
+ * once the turn finishes.
+ *
+ * Cost control: a turn is metered per-component — the LLM unless the user
+ * brought their own key, and TTS unless they brought an ElevenLabs key. A
+ * metered turn is refused up front at a non-positive balance (402), and the
+ * turn's real cost is settled against the balance on finish. */
 
+import { randomUUID } from "node:crypto";
 import { createManimAgent, ensureSandbox } from "@animus/agent";
+import { OUT_OF_CREDITS } from "@animus/core";
 import { getServerEnv } from "@animus/core/env";
 import { convertToModelMessages, createIdGenerator } from "ai";
 import { Hono } from "hono";
@@ -21,6 +28,11 @@ import {
   saveConversationMessages,
   setConversationSandboxId,
 } from "../services/conversations.ts";
+import { getOrCreateCredits, settleUsage } from "../services/credits.ts";
+import {
+  getDecryptedLlmKey,
+  getDecryptedTtsKey,
+} from "../services/settings.ts";
 import type { AppEnv } from "../types.ts";
 
 export const chatRoute = new Hono<AppEnv>();
@@ -37,14 +49,38 @@ chatRoute.post("/", async (c) => {
     throw new HTTPException(400, { message: "id and message are required" });
   }
   const conversationId = body.id;
+  const uid = userId(c);
 
-  const found = await loadOwnedConversation({
-    conversationId,
-    userId: userId(c),
-  });
+  const found = await loadOwnedConversation({ conversationId, userId: uid });
 
   if (!found) {
     throw new HTTPException(404, { message: "Conversation not found" });
+  }
+
+  // Resolve the effective keys for this turn. A component is metered only when
+  // it runs on our key (the user has not brought their own).
+  const env = getServerEnv();
+  const llmKey = await getDecryptedLlmKey(uid);
+  const ttsKey = await getDecryptedTtsKey(uid);
+  const isLlmMetered = !llmKey;
+  const isTtsMetered = !ttsKey;
+  const metered = isLlmMetered || isTtsMetered;
+  const elevenLabsApiKey = ttsKey ?? env.elevenLabsApiKey;
+
+  // Pre-flight gate: a metered turn needs a positive balance to start. The
+  // running turn is never killed, so the balance may end slightly negative.
+  if (metered) {
+    const { balanceMicros } = await getOrCreateCredits(uid);
+    if (balanceMicros <= 0) {
+      return c.json(
+        {
+          code: OUT_OF_CREDITS,
+          message:
+            "You're out of credits. Add your own model key in settings to keep going.",
+        },
+        402
+      );
+    }
   }
 
   const messages = mergeIncomingMessage(found.messages, body.message);
@@ -54,22 +90,36 @@ chatRoute.post("/", async (c) => {
   const sandbox = await ensureSandbox({
     conversationId,
     sandboxId: found.conversation.sandboxId,
+    elevenLabsApiKey,
   });
   if (sandbox.id !== found.conversation.sandboxId) {
     await setConversationSandboxId(conversationId, sandbox.id);
   }
+
+  // Accumulates narration characters synthesized this turn, for TTS metering.
+  const meter = { ttsChars: 0 };
+
+  // Idempotency key for settling this turn's cost. Must be unique PER REQUEST,
+  // not per assistant message: a single assistant message spans multiple
+  // requests during a human-in-the-loop tool exchange (the user answers, the
+  // same message continues), so keying on the message id would dedupe — and
+  // never charge — every continuation after the first.
+  const turnId = randomUUID();
 
   const agent = createManimAgent({
     sandbox,
     conversationId,
     saveVideo,
     backgroundMusicUrl,
+    elevenLabsApiKey,
+    meter,
+    llmKey,
     telemetry: aiTelemetry({
       functionId: "manim-agent",
       metadata: {
         conversationId,
-        userId: userId(c),
-        model: getServerEnv().bedrockModel,
+        userId: uid,
+        model: llmKey ? llmKey.model : env.bedrockModel,
       },
     }),
   });
@@ -89,6 +139,21 @@ chatRoute.post("/", async (c) => {
       maybeGenerateConversationTitle({
         conversationId,
         messages: completedMessages,
+      });
+
+      // Settle this turn's metered cost against the balance, keyed by the
+      // per-request turn id (idempotent if this same request settles twice).
+      const usage = await result.totalUsage;
+      await settleUsage({
+        userId: uid,
+        conversationId,
+        turnId,
+        isLlmMetered,
+        model: env.bedrockModel,
+        inputTokens: usage.inputTokens ?? 0,
+        outputTokens: usage.outputTokens ?? 0,
+        isTtsMetered,
+        ttsChars: meter.ttsChars,
       });
     },
   });
