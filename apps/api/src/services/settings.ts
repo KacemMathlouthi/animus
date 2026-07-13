@@ -1,6 +1,17 @@
-import type { GenerationSettings, ProviderKeyInput } from "@animus/core";
-import { db, eq, providerKey, userSettings } from "@animus/db";
-import { encryptSecret } from "../lib/crypto.ts";
+import type { LlmKey } from "@animus/agent";
+import type {
+  GenerationSettings,
+  KeyKind,
+  LlmKeyPreview,
+  ProviderId,
+  ProviderKeyInput,
+  ProviderKeyPreview,
+  ProviderKeys,
+  TtsKeyPreview,
+} from "@animus/core";
+import { TTS_KEY_PROVIDER } from "@animus/core";
+import { and, db, eq, providerKey, userSettings } from "@animus/db";
+import { decryptSecret, encryptSecret } from "../lib/crypto.ts";
 
 export async function getGenerationSettings(userId: string) {
   const row = await db.query.userSettings.findFirst({
@@ -37,45 +48,117 @@ export async function saveGenerationSettings({
   return settings;
 }
 
-export async function getProviderKey(userId: string) {
-  const row = await db.query.providerKey.findFirst({
-    where: eq(providerKey.userId, userId),
-  });
+// ---------------------------------------------------------------------------
+// Provider keys (at most one LLM key and one TTS key per user, by `kind`)
+// ---------------------------------------------------------------------------
 
-  return row ? { provider: row.provider, last4: row.keyLast4 } : null;
+type ProviderKeyRow = typeof providerKey.$inferSelect;
+
+function toLlmPreview(row: ProviderKeyRow): LlmKeyPreview {
+  return {
+    kind: "llm",
+    provider: row.provider as ProviderId,
+    model: row.model ?? "",
+    last4: row.keyLast4,
+  };
 }
 
+function toTtsPreview(row: ProviderKeyRow): TtsKeyPreview {
+  return { kind: "tts", provider: TTS_KEY_PROVIDER, last4: row.keyLast4 };
+}
+
+/** Both masked key previews for a user, either possibly null. */
+export async function getProviderKeys(userId: string): Promise<ProviderKeys> {
+  const rows = await db.query.providerKey.findMany({
+    where: eq(providerKey.userId, userId),
+  });
+  const llm = rows.find((r) => r.kind === "llm");
+  const tts = rows.find((r) => r.kind === "tts");
+  return {
+    llm: llm ? toLlmPreview(llm) : null,
+    tts: tts ? toTtsPreview(tts) : null,
+  };
+}
+
+/** Encrypt and upsert a key for its `kind`, returning the masked preview. */
 export async function saveProviderKey({
   userId,
   input,
 }: {
   userId: string;
   input: ProviderKeyInput;
-}) {
+}): Promise<ProviderKeyPreview> {
   const trimmed = input.key.trim();
-  const values = {
-    userId,
-    provider: input.provider,
-    keyEncrypted: encryptSecret(trimmed),
-    keyLast4: trimmed.slice(-4),
-  };
+  const provider = input.kind === "llm" ? input.provider : TTS_KEY_PROVIDER;
+  const model = input.kind === "llm" ? input.model : null;
+  const keyLast4 = trimmed.slice(-4);
 
   await db
     .insert(providerKey)
-    .values(values)
+    .values({
+      userId,
+      kind: input.kind,
+      provider,
+      model,
+      keyEncrypted: encryptSecret(trimmed),
+      keyLast4,
+    })
     .onConflictDoUpdate({
-      target: providerKey.userId,
+      target: [providerKey.userId, providerKey.kind],
       set: {
-        provider: values.provider,
-        keyEncrypted: values.keyEncrypted,
-        keyLast4: values.keyLast4,
+        provider,
+        model,
+        keyEncrypted: encryptSecret(trimmed),
+        keyLast4,
         updatedAt: new Date(),
       },
     });
 
-  return { provider: values.provider, last4: values.keyLast4 };
+  return input.kind === "llm"
+    ? {
+        kind: "llm",
+        provider: input.provider,
+        model: input.model,
+        last4: keyLast4,
+      }
+    : { kind: "tts", provider: TTS_KEY_PROVIDER, last4: keyLast4 };
 }
 
-export async function deleteProviderKey(userId: string) {
-  await db.delete(providerKey).where(eq(providerKey.userId, userId));
+/** Remove the user's key of the given kind. */
+export async function deleteProviderKey(
+  userId: string,
+  kind: KeyKind
+): Promise<void> {
+  await db
+    .delete(providerKey)
+    .where(and(eq(providerKey.userId, userId), eq(providerKey.kind, kind)));
+}
+
+/** The user's decrypted LLM key for the agent, or undefined when they run on
+ * our Bedrock model. */
+export async function getDecryptedLlmKey(
+  userId: string
+): Promise<LlmKey | undefined> {
+  const row = await db.query.providerKey.findFirst({
+    where: and(eq(providerKey.userId, userId), eq(providerKey.kind, "llm")),
+  });
+  if (!row?.model) {
+    return;
+  }
+  return {
+    provider: row.provider as ProviderId,
+    model: row.model,
+    apiKey: decryptSecret(row.keyEncrypted),
+  };
+}
+
+/** The user's decrypted ElevenLabs key, or undefined when narration runs on our
+ * key. */
+export async function getDecryptedTtsKey(
+  userId: string
+): Promise<string | undefined> {
+  const row = await db.query.providerKey.findFirst({
+    where: and(eq(providerKey.userId, userId), eq(providerKey.kind, "tts")),
+  });
+  return row ? decryptSecret(row.keyEncrypted) : undefined;
 }

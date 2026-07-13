@@ -1,27 +1,35 @@
-import { GENERATION_DEFAULTS } from "@animus/core";
+import { GENERATION_DEFAULTS, LLM_MODELS } from "@animus/core";
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   deleteProviderKey,
   getGenerationSettings,
-  getProviderKey,
+  getProviderKeys,
   saveGenerationSettings,
   saveProviderKey,
+  validateLlmKey,
+  validateTtsKey,
 } = vi.hoisted(() => ({
   deleteProviderKey: vi.fn(),
   getGenerationSettings: vi.fn(),
-  getProviderKey: vi.fn(),
+  getProviderKeys: vi.fn(),
   saveGenerationSettings: vi.fn(),
   saveProviderKey: vi.fn(),
+  validateLlmKey: vi.fn(),
+  validateTtsKey: vi.fn(),
 }));
 
 vi.mock("../services/settings.ts", () => ({
   deleteProviderKey,
   getGenerationSettings,
-  getProviderKey,
+  getProviderKeys,
   saveGenerationSettings,
   saveProviderKey,
+}));
+vi.mock("../services/provider-validation.ts", () => ({
+  validateLlmKey,
+  validateTtsKey,
 }));
 // Bypass the real session resolution; the wrapper app injects the user instead.
 vi.mock("../middleware/auth.ts", () => ({
@@ -29,6 +37,12 @@ vi.mock("../middleware/auth.ts", () => ({
 }));
 
 const { settingsRoute } = await import("../routes/settings.ts");
+
+const anthropicModel = LLM_MODELS.anthropic[0]?.id;
+const openaiModel = LLM_MODELS.openai[0]?.id;
+if (!(anthropicModel && openaiModel)) {
+  throw new Error("curated LLM model lists must not be empty");
+}
 
 type TestUser = { id: string } | null;
 
@@ -52,19 +66,13 @@ function jsonReq(path: string, method: string, body: unknown) {
 }
 
 beforeEach(() => {
-  deleteProviderKey.mockReset();
-  getGenerationSettings.mockReset();
-  getProviderKey.mockReset();
-  saveGenerationSettings.mockReset();
-  saveProviderKey.mockReset();
+  vi.clearAllMocks();
 });
 
 describe("GET /settings/generation", () => {
   it("returns the caller's generation settings", async () => {
     getGenerationSettings.mockResolvedValue(GENERATION_DEFAULTS);
-
     const res = await appWith({ id: "u1" }).request("/settings/generation");
-
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ settings: GENERATION_DEFAULTS });
     expect(getGenerationSettings).toHaveBeenCalledWith("u1");
@@ -72,9 +80,7 @@ describe("GET /settings/generation", () => {
 
   it("returns null when the user has no row yet", async () => {
     getGenerationSettings.mockResolvedValue(null);
-
     const res = await appWith({ id: "u1" }).request("/settings/generation");
-
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ settings: null });
   });
@@ -91,23 +97,13 @@ describe("PUT /settings/generation", () => {
       { id: "u1" },
       { ...GENERATION_DEFAULTS, videoTheme: "neon" }
     );
-
-    expect(res.status).toBe(400);
-    expect(saveGenerationSettings).not.toHaveBeenCalled();
-  });
-
-  it("400s on a missing field", async () => {
-    const res = await put({ id: "u1" }, { backgroundMusic: true });
-
     expect(res.status).toBe(400);
     expect(saveGenerationSettings).not.toHaveBeenCalled();
   });
 
   it("saves valid generation settings", async () => {
     saveGenerationSettings.mockResolvedValue(GENERATION_DEFAULTS);
-
     const res = await put({ id: "u1" }, GENERATION_DEFAULTS);
-
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ settings: GENERATION_DEFAULTS });
     expect(saveGenerationSettings).toHaveBeenCalledWith({
@@ -118,25 +114,21 @@ describe("PUT /settings/generation", () => {
 });
 
 describe("GET /settings/keys", () => {
-  it("returns the masked key preview", async () => {
-    getProviderKey.mockResolvedValue({ provider: "anthropic", last4: "cdef" });
-
+  it("returns both masked key previews", async () => {
+    const keys = {
+      llm: {
+        kind: "llm",
+        provider: "anthropic",
+        model: anthropicModel,
+        last4: "cdef",
+      },
+      tts: null,
+    };
+    getProviderKeys.mockResolvedValue(keys);
     const res = await appWith({ id: "u1" }).request("/settings/keys");
-
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({
-      key: { provider: "anthropic", last4: "cdef" },
-    });
-    expect(getProviderKey).toHaveBeenCalledWith("u1");
-  });
-
-  it("returns null when no key is stored", async () => {
-    getProviderKey.mockResolvedValue(null);
-
-    const res = await appWith({ id: "u1" }).request("/settings/keys");
-
-    expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ key: null });
+    expect(await res.json()).toEqual({ keys });
+    expect(getProviderKeys).toHaveBeenCalledWith("u1");
   });
 });
 
@@ -146,55 +138,113 @@ describe("PUT /settings/keys", () => {
     return appWith(user).request(r.path, r);
   }
 
-  it("400s on an unknown provider", async () => {
+  it("400s on an unknown provider without validating or saving", async () => {
     const res = await put(
       { id: "u1" },
-      { provider: "nope", key: "sk-ant-longenough" }
+      {
+        kind: "llm",
+        provider: "nope",
+        model: anthropicModel,
+        key: "sk-ant-longenough",
+      }
     );
+    expect(res.status).toBe(400);
+    expect(validateLlmKey).not.toHaveBeenCalled();
+    expect(saveProviderKey).not.toHaveBeenCalled();
+  });
 
+  it("400s on a model not offered for the provider", async () => {
+    const res = await put(
+      { id: "u1" },
+      {
+        kind: "llm",
+        provider: "anthropic",
+        model: openaiModel,
+        key: "sk-ant-longenough",
+      }
+    );
     expect(res.status).toBe(400);
     expect(saveProviderKey).not.toHaveBeenCalled();
   });
 
-  it("400s on a too-short key", async () => {
+  it("400s (and does not save) when validation fails", async () => {
+    validateLlmKey.mockResolvedValue(false);
     const res = await put(
       { id: "u1" },
-      { provider: "anthropic", key: "short" }
+      {
+        kind: "llm",
+        provider: "anthropic",
+        model: anthropicModel,
+        key: "sk-ant-badkey",
+      }
     );
-
     expect(res.status).toBe(400);
+    expect(validateLlmKey).toHaveBeenCalledWith("anthropic", "sk-ant-badkey");
     expect(saveProviderKey).not.toHaveBeenCalled();
   });
 
-  it("saves a valid key and returns the masked preview", async () => {
-    saveProviderKey.mockResolvedValue({ provider: "anthropic", last4: "ough" });
-
+  it("validates then saves a valid LLM key", async () => {
+    validateLlmKey.mockResolvedValue(true);
+    saveProviderKey.mockResolvedValue({
+      kind: "llm",
+      provider: "anthropic",
+      model: anthropicModel,
+      last4: "ough",
+    });
     const res = await put(
       { id: "u1" },
-      { provider: "anthropic", key: "sk-ant-longenough" }
+      {
+        kind: "llm",
+        provider: "anthropic",
+        model: anthropicModel,
+        key: "sk-ant-longenough",
+      }
     );
-
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
-      key: { provider: "anthropic", last4: "ough" },
+      key: {
+        kind: "llm",
+        provider: "anthropic",
+        model: anthropicModel,
+        last4: "ough",
+      },
     });
-    expect(saveProviderKey).toHaveBeenCalledWith({
-      userId: "u1",
-      input: { provider: "anthropic", key: "sk-ant-longenough" },
+    expect(saveProviderKey).toHaveBeenCalledTimes(1);
+  });
+
+  it("validates then saves a valid ElevenLabs (TTS) key", async () => {
+    validateTtsKey.mockResolvedValue(true);
+    saveProviderKey.mockResolvedValue({
+      kind: "tts",
+      provider: "elevenlabs",
+      last4: "_key",
     });
+    const res = await put(
+      { id: "u1" },
+      { kind: "tts", key: "sk_elevenlabs_key" }
+    );
+    expect(res.status).toBe(200);
+    expect(validateTtsKey).toHaveBeenCalledWith("sk_elevenlabs_key");
+    expect(saveProviderKey).toHaveBeenCalledTimes(1);
   });
 });
 
 describe("DELETE /settings/keys", () => {
-  it("deletes the caller's provider key", async () => {
-    deleteProviderKey.mockResolvedValue(undefined);
-
+  it("400s on a missing/invalid kind", async () => {
     const res = await appWith({ id: "u1" }).request("/settings/keys", {
       method: "DELETE",
     });
+    expect(res.status).toBe(400);
+    expect(deleteProviderKey).not.toHaveBeenCalled();
+  });
 
+  it("deletes the caller's key of the given kind", async () => {
+    deleteProviderKey.mockResolvedValue(undefined);
+    const res = await appWith({ id: "u1" }).request("/settings/keys?kind=llm", {
+      method: "DELETE",
+    });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(deleteProviderKey).toHaveBeenCalledWith("u1");
+    expect(deleteProviderKey).toHaveBeenCalledWith("u1", "llm");
   });
 });

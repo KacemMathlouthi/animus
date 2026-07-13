@@ -1,17 +1,25 @@
-/** Per-user settings: generation defaults and a single BYO provider key. All
- * routes require auth and operate only on the caller's own row. Provider keys
- * are encrypted before they touch the database, and only a masked preview
- * (provider + last 4 chars) is ever returned to the client. */
+/** Per-user settings: generation defaults and BYO provider keys (one LLM, one
+ * TTS). All routes require auth and operate only on the caller's own rows.
+ * Provider keys are validated with a cheap test call, then encrypted before they
+ * touch the database; only a masked preview is ever returned to the client. */
 
-import { GenerationSettingsSchema, ProviderKeyInputSchema } from "@animus/core";
+import {
+  GenerationSettingsSchema,
+  KeyKindSchema,
+  ProviderKeyInputSchema,
+} from "@animus/core";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { userId } from "../lib/user.ts";
 import { requireAuth } from "../middleware/auth.ts";
 import {
+  validateLlmKey,
+  validateTtsKey,
+} from "../services/provider-validation.ts";
+import {
   deleteProviderKey,
   getGenerationSettings,
-  getProviderKey,
+  getProviderKeys,
   saveGenerationSettings,
   saveProviderKey,
 } from "../services/settings.ts";
@@ -41,8 +49,8 @@ settingsRoute.put("/generation", async (c) => {
 });
 
 settingsRoute.get("/keys", async (c) => {
-  const key = await getProviderKey(userId(c));
-  return c.json({ key });
+  const keys = await getProviderKeys(userId(c));
+  return c.json({ keys });
 });
 
 settingsRoute.put("/keys", async (c) => {
@@ -52,11 +60,28 @@ settingsRoute.put("/keys", async (c) => {
   if (!parsed.success) {
     throw new HTTPException(400, { message: "Invalid provider key" });
   }
-  const key = await saveProviderKey({ userId: userId(c), input: parsed.data });
+
+  const input = parsed.data;
+  const valid =
+    input.kind === "llm"
+      ? await validateLlmKey(input.provider, input.key.trim())
+      : await validateTtsKey(input.key.trim());
+  if (!valid) {
+    throw new HTTPException(400, {
+      message:
+        "That key could not be verified with the provider. Check it and try again.",
+    });
+  }
+
+  const key = await saveProviderKey({ userId: userId(c), input });
   return c.json({ key });
 });
 
 settingsRoute.delete("/keys", async (c) => {
-  await deleteProviderKey(userId(c));
+  const parsed = KeyKindSchema.safeParse(c.req.query("kind"));
+  if (!parsed.success) {
+    throw new HTTPException(400, { message: "Invalid key kind" });
+  }
+  await deleteProviderKey(userId(c), parsed.data);
   return c.json({ ok: true });
 });
