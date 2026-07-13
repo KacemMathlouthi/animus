@@ -51,19 +51,23 @@ export function HeroSection() {
 					"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-100 duration-500 ease-snappy",
 				)}
 			>
-				Turn any{" "}
-				<span className="-mr-3 hero-word pr-3 font-pixel-grid italic uppercase">
-					question
-				</span>{" "}
-				into a{" "}
-				<span className="hero-word font-pixel-grid font-bold uppercase">
-					video
+				<span className="block">
+					Turn any{" "}
+					<span className="-mr-3 -ml-[0.25em] hero-word pr-3 font-pixel-grid italic uppercase">
+						question
+					</span>
+				</span>
+				<span className="block text-[0.9em]">
+					into an explainer{" "}
+					<span className="hero-word font-pixel-grid font-bold uppercase">
+						video
+					</span>
 				</span>
 			</h1>
 
 			<p
 				className={cn(
-					"text-center text-muted-foreground sm:whitespace-nowrap md:text-lg",
+					"mb-1 text-center text-muted-foreground sm:whitespace-nowrap md:text-lg",
 					"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-150 duration-500 ease-snappy",
 				)}
 			>
