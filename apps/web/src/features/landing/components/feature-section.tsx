@@ -52,7 +52,7 @@ export function FeatureSection() {
 				</FeatureCard>
 
 				<div className="flex flex-col gap-6">
-					<FeatureCard className="h-80 flex-1 p-0 lg:h-auto">
+					<FeatureCard className="h-80 p-0 lg:h-auto lg:flex-1">
 						<div className="relative size-full overflow-hidden">
 							<img
 								alt="Leonardo da Vinci, Vitruvian Man"
@@ -80,7 +80,7 @@ export function FeatureSection() {
 						</div>
 					</FeatureCard>
 
-					<FeatureCard className="h-80 flex-1 p-0 lg:h-auto">
+					<FeatureCard className="h-80 p-0 lg:h-auto lg:flex-1">
 						<div className="relative size-full overflow-hidden">
 							<img
 								alt="Claude Lorrain, Seaport with the Embarkation of the Queen of Sheba"
