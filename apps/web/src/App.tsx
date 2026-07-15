@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router";
 import { RequireAuth } from "@/features/auth/components/require-auth";
 import { AccountSection } from "@/features/settings/components/account-section";
@@ -42,6 +43,7 @@ function App() {
 				</Route>
 				<Route element={<NotFoundPage />} path="*" />
 			</Routes>
+			<Analytics />
 		</BrowserRouter>
 	);
 }

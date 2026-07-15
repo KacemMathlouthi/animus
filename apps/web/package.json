@@ -27,6 +27,7 @@
 		"@tailwindcss/vite": "^4",
 		"@types/three": "^0.184.1",
 		"@vercel/speed-insights": "^2.0.0",
+		"@vercel/analytics": "^2.0.1",
 		"ai": "^6.0.206",
 		"better-auth": "^1.6.19",
 		"class-variance-authority": "^0.7.1",
