@@ -3,7 +3,14 @@
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "declaration": false,
-    "declarationMap": false
+    "declarationMap": false,
+    // Pinned explicitly (not just inherited) so the CJS `export =` packages
+    // (pino, pino-pretty, postgres) and default imports keep resolving under
+    // Vercel's function compiler, which does not honor the inherited value.
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
-  "include": ["src"]
+  // `api/` holds the Vercel serverless entry; include it so `tsc --noEmit`
+  // type-checks it (it imports ../src/app.ts) instead of silently skipping it.
+  "include": ["src", "api"]
 }
