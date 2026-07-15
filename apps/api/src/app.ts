@@ -4,7 +4,6 @@ import { auth } from "@animus/auth";
 import { getServerEnv } from "@animus/core/env";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { logger } from "./lib/logger.ts";
 import { sessionMiddleware } from "./middleware/auth.ts";
 import { onError, onNotFound } from "./middleware/error.ts";
 import { requestLogger } from "./middleware/logger.ts";
@@ -57,20 +56,3 @@ app.route("/api/chat", chatRoute);
 app.route("/api/media", mediaRoute);
 // Public (unauthenticated) — anyone with an unlisted token can resolve a share.
 app.route("/api/share", shareRoute);
-
-export type AppType = typeof app;
-
-logger.info(`animus-api listening on http://localhost:${env.port}`);
-
-export default {
-  port: env.port,
-  fetch(
-    request: Request,
-    server: Bun.Server<unknown>
-  ): Response | Promise<Response> {
-    if (new URL(request.url).pathname.startsWith("/api/chat")) {
-      server.timeout(request, 0);
-    }
-    return app.fetch(request);
-  },
-};

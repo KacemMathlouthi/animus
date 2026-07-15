@@ -4,8 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch --env-file=../../.env src/app.ts",
-    "start": "bun --env-file=../../.env src/app.ts",
+    "dev": "bun --watch --env-file=../../.env src/server.ts",
+    "start": "bun --env-file=../../.env src/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

@@ -6,8 +6,9 @@ import type {
   WebSearchInput,
   WebSearchOutput,
 } from "@animus/core/tools";
-import Exa, {
+import {
   type ContentsOptions,
+  Exa,
   type RegularSearchOptions,
   type SearchResponse,
 } from "exa-js";
