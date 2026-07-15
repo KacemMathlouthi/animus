@@ -1,3 +1,4 @@
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -16,6 +17,7 @@ createRoot(rootElement).render(
 		<ThemeProvider defaultTheme="dark" storageKey="animus-theme">
 			<App />
 			<Toaster position="bottom-right" />
+			<SpeedInsights />
 		</ThemeProvider>
 	</StrictMode>,
 );
