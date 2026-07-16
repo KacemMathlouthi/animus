@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+.git
+.turbo
+**/.turbo
+**/dist
+.vercel
+.vscode
+.agents
+.playwright-mcp
+assets
+launch-video
+docs
+*.md
+.env*
