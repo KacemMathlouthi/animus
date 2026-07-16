@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -28,12 +29,12 @@ export function Header() {
 					},
 				)}
 			>
-				<a
+				<Link
 					className="-ml-1 inline-flex items-center rounded-md px-2 py-1 hover:bg-muted dark:hover:bg-muted/50"
-					href="/"
+					to="/"
 				>
 					<Wordmark />
-				</a>
+				</Link>
 				<div className="hidden items-center gap-1 md:flex">
 					<div>
 						{navLinks.map((link) => (
