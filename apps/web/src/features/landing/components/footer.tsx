@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { Wordmark } from "@/components/brand/wordmark";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { XIcon } from "@/components/icons/x-icon";
@@ -54,13 +55,13 @@ export function Footer() {
 					<span className="text-muted-foreground text-xs">More</span>
 					<div className="mt-2 flex flex-col gap-2">
 						{company.map(({ href, title }) => (
-							<a
+							<Link
 								className="w-max text-sm hover:underline"
-								href={href}
 								key={title}
+								to={href}
 							>
 								{title}
-							</a>
+							</Link>
 						))}
 					</div>
 				</div>
