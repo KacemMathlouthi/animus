@@ -1,0 +1,32 @@
+# Vercel container image for apps/api — detected automatically when the
+# animus-api project's Root Directory is the repo root. Runs the Bun server
+# entry (src/server.ts) on Bun, so the source-first workspace (.ts specifiers,
+# @animus/* packages, native modules) resolves exactly as in local dev — none
+# of the serverless transpile/packaging pipeline applies.
+#
+# Platform behavior: Vercel routes traffic to the port named by $PORT, scales
+# to zero after idle (SIGTERM + 30s grace), and standard function duration
+# limits apply (300s on Hobby) — a long render turn past that is cut.
+
+FROM oven/bun:1.3-slim
+
+WORKDIR /app
+
+# Manifests first so the dependency layer caches across source-only changes.
+COPY package.json bun.lock turbo.json ./
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY packages/agent/package.json packages/agent/
+COPY packages/auth/package.json packages/auth/
+COPY packages/core/package.json packages/core/
+COPY packages/db/package.json packages/db/
+RUN bun install --frozen-lockfile
+
+COPY . .
+
+ENV NODE_ENV=production
+# The API reads PORT (defaults 8787); Vercel routes to the same variable.
+ENV PORT=8787
+EXPOSE 8787
+
+CMD ["bun", "apps/api/src/server.ts"]
