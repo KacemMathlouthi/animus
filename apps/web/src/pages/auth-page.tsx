@@ -252,19 +252,19 @@ export function AuthPage() {
 
 					<p className="mt-8 text-muted-foreground text-xs">
 						By continuing, you agree to our{" "}
-						<a
+						<Link
 							className="underline underline-offset-4 hover:text-primary"
-							href="/terms"
+							to="/terms"
 						>
 							Terms of Service
-						</a>{" "}
+						</Link>{" "}
 						and{" "}
-						<a
+						<Link
 							className="underline underline-offset-4 hover:text-primary"
-							href="/privacy"
+							to="/privacy"
 						>
 							Privacy Policy
-						</a>
+						</Link>
 						.
 					</p>
 				</div>
