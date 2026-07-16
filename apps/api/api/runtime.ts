@@ -8,7 +8,7 @@ export default {
     return Response.json({
       bun: process.versions.bun ?? null,
       node: process.version,
-      runtime: typeof Bun === "undefined" ? "node" : "bun",
+      runtime: process.versions.bun ? "bun" : "node",
     });
   },
 };
