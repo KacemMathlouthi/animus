@@ -1,0 +1,16 @@
+# Keep CLI uploads lean: only what the container build context needs.
+# apps/api/assets stays included (fonts + paintings used by the OG renderer).
+.git
+.turbo
+**/.turbo
+**/dist
+node_modules
+**/node_modules
+.playwright-mcp
+.agents
+.vscode
+assets
+launch-video
+docs
+*.md
+.env*

@@ -94,6 +94,24 @@ Cross-package "does it compile" = `bun run typecheck`.
 - **Runtime:** `apps/api` (Hono/Bun) hosts the loop as a **long-running
   container** (streaming + live sandbox handles need a persistent process — not
   serverless). No separate worker/queue in v1.
+- **Hosting (deployed): Vercel, container image for the API.** The web
+  (`animus-web` project, Vite static + SPA fallback rewrite) and the API
+  (`animus-api` project) both deploy on Vercel. The API ships as an **OCI
+  container image** — `Dockerfile.vercel` at the repo root (project Root
+  Directory = repo root; Container preset) runs `bun apps/api/src/server.ts`
+  on `oven/bun`, so the source-first workspace resolves exactly as in local
+  dev. Vercel's serverless-function pipeline is structurally incompatible with
+  this monorepo (per-file transpile keeps `.ts` specifiers, packager rejects
+  Bun's symlinked workspaces) — don't go back there. Entry split:
+  `src/app.ts` (pure Hono app) + `src/server.ts` (Bun bootstrap; disables the
+  idle timeout on `/api/chat`). Postgres is **Neon** (free tier; the app uses
+  the **pooled** `-pooler` URL, migrations run against the direct URL).
+  Platform limits accepted for now: scale-to-zero after ~5 min idle (cold
+  start) and a **300s function duration cap on Hobby** — a render turn
+  streaming past 5 minutes is cut. Prod env vars live on the Vercel projects
+  (`WEB_ORIGIN`/`BETTER_AUTH_URL` must be the deployed origins, not the
+  localhost `.env` values; `VITE_API_URL` on the web is **build-time** — a
+  redeploy is needed when it changes).
 - **Persistence:** Drizzle + managed Postgres. Conversations and their message
   snapshots are persisted — the DB is authoritative: the client sends only the
   newest message and the completed turn is saved on finish, with titles
