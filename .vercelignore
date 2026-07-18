@@ -1,5 +1,7 @@
-# Keep CLI uploads lean: only what the container build context needs.
-# apps/api/assets stays included (fonts + paintings used by the OG renderer).
+# Keeps deployment uploads lean. NOTE: .vercelignore uses gitignore semantics —
+# a bare directory name matches at ANY depth, so root-only excludes must be
+# anchored with a leading slash. apps/api/assets (OG fonts + paintings) must
+# ship: an unanchored `assets` here once stripped it and broke every request.
 .git
 .turbo
 **/.turbo
@@ -9,8 +11,8 @@ node_modules
 .playwright-mcp
 .agents
 .vscode
-assets
-launch-video
-docs
+/assets
+/launch-video
+/docs
 *.md
 .env*
