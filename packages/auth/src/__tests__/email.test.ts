@@ -130,3 +130,39 @@ describe("deliverMagicLink (no API key fallback)", () => {
     expect(console.log).toHaveBeenCalledWith(`Magic link for ${EMAIL}: ${URL}`);
   });
 });
+
+describe("magicLinkPageUrl", () => {
+  it("builds the web interstitial URL, not the API verify endpoint", async () => {
+    const { magicLinkPageUrl } = await importModule();
+
+    const url = new globalThis.URL(
+      magicLinkPageUrl({
+        webOrigin: "https://tryanimus.app",
+        token: "tok_123",
+        callbackURL: "/studio",
+      })
+    );
+
+    expect(url.origin).toBe("https://tryanimus.app");
+    expect(url.pathname).toBe("/auth/verify");
+    expect(url.searchParams.get("token")).toBe("tok_123");
+    expect(url.searchParams.get("callbackURL")).toBe("/studio");
+    // The one property the scanner bug hinges on: the emailed link must never
+    // target the token-consuming endpoint directly.
+    expect(url.pathname).not.toContain("magic-link/verify");
+  });
+
+  it("percent-encodes token and callback safely", async () => {
+    const { magicLinkPageUrl } = await importModule();
+
+    const raw = magicLinkPageUrl({
+      webOrigin: "https://tryanimus.app",
+      token: "t/+=&?",
+      callbackURL: "/studio/c/abc?x=1",
+    });
+    const url = new globalThis.URL(raw);
+
+    expect(url.searchParams.get("token")).toBe("t/+=&?");
+    expect(url.searchParams.get("callbackURL")).toBe("/studio/c/abc?x=1");
+  });
+});

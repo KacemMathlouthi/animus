@@ -10,7 +10,7 @@ import { dash } from "@better-auth/infra";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
-import { deliverMagicLink } from "./email.ts";
+import { deliverMagicLink, magicLinkPageUrl } from "./email.ts";
 
 const env = getServerEnv();
 const githubId = env.githubClientId;
@@ -71,7 +71,19 @@ export const auth = betterAuth({
       expiresIn: 60 * 5,
       // Store only a hash of the token, so a DB breach can't reveal usable links.
       storeToken: "hashed",
-      sendMagicLink: ({ email, url }) => deliverMagicLink({ email, url }),
+      // The email links to the web app's confirm page, not the verify endpoint
+      // directly — inbox link scanners prefetch URLs and would consume the
+      // single-use token before the human clicks (see magicLinkPageUrl).
+      sendMagicLink: ({ email, url, token }) =>
+        deliverMagicLink({
+          email,
+          url: magicLinkPageUrl({
+            webOrigin: env.webOrigin,
+            token,
+            callbackURL:
+              new URL(url).searchParams.get("callbackURL") ?? "/studio",
+          }),
+        }),
     }),
     // Managed dashboard + analytics. No-op until BETTER_AUTH_API_KEY is set.
     ...(infraApiKey ? [dash({ apiKey: infraApiKey })] : []),
