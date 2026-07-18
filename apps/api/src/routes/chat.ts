@@ -16,6 +16,7 @@ import { getServerEnv } from "@animus/core/env";
 import { convertToModelMessages, createIdGenerator } from "ai";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { z } from "zod";
 import { backgroundMusicUrl, saveVideo } from "../lib/media.ts";
 import { userId } from "../lib/user.ts";
 import { requireAuth } from "../middleware/auth.ts";
@@ -39,15 +40,24 @@ export const chatRoute = new Hono<AppEnv>();
 
 chatRoute.use("*", requireAuth);
 
-chatRoute.post("/", async (c) => {
-  const body = (await c.req.json().catch(() => null)) as {
-    id?: string;
-    message?: unknown;
-  } | null;
+/** Request envelope: the conversation id plus the newest UI message. The
+ * message's internal shape is checked separately by isUIMessage — here Zod
+ * guarantees the envelope itself, so malformed bodies are a clean 400 instead
+ * of leaking a non-string id into queries (500). */
+const ChatRequestSchema = z.object({
+  id: z.string().min(1),
+  message: z.unknown(),
+});
 
-  if (!(body?.id && isUIMessage(body.message))) {
+chatRoute.post("/", async (c) => {
+  const parsed = ChatRequestSchema.safeParse(
+    await c.req.json().catch(() => null)
+  );
+
+  if (!(parsed.success && isUIMessage(parsed.data.message))) {
     throw new HTTPException(400, { message: "id and message are required" });
   }
+  const body = { id: parsed.data.id, message: parsed.data.message };
   const conversationId = body.id;
   const uid = userId(c);
 

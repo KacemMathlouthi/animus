@@ -162,6 +162,25 @@ describe("POST /chat — request validation", () => {
     );
     expect(res.status).toBe(400);
   });
+
+  it("400s (not 500) when the body is not JSON at all", async () => {
+    const res = await appWith({ id: "u1" }).request("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "not-json{",
+    });
+    expect(res.status).toBe(400);
+    expect(loadOwnedConversation).not.toHaveBeenCalled();
+  });
+
+  it("400s when id is not a string, instead of leaking it into queries", async () => {
+    const res = await post(
+      { id: "u1" },
+      { id: 123, message: userMessage("m1", "hi") }
+    );
+    expect(res.status).toBe(400);
+    expect(loadOwnedConversation).not.toHaveBeenCalled();
+  });
 });
 
 describe("POST /chat — ownership", () => {
