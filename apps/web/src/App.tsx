@@ -12,6 +12,7 @@ import { PrivacyPage } from "@/pages/privacy-page";
 import { SharePage } from "@/pages/share-page";
 import { StudioPage } from "@/pages/studio-page";
 import { TermsPage } from "@/pages/terms-page";
+import { VerifyLoginPage } from "@/pages/verify-login-page";
 
 function App() {
 	return (
@@ -19,6 +20,7 @@ function App() {
 			<Routes>
 				<Route element={<LandingPage />} path="/" />
 				<Route element={<AuthPage />} path="/auth" />
+				<Route element={<VerifyLoginPage />} path="/auth/verify" />
 				<Route element={<TermsPage />} path="/terms" />
 				<Route element={<PrivacyPage />} path="/privacy" />
 				<Route element={<SharePage />} path="/v/:token" />

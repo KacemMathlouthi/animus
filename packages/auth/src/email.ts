@@ -103,6 +103,27 @@ ${url}
 If you didn't request this, you can safely ignore this email.`;
 }
 
+/** Build the URL the magic-link EMAIL points at: an interstitial page in the
+ * web app, not the API's verify endpoint. Mail security scanners (Outlook
+ * SafeLinks & co.) prefetch every link in an arriving email; the verify
+ * endpoint consumes the single-use token on GET, so a direct link arrives
+ * already-invalid for the human. The page requires a button click to hit the
+ * real endpoint — scanners follow links, they don't click buttons. */
+export function magicLinkPageUrl({
+  webOrigin,
+  token,
+  callbackURL,
+}: {
+  webOrigin: string;
+  token: string;
+  callbackURL: string;
+}): string {
+  const url = new URL("/auth/verify", webOrigin);
+  url.searchParams.set("token", token);
+  url.searchParams.set("callbackURL", callbackURL);
+  return url.toString();
+}
+
 export async function deliverMagicLink({
   email,
   url,
