@@ -1,8 +1,11 @@
-/** Liveness + readiness. 200 when the API and its database are both reachable,
- * 503 if the database round-trip fails. */
+/** Liveness + readiness. 200 when the API, its database, and the bundled
+ * share-card assets are all present, 503 when any check fails — a build
+ * shipped without apps/api/assets must be visible here, not discovered on the
+ * first OG request (assets load lazily precisely so boot survives). */
 
 import { sql } from "@animus/db";
 import { Hono } from "hono";
+import { shareCardAssetsPresent } from "../lib/og.ts";
 
 export const healthRoute = new Hono();
 
@@ -14,12 +17,16 @@ healthRoute.get("/", async (c) => {
     database = "down";
   }
 
+  const assets: "up" | "down" = shareCardAssetsPresent() ? "up" : "down";
+  const healthy = database === "up" && assets === "up";
+
   return c.json(
     {
-      status: database === "up" ? "ok" : "degraded",
+      status: healthy ? "ok" : "degraded",
       database,
+      assets,
       uptime: process.uptime(),
     },
-    database === "up" ? 200 : 503
+    healthy ? 200 : 503
   );
 });

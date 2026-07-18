@@ -8,7 +8,7 @@
  * without the apps/api/assets tree must break only this surface (with an error
  * naming the missing file), never the whole API at boot. */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
   buildShareCardSvg,
@@ -41,6 +41,17 @@ function loadPaintingDataUri(name: string): string {
     );
   }
   return `data:image/jpeg;base64,${bytes.toString("base64")}`;
+}
+
+/** Cheap existence probe over every bundled asset the renderer needs. Surfaced
+ * by /health so a build shipped without apps/api/assets is visible immediately
+ * on the health page, not on the first OG request. */
+export function shareCardAssetsPresent(): boolean {
+  const paths = [
+    ...FONT_FILES,
+    ...SHARE_IMAGES.map((name) => assetPath(`share-images/${name}.jpg`)),
+  ];
+  return paths.every((path) => existsSync(path));
 }
 
 /** Painting data-URIs, loaded on first use (small, fixed set) and memoized so
