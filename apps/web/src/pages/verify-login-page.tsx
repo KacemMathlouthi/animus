@@ -1,5 +1,4 @@
-import { MailCheckIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router";
 import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
@@ -20,26 +19,32 @@ function safeCallback(value: string | null): string {
 /** Magic-link landing page. The email links HERE instead of the API's verify
  * endpoint: inbox security scanners prefetch every link in an email, and the
  * verify endpoint consumes its single-use token on GET — so a direct link
- * would arrive already-invalid. Rendering this page is side-effect free; only
- * the button click below spends the token. */
+ * would arrive already-invalid. Scanners fetch without executing JavaScript,
+ * so this page forwards to the real endpoint from an effect: humans flash
+ * through it ("Signing you in…"), scanners get inert HTML. The manual button
+ * is a fallback for the rare case the redirect doesn't fire. */
 export function VerifyLoginPage() {
-	useDocumentTitle("Sign in");
+	useDocumentTitle("Signing you in");
 	const [searchParams] = useSearchParams();
-	const [submitting, setSubmitting] = useState(false);
 
 	const token = searchParams.get("token");
 	const callbackURL = safeCallback(searchParams.get("callbackURL"));
 
-	const completeSignIn = () => {
+	const verifyUrl = useMemo(() => {
 		if (!token) {
-			return;
+			return null;
 		}
-		setSubmitting(true);
 		const url = new URL("/api/auth/magic-link/verify", API_URL);
 		url.searchParams.set("token", token);
 		url.searchParams.set("callbackURL", callbackURL);
-		window.location.assign(url.toString());
-	};
+		return url.toString();
+	}, [token, callbackURL]);
+
+	useEffect(() => {
+		if (verifyUrl) {
+			window.location.assign(verifyUrl);
+		}
+	}, [verifyUrl]);
 
 	return (
 		<main className="relative flex min-h-screen flex-col justify-center px-8">
@@ -48,28 +53,24 @@ export function VerifyLoginPage() {
 					<Wordmark />
 				</Link>
 
-				{token ? (
+				{verifyUrl ? (
 					<div className="space-y-4">
-						<div className="flex size-11 items-center justify-center rounded-full bg-secondary">
-							<MailCheckIcon className="size-5" />
-						</div>
-						<div className="flex flex-col space-y-1">
+						<div className="flex items-center gap-3">
+							<Spinner className="size-5" />
 							<h1 className="font-medium text-2xl tracking-tight">
-								Confirm your sign-in
+								Signing you in…
 							</h1>
-							<p className="text-base text-muted-foreground">
-								Click below to finish signing in to animus. The link in your
-								email works once and expires 5 minutes after it was sent.
-							</p>
 						</div>
-						<Button
-							className="w-full"
-							disabled={submitting}
-							onClick={completeSignIn}
-						>
-							{submitting ? <Spinner data-icon="inline-start" /> : null}
-							Sign in
-						</Button>
+						<p className="text-base text-muted-foreground">
+							Hold on a moment. If nothing happens,{" "}
+							<a
+								className="underline underline-offset-4 hover:text-primary"
+								href={verifyUrl}
+							>
+								continue manually
+							</a>
+							.
+						</p>
 					</div>
 				) : (
 					<div className="space-y-4">
