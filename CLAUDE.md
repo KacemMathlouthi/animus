@@ -112,6 +112,23 @@ Cross-package "does it compile" = `bun run typecheck`.
   (`WEB_ORIGIN`/`BETTER_AUTH_URL` must be the deployed origins, not the
   localhost `.env` values; `VITE_API_URL` on the web is **build-time** — a
   redeploy is needed when it changes).
+- **Domain & single origin (live): `tryanimus.app`** (bought on Vercel;
+  Vercel nameservers/DNS). The web serves at `https://tryanimus.app`; the API
+  has **no public domain of its own** — `apps/web/vercel.json` rewrites
+  `/api/:path*` to the `animus-api` deployment, so browsers see one origin.
+  That proxy is what makes auth cookies **first-party** (the two `*.vercel.app`
+  hosts are distinct *sites* — vercel.app is on the Public Suffix List — so
+  cross-origin cookies die with `state_mismatch`; don't split origins again).
+  `VITE_API_URL`, `WEB_ORIGIN`, and `BETTER_AUTH_URL` all equal
+  `https://tryanimus.app`. OAuth callbacks (GitHub app + Google client) point
+  at `https://tryanimus.app/api/auth/callback/{github,google}` — GitHub allows
+  one callback URL, so local dev OAuth needs a separate app. The API's
+  `/health` (not under `/api/`) is reachable only via the deployment URL.
+- **Email (live): Resend on `mail.tryanimus.app`** — verified via the
+  Resend↔Vercel integration (DKIM + SPF + return-path MX on `send.mail.…`,
+  auto-written into Vercel DNS); `RESEND_FROM=animus <login@mail.tryanimus.app>`,
+  so magic links deliver to any address. The **root** domain's MX slot is
+  deliberately free for a future receiving mailbox (Zoho/ImprovMX).
 - **Persistence:** Drizzle + managed Postgres. Conversations and their message
   snapshots are persisted — the DB is authoritative: the client sends only the
   newest message and the completed turn is saved on finish, with titles
@@ -123,7 +140,7 @@ Cross-package "does it compile" = `bun run typecheck`.
   the narration (`tracker.duration`, bookmarks). The ElevenLabs key is injected into
   the render sandbox via `envVars`. Background music is mixed under the narration in
   the post-render ffmpeg step.
-- **Link previews & the SPA meta-injection seam (revisit at deploy).** A static SPA
+- **Link previews & the SPA meta-injection seam (partially resolved).** A static SPA
   serves one `index.html` for every route, so per-share Open Graph / Twitter meta
   must be written **server-side at the real `/v/:token` URL** — crawlers don't run
   JS. The durable, deployment-agnostic parts live in `@animus/core`
@@ -135,11 +152,11 @@ Cross-package "does it compile" = `bun run typecheck`.
   proxy in `vite.config.ts`, both of which exist only under `vite dev`. In prod that
   becomes an **edge function / meta-injecting reverse proxy / the API serving
   `/v/:token`** (or vanishes entirely on an SSR migration), and it reuses the same
-  pure core builders — so the swap is ~30 lines of glue, not a rebuild. The related
-  gap that resolves itself at deploy: the SPA still calls `VITE_API_URL` (absolute)
-  rather than a same-origin `/api`, so external viewers can preview but not yet
-  *play* a shared video until web + API sit behind one origin (the dev `/api` proxy
-  previews that world).
+  pure core builders — so the swap is ~30 lines of glue, not a rebuild. The
+  single-origin half of this is now **done in prod**: web + API sit behind
+  `tryanimus.app` (the `/api` rewrite), so external viewers can play shared
+  videos. Still open: server-side per-share meta injection at `/v/:token` for
+  crawlers (the edge-function glue).
 
 **Roadmap:** shell ✓ (settings backend; conversation persistence with generated
 titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` →
