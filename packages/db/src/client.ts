@@ -1,6 +1,9 @@
-/** The Drizzle database client. Reads DATABASE_URL from the environment and
- * binds the full schema so queries are fully typed (db.query.user, etc.). */
+/** The Drizzle database client. Takes DATABASE_URL from the validated server
+ * env (@animus/core/env — the single sanctioned source; runtime code never
+ * reads process.env directly) and binds the full schema so queries are fully
+ * typed (db.query.user, etc.). */
 
+import { getServerEnv } from "@animus/core/env";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import {
@@ -43,16 +46,8 @@ export const schema = {
   conversationMessageRelations,
 };
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error(
-    "DATABASE_URL is not set. Copy .env.example to .env (see the repo root)."
-  );
-}
-
 /** The underlying postgres.js connection. Exposed for graceful shutdown. */
-export const sql = postgres(connectionString);
+export const sql = postgres(getServerEnv().databaseUrl);
 
 export const db = drizzle(sql, { schema });
 
