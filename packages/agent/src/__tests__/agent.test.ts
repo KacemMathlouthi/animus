@@ -9,6 +9,7 @@ const captured = vi.hoisted(() => ({
   config: undefined as
     | {
         model: unknown;
+        maxRetries?: number;
         instructions: string;
         tools: ToolSet;
         experimental_telemetry?: TelemetrySettings;
@@ -21,6 +22,7 @@ vi.mock("ai", async (importOriginal) => {
   class FakeToolLoopAgent {
     constructor(config: {
       model: unknown;
+      maxRetries?: number;
       instructions: string;
       tools: ToolSet;
       experimental_telemetry?: TelemetrySettings;
@@ -69,6 +71,14 @@ describe("createManimAgent", () => {
     expect(captured.config?.model).toBe("model-sentinel");
     expect(typeof captured.config?.instructions).toBe("string");
     expect(captured.config?.instructions.length).toBeGreaterThan(0);
+  });
+
+  it("raises the retry budget so provider throttling waits instead of dying", () => {
+    build();
+
+    // Bedrock 429s on fresh-account quotas a few calls into a turn; the SDK
+    // default of 2 retries abandons the loop mid-turn.
+    expect(captured.config?.maxRetries).toBe(6);
   });
 
   it("runs on the user's BYOK model when an LLM key is provided", () => {
