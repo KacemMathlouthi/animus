@@ -1,6 +1,6 @@
 import { LogoMark } from "@/components/brand/logo-mark";
 import { DecorIcon } from "@/components/decor-icon";
-import { BookDemoButton } from "@/components/pixel-perfect/book-demo-button";
+import { CtaButton } from "@/components/ui/cta-button";
 import { useCtaTarget } from "@/features/landing/hooks/use-cta-target";
 
 export function CallToAction() {
@@ -28,9 +28,9 @@ export function CallToAction() {
 			</p>
 
 			<div className="flex items-center justify-center gap-2 pt-1">
-				<BookDemoButton className="h-12 w-[13rem]" to={ctaTarget}>
+				<CtaButton className="h-12 w-[13rem]" to={ctaTarget}>
 					Ask your first question
-				</BookDemoButton>
+				</CtaButton>
 			</div>
 		</div>
 	);

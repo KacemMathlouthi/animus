@@ -400,10 +400,10 @@
 		0 1px 1.5px rgba(0, 0, 0, 0.12);
 }
 
-/* CTA book-demo button (components/pixel-perfect/book-demo-button.tsx) — the
-   dotted chevrons shimmer slowly at rest and march faster on hover/focus.
-   Static dots when reduced motion is preferred. */
-@keyframes bd-dot-wave {
+/* CTA button (components/ui/cta-button.tsx) — the dotted chevrons shimmer
+   slowly at rest and march faster on hover/focus. Static dots when reduced
+   motion is preferred. */
+@keyframes cta-dot-wave {
 	0%,
 	65%,
 	100% {
@@ -415,16 +415,16 @@
 		transform: translateX(0.5px) scale(1.08);
 	}
 }
-.bd-dot {
+.cta-dot {
 	transform-box: fill-box;
 	transform-origin: center;
 }
 @media (prefers-reduced-motion: no-preference) {
-	.bd-dot {
-		animation: bd-dot-wave 1.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+	.cta-dot {
+		animation: cta-dot-wave 1.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 	}
-	.bd-root:hover .bd-dot,
-	.bd-root:focus-visible .bd-dot {
+	.cta-root:hover .cta-dot,
+	.cta-root:focus-visible .cta-dot {
 		animation-duration: 0.95s;
 	}
 }
