@@ -1,6 +1,10 @@
 node_modules
 **/node_modules
 .git
+# The API image never runs web code — but the workspace manifest must stay:
+# bun install validates the lockfile against every workspace member.
+apps/web/**
+!apps/web/package.json
 .turbo
 **/.turbo
 **/dist
