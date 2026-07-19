@@ -85,6 +85,39 @@ describe("parseServerEnv", () => {
     expect(env.braintrustProject).toBe("animus-prod");
   });
 
+  it("prefers BEDROCK_* credentials over the AWS_* fallbacks", () => {
+    const env = parseServerEnv({
+      ...MINIMAL,
+      BEDROCK_ACCESS_KEY_ID: "bedrock-akid",
+      BEDROCK_SECRET_ACCESS_KEY: "bedrock-secret",
+      BEDROCK_REGION: "eu-west-1",
+      AWS_ACCESS_KEY_ID: "aws-akid",
+      AWS_SECRET_ACCESS_KEY: "aws-secret",
+      AWS_REGION: "us-east-1",
+    });
+    expect(env.bedrockAccessKeyId).toBe("bedrock-akid");
+    expect(env.bedrockSecretAccessKey).toBe("bedrock-secret");
+    expect(env.bedrockRegion).toBe("eu-west-1");
+  });
+
+  it("falls back to AWS_* credentials when BEDROCK_* are unset (local dev)", () => {
+    const env = parseServerEnv({
+      ...MINIMAL,
+      AWS_ACCESS_KEY_ID: "aws-akid",
+      AWS_SECRET_ACCESS_KEY: "aws-secret",
+      AWS_REGION: "us-east-1",
+    });
+    expect(env.bedrockAccessKeyId).toBe("aws-akid");
+    expect(env.bedrockSecretAccessKey).toBe("aws-secret");
+    expect(env.bedrockRegion).toBe("us-east-1");
+  });
+
+  it("leaves Bedrock credentials undefined when neither is set", () => {
+    const env = parseServerEnv(MINIMAL);
+    expect(env.bedrockAccessKeyId).toBeUndefined();
+    expect(env.bedrockRegion).toBeUndefined();
+  });
+
   it("rejects an invalid NODE_ENV", () => {
     expect(() => parseServerEnv({ ...MINIMAL, NODE_ENV: "staging" })).toThrow();
   });

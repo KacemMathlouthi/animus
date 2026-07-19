@@ -38,9 +38,19 @@ const ServerEnvSchema = z.object({
   /** Optional — magic links log to the console when unset. */
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM: z.string().default("animus <onboarding@resend.dev>"),
-  /** Amazon Bedrock inference-profile id for the agent's Claude model. AWS
-   * credentials/region resolve from AWS_* env vars or the AWS credential chain. */
+  /** Amazon Bedrock inference-profile id for the agent's Claude model. */
   BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-6-v1"),
+  /** Bedrock credentials/region, passed to the provider EXPLICITLY. The BEDROCK_*
+   * names exist because AWS_* is a special namespace on Vercel: the platform
+   * (which itself runs on AWS) shadows user-supplied AWS_* values at runtime, so
+   * they silently never reach the process. Locally the AWS_* fallbacks keep the
+   * usual .env working. */
+  BEDROCK_ACCESS_KEY_ID: z.string().optional(),
+  BEDROCK_SECRET_ACCESS_KEY: z.string().optional(),
+  BEDROCK_REGION: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  AWS_REGION: z.string().optional(),
   /** Exa API key used by the agent's web search and fetch tools. */
   EXA_API_KEY: z.string().optional(),
   /** Braintrust API key for LLM observability. When set, the agent's AI SDK
@@ -72,7 +82,12 @@ const ServerEnvSchema = z.object({
 });
 
 export interface ServerEnv {
+  /** Explicit Bedrock credentials (BEDROCK_* with AWS_* fallback for local dev);
+   * undefined lets the SDK's own credential chain apply. */
+  bedrockAccessKeyId?: string;
   bedrockModel: string;
+  bedrockRegion?: string;
+  bedrockSecretAccessKey?: string;
   betterAuthApiKey?: string;
   betterAuthSecret: string;
   betterAuthUrl: string;
@@ -144,6 +159,10 @@ export function parseServerEnv(
     resendApiKey: e.RESEND_API_KEY,
     resendFrom: e.RESEND_FROM,
     bedrockModel: e.BEDROCK_MODEL,
+    bedrockAccessKeyId: e.BEDROCK_ACCESS_KEY_ID ?? e.AWS_ACCESS_KEY_ID,
+    bedrockSecretAccessKey:
+      e.BEDROCK_SECRET_ACCESS_KEY ?? e.AWS_SECRET_ACCESS_KEY,
+    bedrockRegion: e.BEDROCK_REGION ?? e.AWS_REGION,
     braintrustApiKey: e.BRAINTRUST_API_KEY,
     braintrustProject: e.BRAINTRUST_PROJECT,
     creditsGlobalCapUsd: e.CREDITS_GLOBAL_CAP_USD,

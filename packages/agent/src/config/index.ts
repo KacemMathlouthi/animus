@@ -24,10 +24,18 @@ export interface LlmKey {
 }
 
 /** The Bedrock model (our key). `modelId` overrides the env inference profile —
- * used by the lightweight title-generation helper. */
+ * used by the lightweight title-generation helper. Credentials are passed
+ * EXPLICITLY (never via the SDK's AWS_* env chain): Vercel shadows
+ * user-supplied AWS_* variables at runtime, so relying on the chain works
+ * locally and silently fails in production. Undefined values (local dev
+ * without BEDROCK_*) fall back to the SDK's own chain. */
 export function getModel(modelId?: string): LanguageModel {
   const env = getServerEnv();
-  const bedrock = createAmazonBedrock();
+  const bedrock = createAmazonBedrock({
+    accessKeyId: env.bedrockAccessKeyId,
+    secretAccessKey: env.bedrockSecretAccessKey,
+    region: env.bedrockRegion,
+  });
   return bedrock(modelId ?? env.bedrockModel);
 }
 

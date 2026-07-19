@@ -22,9 +22,15 @@ vi.mock("@ai-sdk/google", () => ({
       `google:${model}:${apiKey}`,
 }));
 vi.mock("@animus/core/env", () => ({
-  getServerEnv: () => ({ bedrockModel: "bedrock-default-id" }),
+  getServerEnv: () => ({
+    bedrockModel: "bedrock-default-id",
+    bedrockAccessKeyId: "AKIA_TEST",
+    bedrockSecretAccessKey: "SECRET_TEST",
+    bedrockRegion: "us-east-1",
+  }),
 }));
 
+const { createAmazonBedrock } = await import("@ai-sdk/amazon-bedrock");
 const { getModel, resolveModel } = await import("../config/index.ts");
 
 describe("getModel", () => {
@@ -34,6 +40,17 @@ describe("getModel", () => {
 
   it("honors an explicit model override", () => {
     expect(getModel("haiku-id")).toBe("bedrock:haiku-id");
+  });
+
+  it("passes credentials to the provider explicitly, never via the env chain", () => {
+    getModel();
+    // Regression: Vercel shadows user-supplied AWS_* env vars at runtime, so
+    // relying on the SDK's implicit chain works locally and fails in prod.
+    expect(createAmazonBedrock).toHaveBeenCalledWith({
+      accessKeyId: "AKIA_TEST",
+      secretAccessKey: "SECRET_TEST",
+      region: "us-east-1",
+    });
   });
 });
 
