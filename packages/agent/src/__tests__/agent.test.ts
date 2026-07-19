@@ -71,6 +71,14 @@ describe("createManimAgent", () => {
     expect(captured.config?.instructions.length).toBeGreaterThan(0);
   });
 
+  it("raises the retry budget so provider throttling waits instead of dying", () => {
+    build();
+
+    // Bedrock 429s on fresh-account quotas a few calls into a turn; the SDK
+    // default of 2 retries abandons the loop mid-turn.
+    expect(captured.config?.maxRetries).toBe(6);
+  });
+
   it("runs on the user's BYOK model when an LLM key is provided", () => {
     build(undefined, {
       provider: "anthropic",

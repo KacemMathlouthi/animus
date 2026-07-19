@@ -30,6 +30,10 @@ export function createManimAgent(deps: {
 }): ToolLoopAgent<never, ToolSet, never> {
   return new ToolLoopAgent({
     model: resolveModel(deps.llmKey).model,
+    // Bedrock throttles fresh accounts hard (429 "Too many requests" a few
+    // calls into a turn). The default 2 retries gives up mid-loop and the turn
+    // stalls; 6 retries of exponential backoff rides out the rate window.
+    maxRetries: 6,
     instructions: MANIM_SYSTEM_PROMPT,
     tools: createTools({
       manim: {
