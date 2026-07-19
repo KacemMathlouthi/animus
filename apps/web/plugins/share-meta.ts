@@ -13,15 +13,17 @@
 import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { join } from "node:path";
-import { buildShareMetaTags, injectShareMeta } from "@animus/core";
+import {
+	buildShareMetaTags,
+	injectShareMeta,
+	SHARE_META_DESCRIPTION,
+} from "@animus/core";
 import type { Logger, Plugin, ViteDevServer } from "vite";
 
 function describe(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
 }
 
-const SHARE_DESCRIPTION =
-	"A narrated explainer, researched and animated by animus. Make your own in minutes.";
 const V_ROUTE = /^\/v\/([\w-]+)\/?$/;
 
 /** Public origin the crawler reached us on, honoring forwarded headers (behind a
@@ -92,7 +94,7 @@ async function serveInjected(
 				html,
 				buildShareMetaTags({
 					title,
-					description: SHARE_DESCRIPTION,
+					description: SHARE_META_DESCRIPTION,
 					pageUrl: `${origin}/v/${token}`,
 					imageUrl: `${base}/og.png`,
 					videoUrl: `${base}/video.mp4`,
