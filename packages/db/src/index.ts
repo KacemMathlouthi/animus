@@ -4,10 +4,12 @@
 export {
   and,
   asc,
+  count,
   desc,
   eq,
   exists,
   ilike,
+  inArray,
   or,
   // drizzle's SQL-fragment builder (for aggregates / raw arithmetic). Named to
   // avoid colliding with the postgres.js client also exported as `sql`.

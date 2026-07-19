@@ -109,3 +109,11 @@ export function formatUsd(micros: number): string {
   const usd = Math.max(0, microsToUsd(micros));
   return `$${usd.toFixed(2)}`;
 }
+
+/** Format a micro-USD cost with sub-cent precision, e.g. `$0.0132` — per-turn
+ * ledger amounts are usually fractions of a cent, which `formatUsd` would
+ * flatten to `$0.00`. Dollar-plus amounts keep the familiar two decimals. */
+export function formatUsdPrecise(micros: number): string {
+  const usd = Math.max(0, microsToUsd(micros));
+  return usd >= 1 ? `$${usd.toFixed(2)}` : `$${usd.toFixed(4)}`;
+}
