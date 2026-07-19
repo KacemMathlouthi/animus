@@ -7,6 +7,7 @@ import {
 import type { ElevenLabs } from "@elevenlabs/elevenlabs-js";
 import { LockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import {
 	Select,
@@ -76,6 +77,7 @@ export function GenerationSection() {
 			setSavedConfig(config);
 		} catch {
 			// Leave the form dirty so the user can retry.
+			toast.error("Couldn't save your settings. Please try again.");
 		} finally {
 			setSaving(false);
 		}

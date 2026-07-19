@@ -101,6 +101,37 @@ describe("generation settings", () => {
     await expect(getGenerationSettings("user-1")).resolves.toBeNull();
   });
 
+  it("coalesces pre-backfill NULL music/voice to the defaults", async () => {
+    mockFindUserSettings.mockResolvedValue({
+      userId: "user-1",
+      videoTheme: "dark",
+      backgroundMusic: true,
+      musicTrack: null,
+      voiceId: null,
+      font: "geist",
+    });
+
+    await expect(getGenerationSettings("user-1")).resolves.toEqual(
+      GENERATION_DEFAULTS
+    );
+  });
+
+  it("serves the defaults (with a warning) for an invalid stored row", async () => {
+    mockFindUserSettings.mockResolvedValue({
+      userId: "user-1",
+      videoTheme: "sepia",
+      backgroundMusic: true,
+      musicTrack: "ambient",
+      voiceId: "voice-x",
+      font: "comic-sans",
+    });
+
+    await expect(getGenerationSettings("user-1")).resolves.toEqual(
+      GENERATION_DEFAULTS
+    );
+    expect(loggerWarn).toHaveBeenCalled();
+  });
+
   it("upserts generation settings for the user", async () => {
     await expect(
       saveGenerationSettings({

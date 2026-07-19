@@ -9,7 +9,13 @@ import type {
   ProviderKeys,
   TtsKeyPreview,
 } from "@animus/core";
-import { TTS_KEY_PROVIDER } from "@animus/core";
+import {
+  DEFAULT_MUSIC_TRACK_ID,
+  DEFAULT_VOICE_ID,
+  GENERATION_DEFAULTS,
+  GenerationSettingsSchema,
+  TTS_KEY_PROVIDER,
+} from "@animus/core";
 import { and, db, eq, providerKey, userSettings } from "@animus/db";
 import { decryptSecret, encryptSecret } from "../lib/crypto.ts";
 import { logger } from "../lib/logger.ts";
@@ -37,20 +43,35 @@ function tryDecrypt(
   }
 }
 
-export async function getGenerationSettings(userId: string) {
+export async function getGenerationSettings(
+  userId: string
+): Promise<GenerationSettings | null> {
   const row = await db.query.userSettings.findFirst({
     where: eq(userSettings.userId, userId),
   });
+  if (!row) {
+    return null;
+  }
 
-  return row
-    ? {
-        videoTheme: row.videoTheme,
-        backgroundMusic: row.backgroundMusic,
-        musicTrack: row.musicTrack,
-        voiceId: row.voiceId,
-        font: row.font,
-      }
-    : null;
+  // Coalesce pre-backfill NULLs (rows written before the not-null migration,
+  // or read during a deploy-before-migrate window), then validate, so a
+  // drifted row can never leak an invalid shape to the client — that used to
+  // make every settings save 400.
+  const parsed = GenerationSettingsSchema.safeParse({
+    videoTheme: row.videoTheme,
+    backgroundMusic: row.backgroundMusic,
+    musicTrack: row.musicTrack ?? DEFAULT_MUSIC_TRACK_ID,
+    voiceId: row.voiceId ?? DEFAULT_VOICE_ID,
+    font: row.font,
+  });
+  if (!parsed.success) {
+    logger.warn(
+      { userId, issues: parsed.error.issues },
+      "stored generation settings are invalid; serving defaults"
+    );
+    return GENERATION_DEFAULTS;
+  }
+  return parsed.data;
 }
 
 export async function saveGenerationSettings({

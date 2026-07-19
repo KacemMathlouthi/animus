@@ -18,8 +18,10 @@ export const userSettings = pgTable("user_settings", {
     .references(() => user.id, { onDelete: "cascade" }),
   videoTheme: text("video_theme").default("dark").notNull(),
   backgroundMusic: boolean("background_music").default(true).notNull(),
-  musicTrack: text("music_track"),
-  voiceId: text("voice_id"),
+  /** Defaults mirror `DEFAULT_MUSIC_TRACK_ID` / `DEFAULT_VOICE_ID` in
+   * `@animus/core` generation — change both together. */
+  musicTrack: text("music_track").default("ambient").notNull(),
+  voiceId: text("voice_id").default("Xb7hH8MSUJpSbSDYk0k2").notNull(),
   font: text("font").default("geist").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
