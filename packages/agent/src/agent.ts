@@ -10,7 +10,7 @@ import {
   type ToolSet,
 } from "ai";
 import { type LlmKey, resolveModel } from "./config/index.ts";
-import { MANIM_SYSTEM_PROMPT } from "./prompts/index.ts";
+import { buildManimSystemPrompt } from "./prompts/index.ts";
 import { createTools } from "./tools/index.ts";
 import type {
   BackgroundMusicUrl,
@@ -25,6 +25,11 @@ export function createManimAgent(deps: {
   backgroundMusicUrl: BackgroundMusicUrl;
   /** The effective ElevenLabs key for this turn (the user's own, or ours). */
   elevenLabsApiKey: string;
+  /** The user's generation settings for this turn: narration voice, and
+   * whether/which music bed to mix under the render. */
+  voiceId: string;
+  backgroundMusic: boolean;
+  musicTrackId: string;
   /** Per-turn TTS accumulator the caller reads after the turn to meter cost. */
   meter: TurnMeter;
   /** When present, the turn runs on the user's own LLM key (not metered);
@@ -43,13 +48,15 @@ export function createManimAgent(deps: {
     // calls into a turn). The default 2 retries gives up mid-loop and the turn
     // stalls; 6 retries of exponential backoff rides out the rate window.
     maxRetries: 6,
-    instructions: MANIM_SYSTEM_PROMPT,
+    instructions: buildManimSystemPrompt({ voiceId: deps.voiceId }),
     tools: createTools({
       manim: {
         sandbox: deps.sandbox,
         conversationId: deps.conversationId,
         saveVideo: deps.saveVideo,
         backgroundMusicUrl: deps.backgroundMusicUrl,
+        backgroundMusic: deps.backgroundMusic,
+        musicTrackId: deps.musicTrackId,
         elevenLabsApiKey: deps.elevenLabsApiKey,
         meter: deps.meter,
       },

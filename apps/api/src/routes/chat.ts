@@ -13,7 +13,7 @@
 
 import { randomUUID } from "node:crypto";
 import { createManimAgent, ensureSandbox } from "@animus/agent";
-import { OUT_OF_CREDITS } from "@animus/core";
+import { GENERATION_DEFAULTS, OUT_OF_CREDITS } from "@animus/core";
 import { getServerEnv } from "@animus/core/env";
 import { consumeStream, convertToModelMessages, createIdGenerator } from "ai";
 import { Hono } from "hono";
@@ -36,6 +36,7 @@ import { getOrCreateCredits, settleUsage } from "../services/credits.ts";
 import {
   getDecryptedLlmKey,
   getDecryptedTtsKey,
+  getGenerationSettings,
 } from "../services/settings.ts";
 import type { AppEnv } from "../types.ts";
 
@@ -121,6 +122,10 @@ chatRoute.post("/", async (c) => {
     const isTtsMetered = !ttsKey;
     const metered = isLlmMetered || isTtsMetered;
     const elevenLabsApiKey = ttsKey ?? env.elevenLabsApiKey;
+
+    // The user's generation settings shape this turn's narration voice and
+    // music bed; a user who never saved any gets the domain defaults.
+    const settings = (await getGenerationSettings(uid)) ?? GENERATION_DEFAULTS;
 
     const messages = mergeIncomingMessage(found.messages, body.message);
 
@@ -213,6 +218,9 @@ chatRoute.post("/", async (c) => {
       saveVideo,
       backgroundMusicUrl,
       elevenLabsApiKey,
+      voiceId: settings.voiceId,
+      backgroundMusic: settings.backgroundMusic,
+      musicTrackId: settings.musicTrack,
       meter,
       llmKey,
       onStepFinish: (step) => {

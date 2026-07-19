@@ -60,6 +60,8 @@ function editTool(initial: Record<string, string>) {
     conversationId: "conv-1",
     saveVideo: vi.fn(() => Promise.resolve("https://example.com/v.mp4")),
     backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
+    backgroundMusic: true,
+    musicTrackId: "ambient",
     elevenLabsApiKey: "el-test-key",
     meter: { ttsChars: 0 },
   });
@@ -77,6 +79,8 @@ function runTool(commandOut: string) {
     conversationId: "conv-1",
     saveVideo: vi.fn(() => Promise.resolve("https://example.com/v.mp4")),
     backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
+    backgroundMusic: true,
+    musicTrackId: "ambient",
     elevenLabsApiKey: "el-test-key",
     meter: { ttsChars: 0 },
   });
@@ -221,6 +225,7 @@ function renderSandbox(opts: {
   renderExit?: number;
   muxExit?: number;
   sceneSource?: string;
+  backgroundMusic?: boolean;
 }) {
   const downloadCalls: string[] = [];
   const meter = { ttsChars: 0 };
@@ -259,6 +264,8 @@ function renderSandbox(opts: {
     conversationId: "conv",
     saveVideo,
     backgroundMusicUrl,
+    backgroundMusic: opts.backgroundMusic ?? true,
+    musicTrackId: "cinematic",
     elevenLabsApiKey: "el-test-key",
     meter,
   });
@@ -271,6 +278,7 @@ function renderSandbox(opts: {
     downloadCalls,
     saveVideo,
     executeCommand,
+    backgroundMusicUrl,
     meter,
   };
 }
@@ -317,6 +325,34 @@ describe("renderScene background music", () => {
     expect(output.logs).toMatch(MUSIC_SKIPPED);
     // Scene source read for metering, then the silent master (never the failed
     // muxed file).
+    expect(downloadCalls).toEqual([SCENE_PATH, MASTER]);
+    expect(saveVideo).toHaveBeenCalledTimes(1);
+  });
+
+  it("presigns the user's chosen track id", async () => {
+    const { execute, backgroundMusicUrl } = renderSandbox({});
+
+    await execute(RENDER_INPUT, EXEC_CTX);
+
+    expect(backgroundMusicUrl).toHaveBeenCalledWith("cinematic");
+  });
+
+  it("skips the music step entirely when background music is off", async () => {
+    const {
+      execute,
+      downloadCalls,
+      saveVideo,
+      executeCommand,
+      backgroundMusicUrl,
+    } = renderSandbox({ backgroundMusic: false });
+
+    const output = await execute(RENDER_INPUT, EXEC_CTX);
+
+    expect(output.ok).toBe(true);
+    // Only the render command ran — no download/ffmpeg step, no presign.
+    expect(executeCommand).toHaveBeenCalledTimes(1);
+    expect(backgroundMusicUrl).not.toHaveBeenCalled();
+    // The silent master is what gets delivered.
     expect(downloadCalls).toEqual([SCENE_PATH, MASTER]);
     expect(saveVideo).toHaveBeenCalledTimes(1);
   });

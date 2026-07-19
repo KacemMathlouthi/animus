@@ -1,21 +1,29 @@
 import { describe, expect, it } from "vitest";
 import { CRAFT_LESSONS } from "../craft-lessons.ts";
-import { MANIM_SYSTEM_PROMPT } from "../index.ts";
+import { buildManimSystemPrompt } from "../index.ts";
 import { MANIM_CRAFT } from "../manim-craft.ts";
 
-describe("MANIM_SYSTEM_PROMPT", () => {
+const PROMPT = buildManimSystemPrompt({ voiceId: "voice-test-1" });
+
+describe("buildManimSystemPrompt", () => {
   it("embeds both the mechanical craft rules and the distilled craft lessons", () => {
-    expect(MANIM_SYSTEM_PROMPT).toContain(MANIM_CRAFT);
-    expect(MANIM_SYSTEM_PROMPT).toContain(CRAFT_LESSONS);
+    expect(PROMPT).toContain(MANIM_CRAFT);
+    expect(PROMPT).toContain(CRAFT_LESSONS);
   });
 
   it("orders the lessons after the mechanical craft and before 'How you work'", () => {
-    const craftAt = MANIM_SYSTEM_PROMPT.indexOf(MANIM_CRAFT);
-    const lessonsAt = MANIM_SYSTEM_PROMPT.indexOf(CRAFT_LESSONS);
-    const howYouWorkAt = MANIM_SYSTEM_PROMPT.indexOf("## How you work");
+    const craftAt = PROMPT.indexOf(MANIM_CRAFT);
+    const lessonsAt = PROMPT.indexOf(CRAFT_LESSONS);
+    const howYouWorkAt = PROMPT.indexOf("## How you work");
     expect(craftAt).toBeGreaterThan(-1);
     expect(lessonsAt).toBeGreaterThan(craftAt);
     expect(howYouWorkAt).toBeGreaterThan(lessonsAt);
+  });
+
+  it("threads the user's narration voice into the verbatim speech-service call", () => {
+    expect(PROMPT).toContain('voice_id="voice-test-1"');
+    // No stray hardcoded voice survives the interpolation.
+    expect(PROMPT).not.toContain("Xb7hH8MSUJpSbSDYk0k2");
   });
 });
 
