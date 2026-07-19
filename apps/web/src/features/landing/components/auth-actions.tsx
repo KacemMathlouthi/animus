@@ -8,11 +8,23 @@ import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
+/** True once any instance has seen the session resolve. `useSession` flips
+ * back to pending on every background refetch (window focus, another
+ * subscriber mounting, route changes remounting the header) — hiding the
+ * buttons each time reads as flickering when the round-trip is slow, so only
+ * the very first load gets the blank slot. */
+let sessionResolvedOnce = false;
+
 export function AuthActions({ stacked = false }: { stacked?: boolean }) {
 	const { data, isPending } = useSession();
 
-	// Avoid flashing the signed-out buttons before the session resolves.
-	if (isPending) {
+	if (!isPending) {
+		sessionResolvedOnce = true;
+	}
+
+	// Avoid flashing the signed-out buttons before the session first resolves;
+	// afterwards, refetches keep rendering the last-known state.
+	if (isPending && !sessionResolvedOnce) {
 		return null;
 	}
 

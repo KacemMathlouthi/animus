@@ -1,9 +1,11 @@
 import { Link } from "react-router";
 import { cn } from "@/lib/utils";
 
-/* Adapted from pixel-perfect's book-demo button: the sliding pill picks up the
-   brand primary token (warm loam in light, warm sand in dark) instead of the
-   registry's fixed variants, and the dot-wave keyframes live in index.css. */
+/* The primary call-to-action button: a sliding accent pill of dotted chevrons
+   over a theme-aware root. The pill picks up the brand primary token (warm
+   loam in light, warm sand in dark) and the root flips with the theme via the
+   shared .cta-surface class (also used by the hero prompt shell). The surface
+   and dot-wave keyframes live in index.css. */
 
 const chevronDots = [
 	{ id: "d1", cx: 2, cy: 2, delay: 0 },
@@ -36,7 +38,7 @@ function DoubleChevron({ index }: { index: number }) {
 			<g fill="var(--primary-foreground)">
 				{chevronDots.map((dot) => (
 					<circle
-						className="bd-dot"
+						className="cta-dot"
 						cx={dot.cx}
 						cy={dot.cy}
 						key={dot.id}
@@ -50,9 +52,7 @@ function DoubleChevron({ index }: { index: number }) {
 }
 
 const rootClasses = cn(
-	"group/btn bd-root relative inline-flex h-11 w-36 overflow-hidden rounded-[12px]",
-	"bg-gradient-to-b from-[#1f1f1f] to-[#0a0a0a] dark:from-[#2c2c2c] dark:to-[#161616]",
-	"shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.18)]",
+	"group/btn cta-root cta-surface relative inline-flex h-11 w-36 overflow-hidden rounded-[12px]",
 	"transition-transform active:scale-[0.97]",
 	"focus-visible:outline-2 focus-visible:outline-offset-2",
 );
@@ -66,7 +66,7 @@ function ButtonBody({
 		<>
 			<span
 				className={cn(
-					"absolute inset-y-0 right-4 flex items-center font-medium text-[14px] text-white tracking-tight",
+					"absolute inset-y-0 right-4 flex items-center font-medium text-[14px] text-foreground tracking-tight",
 					"transition-[transform,opacity] duration-200 ease-snappy motion-reduce:transition-none",
 					"group-hover/btn:translate-x-2 group-hover/btn:opacity-0",
 					"group-focus-visible/btn:translate-x-2 group-focus-visible/btn:opacity-0",
@@ -98,7 +98,7 @@ function ButtonBody({
 
 /** With `to`, renders a real router link (middle-click, link role, crawlable);
  * without it, a plain button for onClick use. */
-export function BookDemoButton({
+export function CtaButton({
 	className,
 	children,
 	to,

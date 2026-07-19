@@ -315,95 +315,62 @@
 	color: transparent;
 }
 
-/* Hero prompt — skeuomorphic treatment (technique from pixel-perfect's
-   silver button): gradient borders painted with the padding-box/border-box
-   double-background trick so the rim reads as lit from above, plus layered
-   contact + drop shadows. All colors derive from theme tokens via color-mix,
-   so light and dark both get a correct bevel. */
-
-/* Raised outer plate. */
-.prompt-shell {
-	border: 1.5px solid transparent;
-	background:
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--card) 90%, white) 0%,
-			var(--card) 100%
-		)
-		padding-box,
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--border) 50%, white) 0%,
-			var(--border) 50%,
-			color-mix(in srgb, var(--border) 75%, black) 100%
-		)
-		border-box;
+/* Shared flat plate surface — the single source of the CTA visual language,
+   used by both the CTA button root (components/ui/cta-button.tsx) and the
+   hero prompt shell: a theme-aware gradient plate with a thin border, one
+   soft drop shadow, and a subtle top highlight. */
+.cta-surface {
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: linear-gradient(180deg, #fbfaf5 0%, #eae4d8 100%);
 	box-shadow:
-		0 1px 2px rgba(0, 0, 0, 0.14),
-		0 10px 24px -8px rgba(0, 0, 0, 0.22);
+		inset 0 1px 0 rgba(255, 255, 255, 0.9),
+		0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.dark .cta-surface {
+	border-color: transparent;
+	background: linear-gradient(180deg, #2c2c2c 0%, #161616 100%);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
-/* Recessed input well — slightly darker at the top with an inner shadow, like
-   a plate milled into the shell. */
+/* Flat input well; focus warms the border and casts a soft primary halo. */
 .prompt-well {
+	background: var(--background);
+	transition:
+		border-color 0.2s,
+		box-shadow 0.2s;
+}
+.prompt-well:focus-within {
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+/* Primary send button — the CTA pill's gradient and highlight. */
+.prompt-send {
 	background: linear-gradient(
 		180deg,
-		color-mix(in srgb, var(--background) 97%, black) 0%,
-		var(--background) 45%
+		color-mix(in srgb, var(--primary) 85%, white) 0%,
+		var(--primary) 100%
 	);
 	box-shadow:
-		inset 0 1.5px 3px rgba(0, 0, 0, 0.1),
-		inset 0 -1px 0 color-mix(in srgb, white 7%, transparent);
+		inset 0 1px 0 rgba(255, 255, 255, 0.4),
+		0 2px 4px rgba(0, 0, 0, 0.08);
+	transition: filter 0.2s;
+}
+.prompt-send:not(:disabled):hover {
+	filter: brightness(1.07);
 }
 
-/* Polished primary send button — lighter crown, darker base, beveled rim. */
-.prompt-send {
-	border: 1.5px solid transparent;
-	background:
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--primary) 78%, white) 0%,
-			var(--primary) 55%,
-			color-mix(in srgb, var(--primary) 86%, black) 100%
-		)
-		padding-box,
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--primary) 55%, white) 0%,
-			color-mix(in srgb, var(--primary) 70%, black) 100%
-		)
-		border-box;
-	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.35),
-		0 1px 2px rgba(0, 0, 0, 0.25),
-		0 4px 10px -3px rgba(0, 0, 0, 0.2);
-}
-
-/* Soft-raised chip for secondary actions. */
+/* Quiet chip for secondary actions. */
 .prompt-chip {
-	border: 1px solid transparent;
-	background:
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--muted) 88%, white) 0%,
-			var(--muted) 100%
-		)
-		padding-box,
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--border) 55%, white) 0%,
-			var(--border) 100%
-		)
-		border-box;
-	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.2),
-		0 1px 1.5px rgba(0, 0, 0, 0.12);
+	border: 1px solid var(--border);
+	background: var(--muted);
 }
 
-/* CTA book-demo button (components/pixel-perfect/book-demo-button.tsx) — the
-   dotted chevrons shimmer slowly at rest and march faster on hover/focus.
-   Static dots when reduced motion is preferred. */
-@keyframes bd-dot-wave {
+/* CTA button (components/ui/cta-button.tsx) — the dotted chevrons shimmer
+   slowly at rest and march faster on hover/focus. Static dots when reduced
+   motion is preferred. */
+@keyframes cta-dot-wave {
 	0%,
 	65%,
 	100% {
@@ -415,16 +382,16 @@
 		transform: translateX(0.5px) scale(1.08);
 	}
 }
-.bd-dot {
+.cta-dot {
 	transform-box: fill-box;
 	transform-origin: center;
 }
 @media (prefers-reduced-motion: no-preference) {
-	.bd-dot {
-		animation: bd-dot-wave 1.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+	.cta-dot {
+		animation: cta-dot-wave 1.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 	}
-	.bd-root:hover .bd-dot,
-	.bd-root:focus-visible .bd-dot {
+	.cta-root:hover .cta-dot,
+	.cta-root:focus-visible .cta-dot {
 		animation-duration: 0.95s;
 	}
 }
