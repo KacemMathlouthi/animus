@@ -1,9 +1,21 @@
+import { useState } from "react";
 import { DecorIcon } from "@/components/decor-icon";
 import { FullWidthDivider } from "@/features/landing/components/full-width-divider";
+import { cn } from "@/lib/utils";
+
+const posterClasses = cn(
+	"pointer-events-none absolute inset-0 h-full w-full object-cover",
+	"transition-opacity duration-700 ease-fluid",
+);
 
 /** The "See animus in action" section. Expects the launch video at
- * `public/launch.mp4`; the hero's "Watch the video" button scrolls here via `#video`. */
+ * `public/launch.mp4`; the hero's "Watch the video" button scrolls here via `#video`.
+ * Until playback starts, a theme-aware poster overlay (the hero art, cross-fading
+ * with the light/dark toggle like the hero itself) covers the player — the native
+ * `poster` attribute can't follow a class-driven theme. */
 export function LaunchVideo() {
+	const [playing, setPlaying] = useState(false);
+
 	return (
 		<section
 			className="relative flex min-h-svh scroll-mt-20 flex-col items-center justify-center gap-10 px-4 py-20"
@@ -43,13 +55,27 @@ export function LaunchVideo() {
 						aria-label="animus launch video"
 						className="h-full w-full object-cover"
 						controls
+						onPlay={() => setPlaying(true)}
 						playsInline
-						poster="/hero/hero-dark.webp"
 						preload="metadata"
 					>
 						<source src="/launch.mp4" type="video/mp4" />
 						<track kind="captions" />
 					</video>
+					{playing ? null : (
+						<>
+							<img
+								alt=""
+								className={cn(posterClasses, "opacity-100 dark:opacity-0")}
+								src="/hero/hero-light.webp"
+							/>
+							<img
+								alt=""
+								className={cn(posterClasses, "opacity-0 dark:opacity-100")}
+								src="/hero/hero-dark.webp"
+							/>
+						</>
+					)}
 				</div>
 			</div>
 
