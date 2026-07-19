@@ -68,9 +68,16 @@ Cross-package "does it compile" = `bun run typecheck`.
   tools call the SDK natively (no wrapper adapter).
 - **Models: Claude via Amazon Bedrock (default), with BYOK.** By default the
   agent resolves its model through `@ai-sdk/amazon-bedrock` — a Bedrock
-  inference-profile id (`BEDROCK_MODEL`, e.g. `us.anthropic.claude-opus-4-6-v1`),
-  with AWS credentials/region from the `AWS_*` env vars or the AWS credential
-  chain (EC2/ECS IAM role). Still provider-agnostic at the AI SDK layer.
+  inference-profile id (`BEDROCK_MODEL`, e.g. `us.anthropic.claude-opus-4-6-v1`).
+  Credentials are passed to the provider **explicitly** from the validated
+  server env (`BEDROCK_ACCESS_KEY_ID`/`BEDROCK_SECRET_ACCESS_KEY`/
+  `BEDROCK_REGION`, falling back to `AWS_*` so local `.env` files keep
+  working): **never rely on the SDK's implicit `AWS_*` env chain in prod** —
+  Vercel owns that namespace at runtime and shadows user-supplied values, which
+  silently broke every chat turn once. The agent runs with `maxRetries: 6` —
+  fresh-account Bedrock quotas 429 mid-turn and the default 2 retries abandons
+  the loop (an AWS Service Quotas increase is the durable fix). Still
+  provider-agnostic at the AI SDK layer.
   **BYOK is now wired into model selection** (`resolveModel` in
   `packages/agent/src/config`): a user may store an AES-256-GCM-encrypted LLM key
   (Anthropic / OpenAI / Google, with a curated tool-capable model) and/or an
@@ -100,15 +107,22 @@ Cross-package "does it compile" = `bun run typecheck`.
   container image** — `Dockerfile.vercel` at the repo root (project Root
   Directory = repo root; Container preset) runs `bun apps/api/src/server.ts`
   on `oven/bun`, so the source-first workspace resolves exactly as in local
-  dev. Vercel's serverless-function pipeline is structurally incompatible with
-  this monorepo (per-file transpile keeps `.ts` specifiers, packager rejects
-  Bun's symlinked workspaces) — don't go back there. Entry split:
+  dev. The image is kept slim (~470MB): `apps/web` source is excluded from the
+  build context (its `package.json` stays — the lockfile validates every
+  workspace member) and the install is `--production`. Vercel's
+  serverless-function pipeline is structurally incompatible with this monorepo
+  (per-file transpile keeps `.ts` specifiers, packager rejects Bun's symlinked
+  workspaces) — don't go back there. Ignore-file dialects differ:
+  `.dockerignore` anchors bare names to the context root, `.vercelignore` uses
+  gitignore semantics (a bare `assets` once stripped `apps/api/assets` at any
+  depth and took prod down) — anchor root-only excludes with a leading `/`. Entry split:
   `src/app.ts` (pure Hono app) + `src/server.ts` (Bun bootstrap; disables the
   idle timeout on `/api/chat`). Postgres is **Neon** (free tier; the app uses
   the **pooled** `-pooler` URL, migrations run against the direct URL).
   Platform limits accepted for now: scale-to-zero after ~5 min idle (cold
-  start) and a **300s function duration cap on Hobby** — a render turn
-  streaming past 5 minutes is cut. Prod env vars live on the Vercel projects
+  start) and the **function duration cap** — 300s default, raisable to 800s on
+  the Pro plan the team now runs on; a render turn streaming past the cap is
+  cut (renderScene alone allows 600s, so the raise matters). Prod env vars live on the Vercel projects
   (`WEB_ORIGIN`/`BETTER_AUTH_URL` must be the deployed origins, not the
   localhost `.env` values; `VITE_API_URL` on the web is **build-time** — a
   redeploy is needed when it changes).
@@ -126,9 +140,25 @@ Cross-package "does it compile" = `bun run typecheck`.
   `/health` (not under `/api/`) is reachable only via the deployment URL.
 - **Email (live): Resend on `mail.tryanimus.app`** — verified via the
   Resend↔Vercel integration (DKIM + SPF + return-path MX on `send.mail.…`,
-  auto-written into Vercel DNS); `RESEND_FROM=animus <login@mail.tryanimus.app>`,
-  so magic links deliver to any address. The **root** domain's MX slot is
-  deliberately free for a future receiving mailbox (Zoho/ImprovMX).
+  auto-written into Vercel DNS, plus a monitor-mode DMARC record);
+  `RESEND_FROM=animus <login@mail.tryanimus.app>`, so magic links deliver to
+  any address. The **root** domain's MX slot is deliberately free for a future
+  receiving mailbox (Zoho/ImprovMX).
+- **Magic-link auth vs inbox scanners.** The verify endpoint consumes its
+  single-use token on GET, and mail security scanners open every link in an
+  arriving email — some executing JavaScript (proven in prod: an auto-redirect
+  interstitial was defeated; paired verify hits ms apart in the logs). The
+  email therefore links to `/auth/verify`, a page where only an **explicit
+  button click** spends the token. If a scanner class that presses buttons
+  ever appears, the endgame is Better Auth's `emailOTP` plugin (typed 6-digit
+  codes — nothing clickable), which is also the more familiar UX.
+- **Narration requires a paid ElevenLabs tier.** The free tier is 10k
+  chars/month (≈2–3 videos) and restricts synthesis from datacenter IPs (the
+  Daytona sandbox). TTS metering charges users for narration on the platform
+  key, so a paid tier is a product prerequisite, not an optimization. In
+  scenes, voices are selected by `voice_id` only — `manim-voiceover` matches
+  `voice_name` exactly against the account's full display names and breaks
+  otherwise (encoded in the prompt + skill).
 - **Persistence:** Drizzle + managed Postgres. Conversations and their message
   snapshots are persisted — the DB is authoritative: the client sends only the
   newest message and the completed turn is saved on finish, with titles
@@ -196,11 +226,19 @@ with the `manim-video` skill; snapshot bumped to 0.6) → landing/UX polish ✓
 per-route document titles via `useDocumentTitle`) → cost control ✓ (free-credit
 metering + BYOK for LLM and ElevenLabs, per-component; balance-only enforcement
 with a `402 OUT_OF_CREDITS` gate + depletion dialog; header balance gauge; see the
-Cost-control decision above) → **next:** playback polish → generalize the
-render/repair loop → later: paid quota tiers / billing, autonomous mode.
-(Outstanding before the chat phase fully closes: an atomic title-generation claim.
-HTTP-level route tests for `conversations` + the `/api/chat` sync contract now
-exist.)
+Cost-control decision above) → deployed to prod ✓ (tryanimus.app — container
+image API + static web on Vercel behind one origin, Neon Postgres, Resend
+email, GitHub/Google OAuth + magic-link live; see the Hosting/Domain/Email
+decisions above) → **now:** first end-to-end prod video validation (blockers
+found and fixed so far: Vercel shadowing `AWS_*`, Bedrock throttling →
+retries, wrong voice guidance; still required: a paid ElevenLabs tier, an AWS
+Bedrock quota increase) → playback polish → generalize the render/repair loop
+→ later: paid quota tiers / billing, autonomous mode.
+(Parked, deliberately: redacting sandbox secrets from tool output; surfacing
+stream errors in the studio UI (a stream that dies after the 200 is committed
+is invisible to status monitoring and silent in the UI); email OTP codes as
+the magic-link endgame; the settings `music_track`/`voice_id`
+nullable-vs-required mismatch; an atomic title-generation claim.)
 
 ---
 
