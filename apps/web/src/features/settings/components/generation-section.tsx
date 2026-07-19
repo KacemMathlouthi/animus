@@ -93,7 +93,7 @@ export function GenerationSection() {
 					description="The look of the rendered video canvas."
 					title="Video theme"
 				>
-					<div className="flex gap-1 rounded-sm border p-0.5">
+					<div className="flex w-fit gap-1 rounded-sm border p-0.5">
 						{VIDEO_THEMES.map((option) => (
 							<button
 								aria-pressed={config.videoTheme === option}
