@@ -92,7 +92,7 @@ export function HeroPrompt({ className }: { className?: string }) {
 				<form
 					className={cn(
 						"prompt-well flex flex-col gap-2.5 rounded-xl border p-3",
-						"transition-[border-color] duration-200 ease-snappy focus-within:border-ring/50",
+						"transition-[border-color] duration-200 ease-snappy focus-within:border-primary/45",
 					)}
 					onSubmit={(event) => {
 						event.preventDefault();

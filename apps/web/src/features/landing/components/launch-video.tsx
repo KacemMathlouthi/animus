@@ -26,8 +26,6 @@ export function LaunchVideo() {
 			<DecorIcon className="size-4" position="bottom-left" />
 			<DecorIcon className="size-4" position="bottom-right" />
 
-			<FullWidthDivider className="-top-px" />
-
 			<div className="max-w-2xl space-y-3 text-center">
 				<p className="font-mono text-muted-foreground text-xs uppercase tracking-wider">
 					Watch
