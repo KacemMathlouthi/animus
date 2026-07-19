@@ -14,6 +14,7 @@ import { AccountSection } from "@/features/settings/components/account-section";
 import { GenerationSection } from "@/features/settings/components/generation-section";
 import { SecretsSection } from "@/features/settings/components/secrets-section";
 import { SettingsLayout } from "@/features/settings/components/settings-layout";
+import { UsageSection } from "@/features/settings/components/usage-section";
 import { AuthPage } from "@/pages/auth-page";
 import { LandingPage } from "@/pages/landing-page";
 import { NotFoundPage } from "@/pages/not-found-page";
@@ -70,6 +71,7 @@ function App() {
 						/>
 						<Route element={<AccountSection />} path="account" />
 						<Route element={<GenerationSection />} path="generation" />
+						<Route element={<UsageSection />} path="usage" />
 						<Route element={<SecretsSection />} path="secrets" />
 					</Route>
 				</Route>
