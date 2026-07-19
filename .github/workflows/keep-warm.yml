@@ -1,0 +1,18 @@
+# Keeps the deployed API responsive: the Vercel container scales to zero after
+# ~5 idle minutes and Neon autosuspends on the same clock, so the first request
+# after idle pays several seconds of stacked cold starts. /health runs a DB
+# round-trip, so one ping keeps the container AND the database warm.
+# (Vercel Cron would be the native tool, but sub-daily crons need the Pro plan.)
+name: keep-warm
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping API health (wakes container + database)
+        run: |
+          curl -sf -m 45 --retry 2 --retry-delay 5 https://animus-api.vercel.app/health
