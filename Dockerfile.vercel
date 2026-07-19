@@ -20,7 +20,10 @@ COPY packages/agent/package.json packages/agent/
 COPY packages/auth/package.json packages/auth/
 COPY packages/core/package.json packages/core/
 COPY packages/db/package.json packages/db/
-RUN bun install --frozen-lockfile
+# --production drops every workspace's devDependencies (vitest, drizzle-kit,
+# the web toolchain) — none are imported at runtime; the boot probe in CI of
+# record: / and /health verified after every image change.
+RUN bun install --frozen-lockfile --production
 
 COPY . .
 
