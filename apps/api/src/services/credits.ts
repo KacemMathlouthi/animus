@@ -14,9 +14,20 @@ import {
   FREE_GRANT_MICROS,
   MICROS_PER_DOLLAR,
   ttsCostMicros,
+  type UsageList,
 } from "@animus/core";
 import { getServerEnv } from "@animus/core/env";
-import { db, eq, sqlExpr, usageEvent, userCredits } from "@animus/db";
+import {
+  conversation,
+  count,
+  db,
+  desc,
+  eq,
+  inArray,
+  sqlExpr,
+  usageEvent,
+  userCredits,
+} from "@animus/db";
 
 function toBalance(balanceMicros: number): CreditsBalance {
   return { balanceMicros, grantMicros: FREE_GRANT_MICROS };
@@ -128,4 +139,68 @@ export async function settleUsage(input: SettleUsageInput): Promise<number> {
     .where(eq(userCredits.userId, input.userId));
 
   return costMicros;
+}
+
+export interface ListUsageInput {
+  limit: number;
+  offset: number;
+  userId: string;
+}
+
+/** A page of the caller's usage ledger, newest first, with conversation titles
+ * attached where the conversation still exists (the ledger keeps the plain id
+ * after deletion, so cost history survives). */
+export async function listUsage({
+  userId,
+  limit,
+  offset,
+}: ListUsageInput): Promise<UsageList> {
+  const [rows, totalRows] = await Promise.all([
+    db
+      .select()
+      .from(usageEvent)
+      .where(eq(usageEvent.userId, userId))
+      .orderBy(desc(usageEvent.createdAt), desc(usageEvent.id))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ total: count() })
+      .from(usageEvent)
+      .where(eq(usageEvent.userId, userId)),
+  ]);
+
+  const conversationIds = [
+    ...new Set(
+      rows
+        .map((row) => row.conversationId)
+        .filter((id): id is string => id !== null)
+    ),
+  ];
+  const titles = conversationIds.length
+    ? await db
+        .select({ id: conversation.id, title: conversation.title })
+        .from(conversation)
+        .where(inArray(conversation.id, conversationIds))
+    : [];
+  const titleById = new Map(titles.map((row) => [row.id, row.title]));
+
+  return {
+    items: rows.map((row) => ({
+      id: row.id,
+      conversationId: row.conversationId,
+      conversationTitle: row.conversationId
+        ? (titleById.get(row.conversationId) ?? null)
+        : null,
+      turnId: row.turnId,
+      model: row.model,
+      inputTokens: row.inputTokens,
+      outputTokens: row.outputTokens,
+      ttsChars: row.ttsChars,
+      costMicros: row.costMicros,
+      createdAt: row.createdAt.toISOString(),
+    })),
+    total: totalRows[0]?.total ?? 0,
+    limit,
+    offset,
+  };
 }

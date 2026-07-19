@@ -7,10 +7,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const USER_CREDITS = { __table: "user_credits" };
 const USAGE_EVENT = { __table: "usage_event" };
+const CONVERSATION = { __table: "conversation", id: "id", title: "title" };
 
 const h = vi.hoisted(() => ({
   findFirst: vi.fn(),
   selectRows: vi.fn(() => [{ total: "0" }]),
+  /** Queued results for chained selects (listUsage); falls back to selectRows. */
+  selectQueue: [] as unknown[],
   usageReturning: vi.fn(() => [{ id: "evt-1" }]),
   updateWhere: vi.fn(() => Promise.resolve(undefined)),
   insertCalls: [] as Array<{ table: unknown; values: unknown }>,
@@ -24,7 +27,26 @@ vi.mock("@animus/core/env", () => ({
 vi.mock("@animus/db", () => ({
   db: {
     query: { userCredits: { findFirst: h.findFirst } },
-    select: () => ({ from: () => Promise.resolve(h.selectRows()) }),
+    // A chainable, thenable select: every chain method returns the builder and
+    // awaiting it resolves the next queued result (or the legacy selectRows).
+    select: () => {
+      const chain = {
+        from: () => chain,
+        where: () => chain,
+        orderBy: () => chain,
+        limit: () => chain,
+        offset: () => chain,
+        then: (
+          resolve: (value: unknown) => unknown,
+          reject?: (error: unknown) => unknown
+        ) => {
+          const result =
+            h.selectQueue.length > 0 ? h.selectQueue.shift() : h.selectRows();
+          return Promise.resolve(result).then(resolve, reject);
+        },
+      };
+      return chain;
+    },
     insert: (table: unknown) => ({
       values: (values: unknown) => {
         h.insertCalls.push({ table, values });
@@ -40,19 +62,24 @@ vi.mock("@animus/db", () => ({
     }),
     update: () => ({ set: () => ({ where: h.updateWhere }) }),
   },
+  conversation: CONVERSATION,
+  count: vi.fn(() => ({ count: true })),
+  desc: vi.fn((column) => ({ desc: column })),
   eq: vi.fn((left, right) => ({ eq: [left, right] })),
+  inArray: vi.fn((column, values) => ({ inArray: [column, values] })),
   sqlExpr: vi.fn(() => ({ sql: true })),
   userCredits: USER_CREDITS,
   usageEvent: USAGE_EVENT,
 }));
 
-const { getOrCreateCredits, settleUsage } = await import(
+const { getOrCreateCredits, listUsage, settleUsage } = await import(
   "../services/credits.ts"
 );
 
 beforeEach(() => {
   vi.clearAllMocks();
   h.selectRows.mockReturnValue([{ total: "0" }]);
+  h.selectQueue.length = 0;
   h.usageReturning.mockReturnValue([{ id: "evt-1" }]);
   h.updateWhere.mockResolvedValue(undefined);
   h.insertCalls.length = 0;
@@ -184,5 +211,83 @@ describe("settleUsage", () => {
     });
     expect(charged).toBe(0);
     expect(h.updateWhere).not.toHaveBeenCalled();
+  });
+});
+
+describe("listUsage", () => {
+  const CREATED = new Date("2026-07-19T12:00:00Z");
+
+  const row = (overrides: Record<string, unknown>) => ({
+    id: "evt-1",
+    userId: "u1",
+    conversationId: null,
+    turnId: "t1",
+    model: null,
+    inputTokens: 0,
+    outputTokens: 0,
+    ttsChars: 0,
+    costMicros: 0,
+    createdAt: CREATED,
+    ...overrides,
+  });
+
+  it("maps rows, attaches surviving conversation titles, and reports total", async () => {
+    h.selectQueue.push(
+      [
+        row({
+          id: "evt-1",
+          conversationId: "c1",
+          turnId: "t1",
+          model: "us.anthropic.claude-sonnet-5",
+          inputTokens: 1200,
+          outputTokens: 300,
+          ttsChars: 900,
+          costMicros: 12_345,
+        }),
+        row({
+          id: "evt-2",
+          conversationId: "c-deleted",
+          turnId: "t2",
+          ttsChars: 50,
+          costMicros: 15,
+        }),
+      ],
+      [{ total: 2 }],
+      [{ id: "c1", title: "Fourier transforms" }]
+    );
+
+    const page = await listUsage({ userId: "u1", limit: 20, offset: 0 });
+
+    expect(page.total).toBe(2);
+    expect(page.limit).toBe(20);
+    expect(page.offset).toBe(0);
+    expect(page.items[0]).toEqual({
+      id: "evt-1",
+      conversationId: "c1",
+      conversationTitle: "Fourier transforms",
+      turnId: "t1",
+      model: "us.anthropic.claude-sonnet-5",
+      inputTokens: 1200,
+      outputTokens: 300,
+      ttsChars: 900,
+      costMicros: 12_345,
+      createdAt: CREATED.toISOString(),
+    });
+    // Deleted conversation: id survives, title is null, BYOK model is null.
+    expect(page.items[1]).toMatchObject({
+      conversationId: "c-deleted",
+      conversationTitle: null,
+      model: null,
+    });
+  });
+
+  it("returns an empty page without querying titles when there are no rows", async () => {
+    h.selectQueue.push([], [{ total: 0 }]);
+
+    const page = await listUsage({ userId: "u1", limit: 10, offset: 40 });
+
+    expect(page).toEqual({ items: [], total: 0, limit: 10, offset: 40 });
+    // Only the rows + count selects ran — nothing left unconsumed.
+    expect(h.selectQueue.length).toBe(0);
   });
 });
