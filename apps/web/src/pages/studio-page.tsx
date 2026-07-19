@@ -52,15 +52,24 @@ function LoadedStudioChat({
 }) {
 	const location = useLocation();
 	const prompt = (location.state as { prompt?: string } | null)?.prompt;
-	const { messages, status, phase, videoKey, respondToTool, send, stop } =
-		useStudioChat({
-			chatId,
-			initialPrompt: prompt,
-			initialMessages: detail.messages as AnimusUIMessage[],
-			// A finished turn persists new messages and may generate a title; let
-			// the sidebar and detail hook refresh from that single signal.
-			onConversationUpdated: notifyConversationsChanged,
-		});
+	const {
+		messages,
+		status,
+		phase,
+		videoKey,
+		respondToTool,
+		send,
+		stop,
+		error: turnError,
+		retry,
+	} = useStudioChat({
+		chatId,
+		initialPrompt: prompt,
+		initialMessages: detail.messages as AnimusUIMessage[],
+		// A finished turn persists new messages and may generate a title; let
+		// the sidebar and detail hook refresh from that single signal.
+		onConversationUpdated: notifyConversationsChanged,
+	});
 
 	// Expose the latest render to the header's Publish menu (disabled until one exists).
 	useRegisterPublishTarget(
@@ -69,7 +78,9 @@ function LoadedStudioChat({
 
 	return (
 		<StudioStage
+			error={turnError}
 			messages={messages}
+			onRetry={retry}
 			onStop={stop}
 			onSubmit={send}
 			phase={phase}

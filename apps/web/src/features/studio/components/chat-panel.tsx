@@ -1,10 +1,12 @@
 import type { ChatStatus } from "ai";
+import { RotateCcwIcon } from "lucide-react";
 import {
 	Conversation,
 	ConversationContent,
 	ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import { Button } from "@/components/ui/button";
 import { ChatMessage } from "@/features/studio/components/chat-message";
 import { StudioPrompt } from "@/features/studio/components/studio-prompt";
 import type { AnimusUIMessage, RespondToTool } from "@/features/studio/types";
@@ -16,6 +18,8 @@ export function ChatPanel({
 	onSubmit,
 	onStop,
 	onOpenVideo,
+	error,
+	onRetry,
 }: {
 	messages: AnimusUIMessage[];
 	status: ChatStatus;
@@ -23,6 +27,8 @@ export function ChatPanel({
 	onSubmit: (text: string) => void;
 	onStop: () => void;
 	onOpenVideo?: (key: string) => void;
+	error?: Error;
+	onRetry?: () => void;
 }) {
 	const lastIndex = messages.length - 1;
 	return (
@@ -44,6 +50,20 @@ export function ChatPanel({
 					))}
 					{status === "submitted" ? (
 						<Shimmer>Thinking through the explanation…</Shimmer>
+					) : null}
+					{status === "error" ? (
+						<div className="flex items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
+							<span className="text-destructive">
+								{error?.message ||
+									"Something went wrong while generating. Try again."}
+							</span>
+							{onRetry ? (
+								<Button onClick={onRetry} size="sm" variant="outline">
+									<RotateCcwIcon data-icon="inline-start" />
+									Retry
+								</Button>
+							) : null}
+						</div>
 					) : null}
 				</ConversationContent>
 				<ConversationScrollButton />
