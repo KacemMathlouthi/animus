@@ -162,7 +162,9 @@ FONT = "Latin Modern Roman"
 class Explainer(VoiceoverScene):
     def construct(self):
         self.set_speech_service(ElevenLabsService(
-            voice_name="Rachel", model="eleven_multilingual_v2", transcription_model=None
+            # Always voice_id, never voice_name: name lookup needs an exact match
+            # against the account's full display names and breaks otherwise.
+            voice_id="Xb7hH8MSUJpSbSDYk0k2", model="eleven_multilingual_v2", transcription_model=None
         ))
         title = Text("Why Does This Work?", font_size=48, color=PRIMARY, weight=BOLD, font=FONT)
         with self.voiceover(text="Why does this work?") as tracker:
