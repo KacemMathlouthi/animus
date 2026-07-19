@@ -151,6 +151,15 @@ export function createManimTools(deps: {
     meter,
   } = deps;
 
+  /** Scrub the ElevenLabs key from anything the sandbox echoes back. The key
+   * lives in the sandbox env, so `env`, `cat .env`, or an error trace can
+   * reflect it into tool output — which the model then streams into the chat
+   * and the persisted message snapshot. Redact at the tool boundary. */
+  const redactSecrets = (text: string): string =>
+    elevenLabsApiKey
+      ? text.split(elevenLabsApiKey).join("[redacted:elevenlabs-key]")
+      : text;
+
   return {
     writeFile: tool({
       description:
@@ -206,7 +215,7 @@ export function createManimTools(deps: {
       inputSchema: ReadFileInputSchema,
       execute: async ({ path }): Promise<ReadFileOutput> => {
         const buffer = await sandbox.fs.downloadFile(resolvePath(path));
-        return { path, content: buffer.toString("utf8") };
+        return { path, content: redactSecrets(buffer.toString("utf8")) };
       },
     }),
     listFiles: tool({
@@ -231,7 +240,7 @@ export function createManimTools(deps: {
         return {
           command,
           exitCode: res.exitCode,
-          output: tailLog(commandOutput(res)),
+          output: redactSecrets(tailLog(commandOutput(res))),
         };
       },
     }),
@@ -258,7 +267,7 @@ export function createManimTools(deps: {
           RENDER_TIMEOUT_SEC
         );
         const output = commandOutput(res);
-        const logs = tailLog(output);
+        const logs = redactSecrets(tailLog(output));
 
         if (res.exitCode !== 0) {
           return { ok: false, file, scene, exitCode: res.exitCode, logs };

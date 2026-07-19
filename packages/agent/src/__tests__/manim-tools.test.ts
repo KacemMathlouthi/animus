@@ -208,6 +208,46 @@ describe("runCommand log truncation", () => {
   });
 });
 
+describe("secret redaction at the tool boundary", () => {
+  // Regression: the agent ran `env | grep -i eleven` in prod and the tool
+  // reflected the full ElevenLabs key into the chat and the persisted
+  // message snapshot. The sandbox holds the key in its env, so any echo of
+  // it must be scrubbed before the model sees the output.
+  it("scrubs the ElevenLabs key from runCommand output", async () => {
+    const execute = runTool(
+      "ELEVENLABS_API_KEY=el-test-key\nELEVEN_API_KEY=el-test-key\n"
+    );
+
+    const output = await execute({ command: "env | grep -i eleven" }, EXEC_CTX);
+
+    expect(output.output).not.toContain("el-test-key");
+    expect(output.output).toContain("[redacted:elevenlabs-key]");
+  });
+
+  it("scrubs the ElevenLabs key from readFile content", async () => {
+    const state = createFakeSandbox({
+      [`${"/home/daytona/project"}/.env`]: "ELEVENLABS_API_KEY=el-test-key\n",
+    });
+    const tools = createManimTools({
+      sandbox: state.sandbox,
+      conversationId: "conv-1",
+      saveVideo: vi.fn(() => Promise.resolve("https://example.com/v.mp4")),
+      backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
+      elevenLabsApiKey: "el-test-key",
+      meter: { ttsChars: 0 },
+    });
+    const read = tools.readFile;
+    if (!read?.execute) {
+      throw new Error("readFile tool is not executable");
+    }
+
+    const output = await read.execute({ path: ".env" }, EXEC_CTX);
+
+    expect(output.content).not.toContain("el-test-key");
+    expect(output.content).toContain("[redacted:elevenlabs-key]");
+  });
+});
+
 const MASTER = "/home/daytona/project/media/videos/scene/1080p60/Main.mp4";
 const MUSIC_MASTER =
   "/home/daytona/project/media/videos/scene/1080p60/Main.music.mp4";
