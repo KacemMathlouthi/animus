@@ -36,6 +36,7 @@ vi.mock("@animus/db", () => ({
         orderBy: () => chain,
         limit: () => chain,
         offset: () => chain,
+        // biome-ignore lint/suspicious/noThenProperty: intentionally thenable — drizzle's query builder is awaited directly, so the mock must be too.
         then: (
           resolve: (value: unknown) => unknown,
           reject?: (error: unknown) => unknown
