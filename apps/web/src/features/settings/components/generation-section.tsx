@@ -114,30 +114,6 @@ export function GenerationSection() {
 				</SettingRow>
 
 				<SettingRow
-					description="Use your own brand colors across the animation."
-					disabled
-					title={
-						<span className="flex items-center gap-2">
-							Brand palette
-							<Badge variant="outline">
-								<LockIcon className="size-3" />
-								Coming soon
-							</Badge>
-						</span>
-					}
-				>
-					<div className="flex gap-1.5">
-						{["#4a3212", "#b08442", "#e8d9c0", "#1c1917"].map((color) => (
-							<span
-								className="size-6 rounded-full border"
-								key={color}
-								style={{ backgroundColor: color }}
-							/>
-						))}
-					</div>
-				</SettingRow>
-
-				<SettingRow
 					description="Add a subtle soundtrack under the narration."
 					title="Background music"
 				>
@@ -166,16 +142,56 @@ export function GenerationSection() {
 				) : null}
 
 				<SettingRow
-					description="Typeface used for on-screen text and titles."
-					title="Font"
+					description="The narrator for your videos. Hover a voice and press play to hear a sample."
+					stacked
+					title="Voiceover"
 				>
-					<Select
-						onValueChange={(value) =>
-							update({ font: value as GenerationSettings["font"] })
-						}
-						value={config.font}
-					>
-						<SelectTrigger aria-label="Font" className="w-44">
+					<VoicePicker
+						onValueChange={(id) => update({ voiceId: id })}
+						value={config.voiceId}
+						voices={VOICES}
+					/>
+				</SettingRow>
+
+				<SettingRow
+					description="Use your own brand colors across the animation."
+					disabled
+					title={
+						<span className="flex items-center gap-2">
+							Brand palette
+							<Badge variant="outline">
+								<LockIcon className="size-3" />
+								Coming soon
+							</Badge>
+						</span>
+					}
+				>
+					<div className="flex gap-1.5">
+						{["#4a3212", "#b08442", "#e8d9c0", "#1c1917"].map((color) => (
+							<span
+								className="size-6 rounded-full border"
+								key={color}
+								style={{ backgroundColor: color }}
+							/>
+						))}
+					</div>
+				</SettingRow>
+
+				<SettingRow
+					description="Typeface used for on-screen text and titles."
+					disabled
+					title={
+						<span className="flex items-center gap-2">
+							Font
+							<Badge variant="outline">
+								<LockIcon className="size-3" />
+								Coming soon
+							</Badge>
+						</span>
+					}
+				>
+					<Select value={config.font}>
+						<SelectTrigger aria-label="Font" className="w-44" disabled>
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -186,18 +202,6 @@ export function GenerationSection() {
 							))}
 						</SelectContent>
 					</Select>
-				</SettingRow>
-
-				<SettingRow
-					description="The narrator for your videos. Hover a voice and press play to hear a sample."
-					stacked
-					title="Voiceover"
-				>
-					<VoicePicker
-						onValueChange={(id) => update({ voiceId: id })}
-						value={config.voiceId}
-						voices={VOICES}
-					/>
 				</SettingRow>
 			</div>
 
