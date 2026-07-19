@@ -14,6 +14,11 @@ import { OG_HEIGHT, OG_WIDTH } from "./share-card.ts";
 export const SHARE_META_START = "<!-- share-meta:start -->";
 export const SHARE_META_END = "<!-- share-meta:end -->";
 
+/** Default description for share link previews — one string for every
+ * injection layer (the Vite dev plugin and the API's prod page route). */
+export const SHARE_META_DESCRIPTION =
+  "A narrated explainer, researched and animated by animus. Make your own in minutes.";
+
 /** Default player embed dimensions (our videos are 16:9). */
 const PLAYER_WIDTH = 1280;
 const PLAYER_HEIGHT = 720;

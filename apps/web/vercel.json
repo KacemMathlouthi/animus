@@ -5,6 +5,10 @@
 			"source": "/api/:path*",
 			"destination": "https://animus-api.vercel.app/api/:path*"
 		},
+		{
+			"source": "/v/:token",
+			"destination": "https://animus-api.vercel.app/api/share/:token/page"
+		},
 		{ "source": "/(.*)", "destination": "/index.html" }
 	]
 }

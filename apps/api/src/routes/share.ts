@@ -4,7 +4,14 @@
  * authenticated `POST /api/media/share`; this route is read-only and never
  * exposes the underlying object key or conversation. */
 
-import { escapeHtml, PublicShareResponseSchema } from "@animus/core";
+import {
+  buildShareMetaTags,
+  escapeHtml,
+  injectShareMeta,
+  PublicShareResponseSchema,
+  SHARE_META_DESCRIPTION,
+} from "@animus/core";
+import { getServerEnv } from "@animus/core/env";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { signDownloadUrl, signMediaUrl } from "../lib/media.ts";
@@ -60,6 +67,61 @@ shareRoute.get("/:token/video.mp4", async (c) => {
   const url = await signMediaUrl(share.videoKey);
   c.header("Cache-Control", "public, max-age=300");
   return c.redirect(url, 302);
+});
+
+/** The SPA shell (index.html) fetched from the web origin, cached briefly —
+ * it only changes on a web deploy, and a crawler burst must not hammer the
+ * origin with one fetch per hit. */
+const SHELL_CACHE_TTL_MS = 5 * 60 * 1000;
+let shellCache: { html: string; fetchedAt: number } | null = null;
+
+async function fetchSpaShell(webOrigin: string): Promise<string> {
+  const now = Date.now();
+  if (shellCache && now - shellCache.fetchedAt < SHELL_CACHE_TTL_MS) {
+    return shellCache.html;
+  }
+  const res = await fetch(`${webOrigin}/`, {
+    headers: { accept: "text/html" },
+  });
+  if (!res.ok) {
+    throw new HTTPException(503, { message: "Share page unavailable" });
+  }
+  const html = await res.text();
+  shellCache = { html, fetchedAt: now };
+  return html;
+}
+
+/** The share page itself, with per-share link-preview meta injected. A static
+ * SPA serves one index.html for every route, so crawlers hitting `/v/:token`
+ * would see no OG tags at all — the web project rewrites `/v/:token` here,
+ * and this route serves the SPA shell with the share's meta block spliced in.
+ * Humans boot the SPA exactly as before; unknown tokens get the plain shell
+ * (the SPA renders its own not-found state). This is the prod counterpart of
+ * the web's dev-only Vite plugin (apps/web/plugins/share-meta.ts). */
+shareRoute.get("/:token/page", async (c) => {
+  const { webOrigin } = getServerEnv();
+  const [share, shell] = await Promise.all([
+    getShareByToken(c.req.param("token")),
+    fetchSpaShell(webOrigin),
+  ]);
+  c.header("Cache-Control", "public, max-age=300");
+  if (!share) {
+    return c.html(shell);
+  }
+  const base = `${webOrigin}/api/share/${share.token}`;
+  return c.html(
+    injectShareMeta(
+      shell,
+      buildShareMetaTags({
+        title: share.title,
+        description: SHARE_META_DESCRIPTION,
+        pageUrl: `${webOrigin}/v/${share.token}`,
+        imageUrl: `${base}/og.png`,
+        videoUrl: `${base}/video.mp4`,
+        embedUrl: `${base}/embed`,
+      })
+    )
+  );
 });
 
 /** The `twitter:player` iframe target — an inline video player crawlers can embed. */

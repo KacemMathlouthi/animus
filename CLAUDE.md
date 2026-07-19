@@ -171,23 +171,24 @@ Cross-package "does it compile" = `bun run typecheck`.
   the narration (`tracker.duration`, bookmarks). The ElevenLabs key is injected into
   the render sandbox via `envVars`. Background music is mixed under the narration in
   the post-render ffmpeg step.
-- **Link previews & the SPA meta-injection seam (partially resolved).** A static SPA
+- **Link previews & the SPA meta-injection seam (resolved).** A static SPA
   serves one `index.html` for every route, so per-share Open Graph / Twitter meta
   must be written **server-side at the real `/v/:token` URL** — crawlers don't run
   JS. The durable, deployment-agnostic parts live in `@animus/core`
   (`buildShareCardSvg`, `buildShareMetaTags`, `injectShareMeta`) and in the public
   API endpoints (`GET /api/share/:token/og.png` PNG card, `…/video.mp4` presigned
   redirect for `og:video`, `…/embed` iframe for `twitter:player`) — these never
-  change with hosting. The **only** hosting-coupled piece is the *injection layer*:
-  today it's a **Vite dev plugin** (`apps/web/plugins/share-meta.ts`) + an `/api`
-  proxy in `vite.config.ts`, both of which exist only under `vite dev`. In prod that
-  becomes an **edge function / meta-injecting reverse proxy / the API serving
-  `/v/:token`** (or vanishes entirely on an SSR migration), and it reuses the same
-  pure core builders — so the swap is ~30 lines of glue, not a rebuild. The
-  single-origin half of this is now **done in prod**: web + API sit behind
-  `tryanimus.app` (the `/api` rewrite), so external viewers can play shared
-  videos. Still open: server-side per-share meta injection at `/v/:token` for
-  crawlers (the edge-function glue).
+  change with hosting. The **only** hosting-coupled piece is the *injection layer*,
+  and both halves now exist: in dev a **Vite dev plugin**
+  (`apps/web/plugins/share-meta.ts`) + an `/api` proxy in `vite.config.ts`; in
+  prod the API's **`GET /api/share/:token/page`** route, which fetches the SPA
+  shell from `WEB_ORIGIN` (cached ~5 min), splices in the meta block, and is
+  wired to the real URL by a `/v/:token` rewrite in `apps/web/vercel.json`
+  (placed before the SPA fallback). Both layers reuse the same pure core
+  builders and the shared `SHARE_META_DESCRIPTION`. Humans still boot the SPA
+  as normal; unknown tokens get the plain shell. Single origin also done:
+  web + API sit behind `tryanimus.app` (the `/api` rewrite), so external
+  viewers can play shared videos.
 
 **Roadmap:** shell ✓ (settings backend; conversation persistence with generated
 titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` →
@@ -213,8 +214,8 @@ bundled Geist at the public `GET /api/share/:token/og.png`. Real link previews a
 served at the **natural `/v/:token` URL**: because a static SPA can't emit per-URL
 meta, per-share OG/Twitter tags (`buildShareMetaTags`/`injectShareMeta` in
 `@animus/core`) are injected into index.html server-side — a Vite dev plugin +
-`/api` proxy today so it works over a `cloudflared` tunnel, an edge function /
-meta-injecting proxy in prod (seam left; ties to the open hosting decision).
+`/api` proxy in dev, and in prod the API's `GET /api/share/:token/page` route
+behind a `/v/:token` rewrite (see the meta-injection decision above).
 Previews include `og:video` + a `twitter:player` iframe embed
 (`GET /api/share/:token/embed`) backed by a stable mp4 URL
 (`GET /api/share/:token/video.mp4` → presigned redirect), so they play inline
