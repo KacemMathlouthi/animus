@@ -1,5 +1,6 @@
 import { MenuIcon, XIcon } from "lucide-react";
 import React from "react";
+import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { AuthActions } from "@/features/landing/components/auth-actions";
 import { navLinks } from "@/features/landing/components/nav-links";
@@ -65,9 +66,9 @@ export function MobileNav() {
 									key={link.label}
 									variant="ghost"
 								>
-									<a href={link.href} onClick={close}>
+									<Link onClick={close} to={link.href}>
 										{link.label}
-									</a>
+									</Link>
 								</Button>
 							))}
 						</div>

@@ -39,7 +39,7 @@ export function Header() {
 					<div>
 						{navLinks.map((link) => (
 							<Button asChild key={link.label} size="sm" variant="ghost">
-								<a href={link.href}>{link.label}</a>
+								<Link to={link.href}>{link.label}</Link>
 							</Button>
 						))}
 					</div>
