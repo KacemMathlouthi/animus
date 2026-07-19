@@ -120,9 +120,10 @@ Cross-package "does it compile" = `bun run typecheck`.
   idle timeout on `/api/chat`). Postgres is **Neon** (free tier; the app uses
   the **pooled** `-pooler` URL, migrations run against the direct URL).
   Platform limits accepted for now: scale-to-zero after ~5 min idle (cold
-  start) and the **function duration cap** — 300s default, raisable to 800s on
-  the Pro plan the team now runs on; a render turn streaming past the cap is
-  cut (renderScene alone allows 600s, so the raise matters). Prod env vars live on the Vercel projects
+  start) and the **function duration cap** — a hard 300s on the Hobby plan the
+  team runs on (confirmed by the CLI; the Pro upgrade would raise it to 800s —
+  relevant because renderScene alone allows 600s, so long render turns can be
+  cut mid-stream today). Prod env vars live on the Vercel projects
   (`WEB_ORIGIN`/`BETTER_AUTH_URL` must be the deployed origins, not the
   localhost `.env` values; `VITE_API_URL` on the web is **build-time** — a
   redeploy is needed when it changes).
