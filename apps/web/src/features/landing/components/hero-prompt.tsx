@@ -84,7 +84,7 @@ export function HeroPrompt({ className }: { className?: string }) {
 
 	return (
 		<div className={cn("w-full max-w-2xl", className)}>
-			<div className="prompt-shell flex flex-col gap-2 rounded-2xl p-2.5">
+			<div className="cta-surface flex flex-col gap-2 rounded-2xl p-2.5">
 				<div className="flex items-center px-1.5 pt-0.5 font-medium text-muted-foreground text-xs">
 					<span>$5.00 in free credits</span>
 				</div>

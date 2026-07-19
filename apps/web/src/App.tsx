@@ -7,6 +7,7 @@ import {
 	Route,
 	Routes,
 	useLocation,
+	useNavigationType,
 } from "react-router";
 import { RequireAuth } from "@/features/auth/components/require-auth";
 import { AccountSection } from "@/features/settings/components/account-section";
@@ -24,7 +25,12 @@ import { VerifyLoginPage } from "@/pages/verify-login-page";
 
 function ScrollToTop() {
 	const location = useLocation();
+	const navigationType = useNavigationType();
 	useEffect(() => {
+		// Back/forward: let the browser restore the previous scroll position.
+		if (navigationType === "POP") {
+			return;
+		}
 		const target = location.hash
 			? document.getElementById(location.hash.slice(1))
 			: null;
@@ -33,7 +39,7 @@ function ScrollToTop() {
 			return;
 		}
 		window.scrollTo({ top: 0, behavior: "instant" });
-	}, [location]);
+	}, [location, navigationType]);
 	return null;
 }
 

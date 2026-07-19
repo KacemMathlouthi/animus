@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 
 /* The primary call-to-action button: a sliding accent pill of dotted chevrons
    over a theme-aware root. The pill picks up the brand primary token (warm
-   loam in light, warm sand in dark) and the root flips with the theme (light
-   card in light mode, dark gradient in dark). The dot-wave keyframes live in
-   index.css. */
+   loam in light, warm sand in dark) and the root flips with the theme via the
+   shared .cta-surface class (also used by the hero prompt shell). The surface
+   and dot-wave keyframes live in index.css. */
 
 const chevronDots = [
 	{ id: "d1", cx: 2, cy: 2, delay: 0 },
@@ -52,9 +52,7 @@ function DoubleChevron({ index }: { index: number }) {
 }
 
 const rootClasses = cn(
-	"group/btn cta-root relative inline-flex h-11 w-36 overflow-hidden rounded-[12px]",
-	"border border-black/10 bg-gradient-to-b from-[#fbfaf5] to-[#eae4d8] dark:border-transparent dark:from-[#2c2c2c] dark:to-[#161616]",
-	"shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_12px_rgba(0,0,0,0.10)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.18)]",
+	"group/btn cta-root cta-surface relative inline-flex h-11 w-36 overflow-hidden rounded-[12px]",
 	"transition-transform active:scale-[0.97]",
 	"focus-visible:outline-2 focus-visible:outline-offset-2",
 );
