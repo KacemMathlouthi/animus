@@ -1,3 +1,4 @@
+// Vite config for the animus web app.
 import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";

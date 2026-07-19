@@ -1,4 +1,4 @@
-# Vercel container image for apps/api. Detected automatically when the
+# Vercel container image for apps/api (serves tryanimus.app/api). Detected when the
 # animus-api project's Root Directory is the repo root. Runs the Bun server
 # entry (src/server.ts) on Bun, so the source-first workspace (.ts specifiers,
 # @animus/* packages, native modules) resolves exactly as in local dev — none
