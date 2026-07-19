@@ -43,6 +43,13 @@
       "when": 1783268238599,
       "tag": "0005_thick_hellfire_club",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784495733616,
+      "tag": "0006_first_starhawk",
+      "breakpoints": true
     }
   ]
 }
