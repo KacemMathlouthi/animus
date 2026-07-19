@@ -9,6 +9,9 @@ const { getShareByToken, signDownloadUrl, signMediaUrl } = vi.hoisted(() => ({
 
 vi.mock("../lib/media.ts", () => ({ signDownloadUrl, signMediaUrl }));
 vi.mock("../services/shares.ts", () => ({ getShareByToken }));
+vi.mock("@animus/core/env", () => ({
+  getServerEnv: () => ({ webOrigin: "https://web.test" }),
+}));
 
 const { shareRoute } = await import("../routes/share.ts");
 
@@ -142,5 +145,76 @@ describe("GET /share/:token/embed", () => {
     getShareByToken.mockResolvedValue(null);
     const res = await app().request("/share/nope/embed");
     expect(res.status).toBe(404);
+  });
+});
+
+describe("GET /share/:token/page", () => {
+  const SHELL =
+    "<!doctype html><html><head><!-- share-meta:start --><title>animus</title><!-- share-meta:end --></head><body></body></html>";
+  const fetchShell = vi.fn();
+
+  vi.stubGlobal("fetch", fetchShell);
+
+  // NOTE: the SPA shell is cached at module level for 5 minutes, so test order
+  // matters here: the failure case runs first (a failed fetch is not cached),
+  // then the success cases prime and reuse the cache.
+  it("503s when the SPA shell cannot be fetched (and does not cache)", async () => {
+    fetchShell.mockResolvedValue(new Response("nope", { status: 500 }));
+    getShareByToken.mockResolvedValue(null);
+
+    const res = await app().request("/share/tok123/page");
+
+    expect(res.status).toBe(503);
+  });
+
+  it("serves the shell with injected per-share meta for a known token", async () => {
+    fetchShell.mockResolvedValue(new Response(SHELL, { status: 200 }));
+    getShareByToken.mockResolvedValue({
+      token: "tok123",
+      videoKey: "videos/conv1/Scene-ab12cd34.mp4",
+      title: 'My <"explainer">',
+    });
+
+    const res = await app().request("/share/tok123/page");
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/html");
+    expect(res.headers.get("cache-control")).toContain("max-age");
+    const html = await res.text();
+    // Meta is injected with absolute web-origin URLs and escaped content.
+    expect(html).toContain(
+      '<meta property="og:image" content="https://web.test/api/share/tok123/og.png"/>'
+    );
+    expect(html).toContain(
+      '<meta property="og:url" content="https://web.test/v/tok123"/>'
+    );
+    expect(html).toContain("My &lt;&quot;explainer&quot;&gt;");
+    // The SPA shell is intact around the injected block.
+    expect(html).toContain("<body></body>");
+    expect(fetchShell).toHaveBeenCalledWith(
+      "https://web.test/",
+      expect.anything()
+    );
+  });
+
+  it("serves the plain shell for an unknown token (SPA renders not-found)", async () => {
+    getShareByToken.mockResolvedValue(null);
+
+    const res = await app().request("/share/nope/page");
+
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).not.toContain("og:image");
+    expect(html).toContain("<body></body>");
+  });
+
+  it("reuses the cached shell instead of refetching per request", async () => {
+    fetchShell.mockClear();
+    getShareByToken.mockResolvedValue(null);
+
+    await app().request("/share/nope/page");
+    await app().request("/share/nope/page");
+
+    expect(fetchShell).not.toHaveBeenCalled();
   });
 });
