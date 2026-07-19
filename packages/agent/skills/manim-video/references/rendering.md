@@ -154,7 +154,9 @@ from manim_voiceover.services.elevenlabs import ElevenLabsService
 class NarratedScene(VoiceoverScene):
     def construct(self):
         self.set_speech_service(ElevenLabsService(
-            voice_name="Rachel",
+            # Always voice_id, never voice_name (name lookup needs an exact
+            # match against the account's full display names).
+            voice_id="Xb7hH8MSUJpSbSDYk0k2",
             model="eleven_multilingual_v2",
             transcription_model=None,
         ))
