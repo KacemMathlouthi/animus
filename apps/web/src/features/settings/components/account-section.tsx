@@ -114,6 +114,7 @@ export function AccountSection() {
 						balance={balance}
 						fraction={fraction}
 						onNavigateToKeys={() => navigate("/settings/secrets")}
+						onNavigateToUsage={() => navigate("/settings/usage")}
 						variant="card"
 					/>
 				) : null}

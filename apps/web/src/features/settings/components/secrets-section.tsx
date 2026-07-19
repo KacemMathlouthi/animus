@@ -5,7 +5,6 @@
  * plaintext never comes back, only a masked preview. */
 
 import {
-	formatUsd,
 	type LlmKeyPreview,
 	type ProviderId,
 	type ProviderKeys,
@@ -16,13 +15,6 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -31,7 +23,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useCredits } from "@/hooks/use-credits";
 import { ApiError, apiFetch } from "@/lib/api";
 import { notifyCreditsChanged } from "@/lib/credit-events";
 import { PROVIDERS } from "../data/providers";
@@ -102,37 +93,6 @@ function SavedKeyRow({
 				Remove
 			</Button>
 		</div>
-	);
-}
-
-function CreditsCard() {
-	const { balance, fraction } = useCredits();
-	if (!balance) {
-		return null;
-	}
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center justify-between">
-					<span>Balance</span>
-					<span className="tabular-nums">
-						{formatUsd(balance.balanceMicros)}
-					</span>
-				</CardTitle>
-				<CardDescription>
-					Free credits for generating on our models. Bring your own key below to
-					keep going for free once they run out.
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-					<div
-						className="h-full rounded-full bg-primary transition-[width] duration-500"
-						style={{ width: `${fraction * 100}%` }}
-					/>
-				</div>
-			</CardContent>
-		</Card>
 	);
 }
 
@@ -270,11 +230,9 @@ export function SecretsSection() {
 	return (
 		<div className="space-y-8">
 			<SectionHeading
-				description="Bring your own key to generate for free — a brought key runs on your account and isn't metered."
-				title="Credits & keys"
+				description="Bring your own key to generate for free. A brought key runs on your account and isn't metered."
+				title="Bring your own keys"
 			/>
-
-			<CreditsCard />
 
 			<div className="space-y-4">
 				<div>

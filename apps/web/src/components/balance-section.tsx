@@ -4,7 +4,7 @@
  * two places: the profile dropdown ("menu") and the account page ("card"). */
 
 import { type CreditsBalance, formatUsd } from "@animus/core";
-import { KeyIcon } from "lucide-react";
+import { KeyIcon, ReceiptTextIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -42,11 +42,14 @@ export function BalanceSection({
 	balance,
 	fraction,
 	onNavigateToKeys,
+	onNavigateToUsage,
 }: {
 	variant: "menu" | "card";
 	balance: CreditsBalance;
 	fraction: number;
 	onNavigateToKeys: () => void;
+	/** Shows a "View usage" button into the usage ledger when provided. */
+	onNavigateToUsage?: () => void;
 }) {
 	if (variant === "menu") {
 		return (
@@ -65,6 +68,17 @@ export function BalanceSection({
 					<KeyIcon />
 					Bring your own key
 				</Button>
+				{onNavigateToUsage ? (
+					<Button
+						className="mt-1.5 w-full"
+						onClick={onNavigateToUsage}
+						size="sm"
+						variant="outline"
+					>
+						<ReceiptTextIcon />
+						View usage
+					</Button>
+				) : null}
 			</div>
 		);
 	}
@@ -85,10 +99,18 @@ export function BalanceSection({
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<LineGauge fraction={fraction} />
-				<Button onClick={onNavigateToKeys} variant="outline">
-					<KeyIcon data-icon="inline-start" />
-					Bring your own key
-				</Button>
+				<div className="flex flex-wrap gap-2">
+					<Button onClick={onNavigateToKeys} variant="outline">
+						<KeyIcon data-icon="inline-start" />
+						Bring your own key
+					</Button>
+					{onNavigateToUsage ? (
+						<Button onClick={onNavigateToUsage} variant="outline">
+							<ReceiptTextIcon data-icon="inline-start" />
+							View usage
+						</Button>
+					) : null}
+				</div>
 			</CardContent>
 		</Card>
 	);

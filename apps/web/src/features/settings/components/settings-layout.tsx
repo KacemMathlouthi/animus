@@ -2,7 +2,13 @@
  * column (the active section renders into the Outlet). Full-height layout,
  * separate from the studio shell. */
 
-import { ChevronLeftIcon, KeyIcon, SlidersIcon, UserIcon } from "lucide-react";
+import {
+	ChevronLeftIcon,
+	KeyIcon,
+	ReceiptTextIcon,
+	SlidersIcon,
+	UserIcon,
+} from "lucide-react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { Wordmark } from "@/components/brand/wordmark";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -11,7 +17,8 @@ import { cn } from "@/lib/utils";
 const SECTIONS = [
 	{ to: "/settings/account", label: "Account", icon: UserIcon },
 	{ to: "/settings/generation", label: "Generation", icon: SlidersIcon },
-	{ to: "/settings/secrets", label: "API keys", icon: KeyIcon },
+	{ to: "/settings/usage", label: "Usage", icon: ReceiptTextIcon },
+	{ to: "/settings/secrets", label: "BYOK", icon: KeyIcon },
 ];
 
 export function SettingsLayout() {
@@ -56,7 +63,7 @@ export function SettingsLayout() {
 				</nav>
 			</aside>
 			<main className="min-h-0 flex-1 overflow-y-auto">
-				<div className="mx-auto w-full max-w-2xl px-6 py-10">
+				<div className="mx-auto w-full max-w-4xl px-6 py-10">
 					<Outlet />
 				</div>
 			</main>

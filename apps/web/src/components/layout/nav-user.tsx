@@ -41,6 +41,11 @@ export function NavUser() {
 		navigate("/settings/secrets");
 	}
 
+	function goToUsage() {
+		setOpen(false);
+		navigate("/settings/usage");
+	}
+
 	return (
 		<DropdownMenu onOpenChange={setOpen} open={open}>
 			<DropdownMenuTrigger asChild>
@@ -105,6 +110,7 @@ export function NavUser() {
 							balance={balance}
 							fraction={fraction}
 							onNavigateToKeys={goToKeys}
+							onNavigateToUsage={goToUsage}
 							variant="menu"
 						/>
 					</>
