@@ -24,8 +24,8 @@ vi.mock("@animus/core/env", () => ({
   getServerEnv: () => ({ creditsGlobalCapUsd: h.capUsd }),
 }));
 
-vi.mock("@animus/db", () => ({
-  db: {
+vi.mock("@animus/db", () => {
+  const dbLike = {
     query: { userCredits: { findFirst: h.findFirst } },
     // A chainable, thenable select: every chain method returns the builder and
     // awaiting it resolves the next queued result (or the legacy selectRows).
@@ -62,16 +62,24 @@ vi.mock("@animus/db", () => ({
       },
     }),
     update: () => ({ set: () => ({ where: h.updateWhere }) }),
-  },
-  conversation: CONVERSATION,
-  count: vi.fn(() => ({ count: true })),
-  desc: vi.fn((column) => ({ desc: column })),
-  eq: vi.fn((left, right) => ({ eq: [left, right] })),
-  inArray: vi.fn((column, values) => ({ inArray: [column, values] })),
-  sqlExpr: vi.fn(() => ({ sql: true })),
-  userCredits: USER_CREDITS,
-  usageEvent: USAGE_EVENT,
-}));
+  };
+  return {
+    db: {
+      ...dbLike,
+      // Settlement runs inside a transaction; the callback gets the same
+      // db-like surface so inserts/updates hit the same recorders.
+      transaction: (fn: (tx: typeof dbLike) => unknown) => fn(dbLike),
+    },
+    conversation: CONVERSATION,
+    count: vi.fn(() => ({ count: true })),
+    desc: vi.fn((column) => ({ desc: column })),
+    eq: vi.fn((left, right) => ({ eq: [left, right] })),
+    inArray: vi.fn((column, values) => ({ inArray: [column, values] })),
+    sqlExpr: vi.fn(() => ({ sql: true })),
+    userCredits: USER_CREDITS,
+    usageEvent: USAGE_EVENT,
+  };
+});
 
 const { getOrCreateCredits, listUsage, settleUsage } = await import(
   "../services/credits.ts"

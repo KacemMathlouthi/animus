@@ -111,23 +111,39 @@ const COMPLETED: UIMessage[] = [
   { id: "a1", role: "assistant", parts: [{ type: "text", text: "hello" }] },
 ];
 
-/** A fake agent whose stream, on finish, invokes onFinish with completed
- * messages and exposes token usage — mirroring the AI SDK stream result. */
-function stubAgentStream(usage = { inputTokens: 100, outputTokens: 50 }) {
+interface StreamResponseOptions {
+  onError: (error: unknown) => string;
+  onFinish: (arg: {
+    messages: UIMessage[];
+    isAborted: boolean;
+  }) => Promise<void> | void;
+}
+
+/** Fires the onStepFinish the route registered on the agent — usage is
+ * accumulated per completed step, exactly as the SDK reports it. */
+function emitStep(usage: { inputTokens: number; outputTokens: number }) {
+  const deps = createManimAgent.mock.calls.at(-1)?.[0] as {
+    onStepFinish?: (step: { usage: typeof usage }) => void;
+  };
+  deps.onStepFinish?.({ usage });
+}
+
+/** A fake agent whose stream completes one step and finishes — mirroring the
+ * AI SDK stream result surface the route consumes. */
+function stubAgentStream(
+  usage = { inputTokens: 100, outputTokens: 50 },
+  { isAborted = false } = {}
+) {
   const toUIMessageStreamResponse = vi.fn(
-    async (opts: {
-      onFinish: (arg: { messages: UIMessage[] }) => Promise<void> | void;
-    }) => {
-      await opts.onFinish({ messages: COMPLETED });
+    async (opts: StreamResponseOptions) => {
+      emitStep(usage);
+      await opts.onFinish({ messages: COMPLETED, isAborted });
       return new Response("ok");
     }
   );
-  const stream = vi.fn().mockResolvedValue({
-    toUIMessageStreamResponse,
-    totalUsage: Promise.resolve(usage),
-  });
+  const stream = vi.fn().mockResolvedValue({ toUIMessageStreamResponse });
   createManimAgent.mockReturnValue({ stream });
-  return { stream };
+  return { stream, toUIMessageStreamResponse };
 }
 
 beforeEach(() => {
@@ -381,5 +397,130 @@ describe("POST /chat — happy path (metered)", () => {
 
     expect(res.status).toBe(200);
     expect(setConversationSandboxId).not.toHaveBeenCalled();
+  });
+
+  it("sums usage across multiple completed steps", async () => {
+    const toUIMessageStreamResponse = vi.fn(
+      async (opts: StreamResponseOptions) => {
+        emitStep({ inputTokens: 1000, outputTokens: 20 });
+        emitStep({ inputTokens: 2500, outputTokens: 80 });
+        await opts.onFinish({ messages: COMPLETED, isAborted: false });
+        return new Response("ok");
+      }
+    );
+    createManimAgent.mockReturnValue({
+      stream: vi.fn().mockResolvedValue({ toUIMessageStreamResponse }),
+    });
+
+    await post({ id: "u1" }, { id: "conv1", message: userMessage("m1", "hi") });
+
+    expect(settleUsage).toHaveBeenCalledWith(
+      expect.objectContaining({ inputTokens: 3500, outputTokens: 100 })
+    );
+  });
+});
+
+describe("POST /chat — turn lifecycle (abort/error)", () => {
+  it("persists messages and settles an ABORTED turn, without titling it", async () => {
+    stubAgentStream(
+      { inputTokens: 700, outputTokens: 30 },
+      { isAborted: true }
+    );
+
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "hi") }
+    );
+
+    expect(res.status).toBe(200);
+    // The stopped turn keeps the user's message and partial assistant work.
+    expect(saveConversationMessages).toHaveBeenCalledWith({
+      conversationId: "conv1",
+      messages: COMPLETED,
+    });
+    expect(maybeGenerateConversationTitle).not.toHaveBeenCalled();
+    // Steps completed before the abort are real spend — they settle.
+    expect(settleUsage).toHaveBeenCalledWith(
+      expect.objectContaining({ inputTokens: 700, outputTokens: 30 })
+    );
+  });
+
+  it("settles on a stream error and returns a sanitized message", async () => {
+    const toUIMessageStreamResponse = vi.fn(
+      async (opts: StreamResponseOptions) => {
+        emitStep({ inputTokens: 400, outputTokens: 10 });
+        const clientText = opts.onError(
+          new Error("Bedrock exploded: sk-secret")
+        );
+        expect(clientText).not.toContain("Bedrock");
+        expect(clientText).not.toContain("sk-secret");
+        await opts.onFinish({ messages: COMPLETED, isAborted: false });
+        return new Response("ok");
+      }
+    );
+    createManimAgent.mockReturnValue({
+      stream: vi.fn().mockResolvedValue({ toUIMessageStreamResponse }),
+    });
+
+    await post({ id: "u1" }, { id: "conv1", message: userMessage("m1", "hi") });
+
+    // Settled exactly once despite both the error and finish paths running.
+    expect(settleUsage).toHaveBeenCalledTimes(1);
+    expect(settleUsage).toHaveBeenCalledWith(
+      expect.objectContaining({ inputTokens: 400, outputTokens: 10 })
+    );
+  });
+});
+
+describe("POST /chat — per-user concurrency cap", () => {
+  it("429s a third simultaneous turn and frees the slot when a turn ends", async () => {
+    // Streams that never finish: the returned response leaves onFinish
+    // uncalled, so the slot stays held.
+    const held: StreamResponseOptions[] = [];
+    const toUIMessageStreamResponse = vi.fn((opts: StreamResponseOptions) => {
+      held.push(opts);
+      return new Response("ok");
+    });
+    createManimAgent.mockReturnValue({
+      stream: vi.fn().mockResolvedValue({ toUIMessageStreamResponse }),
+    });
+
+    const user = { id: "u-cap" };
+    const msg = (id: string) => ({
+      id: "conv1",
+      message: userMessage(id, "hi"),
+    });
+
+    expect((await post(user, msg("m1"))).status).toBe(200);
+    expect((await post(user, msg("m2"))).status).toBe(200);
+    const third = await post(user, msg("m3"));
+    expect(third.status).toBe(429);
+
+    // Finish one held turn — its slot frees and the next request is admitted.
+    const first = held[0];
+    if (!first) {
+      throw new Error("expected a held stream");
+    }
+    await first.onFinish({ messages: COMPLETED, isAborted: false });
+    expect((await post(user, msg("m4"))).status).toBe(200);
+  });
+
+  it("does not leak the slot when the sandbox fails to start", async () => {
+    const user = { id: "u-sandbox-fail" };
+    ensureSandbox.mockRejectedValueOnce(new Error("daytona down"));
+
+    const failed = await post(user, {
+      id: "conv1",
+      message: userMessage("m1", "hi"),
+    });
+    expect(failed.status).toBe(500);
+
+    // The slot released on the throw — the retry is admitted, twice over.
+    ensureSandbox.mockResolvedValue({ id: "new-sandbox" });
+    stubAgentStream();
+    expect(
+      (await post(user, { id: "conv1", message: userMessage("m2", "hi") }))
+        .status
+    ).toBe(200);
   });
 });

@@ -3,7 +3,12 @@
  * research always, plus the Manim sandbox tools bound to this conversation. */
 
 import type { Sandbox } from "@daytonaio/sdk";
-import { type TelemetrySettings, ToolLoopAgent, type ToolSet } from "ai";
+import {
+  type TelemetrySettings,
+  ToolLoopAgent,
+  type ToolLoopAgentOnStepFinishCallback,
+  type ToolSet,
+} from "ai";
 import { type LlmKey, resolveModel } from "./config/index.ts";
 import { MANIM_SYSTEM_PROMPT } from "./prompts/index.ts";
 import { createTools } from "./tools/index.ts";
@@ -27,6 +32,10 @@ export function createManimAgent(deps: {
   llmKey?: LlmKey;
   /** Per-turn observability; the caller (apps/api) owns policy. Omitted means no tracing. */
   telemetry?: TelemetrySettings;
+  /** Fires after every completed LLM step. The caller uses it to accumulate
+   * token usage as it happens — `totalUsage` is empty on an aborted stream,
+   * and the most expensive turns are exactly the ones that get cut. */
+  onStepFinish?: ToolLoopAgentOnStepFinishCallback<ToolSet>;
 }): ToolLoopAgent<never, ToolSet, never> {
   return new ToolLoopAgent({
     model: resolveModel(deps.llmKey).model,
@@ -45,6 +54,7 @@ export function createManimAgent(deps: {
         meter: deps.meter,
       },
     }),
+    onStepFinish: deps.onStepFinish,
     experimental_telemetry: deps.telemetry,
   });
 }

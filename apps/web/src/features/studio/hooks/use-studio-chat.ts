@@ -23,6 +23,10 @@ type StudioChat = {
 	send: (text: string) => void;
 	stop: () => void;
 	respondToTool: RespondToTool;
+	/** The error that ended the last turn, if it ended in one. */
+	error?: Error;
+	/** Re-runs the failed turn (regenerates from the last user message). */
+	retry: () => void;
 };
 
 /** The studio's chat session over the streaming /api/chat endpoint. Keyed by
@@ -40,18 +44,25 @@ export function useStudioChat({
 	initialMessages?: AnimusUIMessage[];
 	onConversationUpdated?: () => void;
 }): StudioChat {
-	const { messages, sendMessage, status, addToolOutput, stop } =
-		useChat<AnimusUIMessage>({
-			id: chatId,
-			messages: initialMessages,
-			transport: chatTransport,
-			sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
-			onFinish: () => {
-				onConversationUpdated?.();
-				// A completed turn may have drawn down the balance — refresh the gauge.
-				notifyCreditsChanged();
-			},
-		});
+	const {
+		messages,
+		sendMessage,
+		status,
+		addToolOutput,
+		stop,
+		error,
+		regenerate,
+	} = useChat<AnimusUIMessage>({
+		id: chatId,
+		messages: initialMessages,
+		transport: chatTransport,
+		sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+		onFinish: () => {
+			onConversationUpdated?.();
+			// A completed turn may have drawn down the balance — refresh the gauge.
+			notifyCreditsChanged();
+		},
+	});
 
 	// Auto-run the first prompt exactly once for a genuinely new conversation.
 	// Capture whether the loaded snapshot already had messages at mount: router
@@ -119,5 +130,19 @@ export function useStudioChat({
 		}
 	}
 
-	return { messages, status, phase, videoKey, send, stop, respondToTool };
+	const retry = useCallback(() => {
+		void regenerate();
+	}, [regenerate]);
+
+	return {
+		messages,
+		status,
+		phase,
+		videoKey,
+		send,
+		stop,
+		respondToTool,
+		error,
+		retry,
+	};
 }

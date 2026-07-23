@@ -44,6 +44,8 @@ export function StudioStage({
 	respondToTool,
 	onSubmit,
 	onStop,
+	error,
+	onRetry,
 }: {
 	phase: StudioPhase;
 	messages: AnimusUIMessage[];
@@ -54,6 +56,8 @@ export function StudioStage({
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 	onStop: () => void;
+	error?: Error;
+	onRetry?: () => void;
 }) {
 	useRenderNotification(videoKey);
 
@@ -65,7 +69,9 @@ export function StudioStage({
 			{phase === "loading" ? <StudioLoading /> : null}
 			{phase === "chat" ? (
 				<StudioWorkspace
+					error={error}
 					messages={messages}
+					onRetry={onRetry}
 					onStop={onStop}
 					onSubmit={onSubmit}
 					respondToTool={respondToTool}

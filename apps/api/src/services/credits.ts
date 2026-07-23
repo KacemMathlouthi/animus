@@ -108,37 +108,41 @@ export async function settleUsage(input: SettleUsageInput): Promise<number> {
     return 0;
   }
 
-  // Record the turn first; the unique turn_id makes this the idempotency guard —
-  // if the row already exists, the debit below is skipped.
-  const inserted = await db
-    .insert(usageEvent)
-    .values({
-      id: randomUUID(),
-      userId: input.userId,
-      conversationId: input.conversationId,
-      turnId: input.turnId,
-      model: input.isLlmMetered ? input.model : null,
-      inputTokens: input.inputTokens,
-      outputTokens: input.outputTokens,
-      ttsChars: input.ttsChars,
-      costMicros,
-    })
-    .onConflictDoNothing({ target: usageEvent.turnId })
-    .returning({ id: usageEvent.id });
+  // One transaction: the ledger insert (whose unique turn_id is the
+  // idempotency guard — an existing row skips the debit) and the balance
+  // debit commit or roll back together. Split statements once left a ledger
+  // row without its debit on a crash, permanently blocking the retry.
+  return await db.transaction(async (tx) => {
+    const inserted = await tx
+      .insert(usageEvent)
+      .values({
+        id: randomUUID(),
+        userId: input.userId,
+        conversationId: input.conversationId,
+        turnId: input.turnId,
+        model: input.isLlmMetered ? input.model : null,
+        inputTokens: input.inputTokens,
+        outputTokens: input.outputTokens,
+        ttsChars: input.ttsChars,
+        costMicros,
+      })
+      .onConflictDoNothing({ target: usageEvent.turnId })
+      .returning({ id: usageEvent.id });
 
-  if (inserted.length === 0) {
-    return 0;
-  }
+    if (inserted.length === 0) {
+      return 0;
+    }
 
-  await db
-    .update(userCredits)
-    .set({
-      balanceMicros: sqlExpr`${userCredits.balanceMicros} - ${costMicros}`,
-      updatedAt: new Date(),
-    })
-    .where(eq(userCredits.userId, input.userId));
+    await tx
+      .update(userCredits)
+      .set({
+        balanceMicros: sqlExpr`${userCredits.balanceMicros} - ${costMicros}`,
+        updatedAt: new Date(),
+      })
+      .where(eq(userCredits.userId, input.userId));
 
-  return costMicros;
+    return costMicros;
+  });
 }
 
 export interface ListUsageInput {

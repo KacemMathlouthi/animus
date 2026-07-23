@@ -23,6 +23,8 @@ export function StudioWorkspace({
 	respondToTool,
 	onSubmit,
 	onStop,
+	error,
+	onRetry,
 }: {
 	messages: AnimusUIMessage[];
 	status: ChatStatus;
@@ -32,6 +34,8 @@ export function StudioWorkspace({
 	respondToTool: RespondToTool;
 	onSubmit: (text: string) => void;
 	onStop: () => void;
+	error?: Error;
+	onRetry?: () => void;
 }) {
 	const isMobile = useIsMobile();
 	const videoPanelRef = useRef<PanelImperativeHandle>(null);
@@ -77,8 +81,10 @@ export function StudioWorkspace({
 
 	const chatPanel = (
 		<ChatPanel
+			error={error}
 			messages={messages}
 			onOpenVideo={openVideo}
+			onRetry={onRetry}
 			onStop={onStop}
 			onSubmit={onSubmit}
 			respondToTool={respondToTool}
