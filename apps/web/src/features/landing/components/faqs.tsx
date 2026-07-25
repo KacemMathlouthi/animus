@@ -79,6 +79,12 @@ const faqs = [
 			"A narrated, animated explainer video. animus researches your topic, plans the scenes, animates them, and adds a synced voiceover, so you get a finished, shareable film.",
 	},
 	{
+		id: "item-pricing",
+		title: "Is it free? What does it cost?",
+		content:
+			"You start with $5.00 in free credits, no credit card required, just a quick sign-in. Each video draws from that balance based on its length and complexity. When your credits run out, you can connect your own API keys (an Anthropic, OpenAI, or Google key for the writing and an ElevenLabs key for narration), and anything that runs on your keys isn't charged against your credits.",
+	},
+	{
 		id: "item-2",
 		title: "How is this different from NotebookLM or a slideshow tool?",
 		content:

@@ -1,4 +1,4 @@
-import { ArrowUpIcon, LightbulbIcon } from "lucide-react";
+import { ArrowUpIcon, GiftIcon, LightbulbIcon } from "lucide-react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router";
@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 const MAX_TEXTAREA_HEIGHT = 168;
 
-/** Ready-made questions the "Prompts" button cycles into the input — a nudge
+/** Ready-made questions the "Prompts" button cycles into the input, a nudge
  * for visitors who don't know what to ask yet. */
 const EXAMPLE_PROMPTS = [
 	"Why is the sky blue?",
@@ -33,7 +33,7 @@ export function HeroPrompt({ className }: { className?: string }) {
 	};
 
 	// Grow the textarea with its content up to a cap, then scroll. Driven off the
-	// input event's element (already carries the new value) — no effect needed.
+	// input event's element (already carries the new value), so no effect needed.
 	const onChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
 		setText(event.target.value);
 		syncHeight(event.target);
@@ -84,14 +84,18 @@ export function HeroPrompt({ className }: { className?: string }) {
 
 	return (
 		<div className={cn("w-full max-w-2xl", className)}>
-			<div className="cta-surface flex flex-col gap-2 rounded-2xl p-2.5">
-				<div className="flex items-center px-1.5 pt-0.5 font-medium text-muted-foreground text-xs">
-					<span>$5.00 in free credits</span>
+			<div className="cta-surface flex flex-col gap-2 rounded-xl p-2.5">
+				<div className="flex items-center gap-1.5 px-1.5 pt-0.5 font-medium text-muted-foreground text-xs">
+					<GiftIcon aria-hidden="true" className="size-3.5 text-primary" />
+					<span>
+						<span className="text-foreground">$5.00 in free credits.</span> No
+						card required.
+					</span>
 				</div>
 
 				<form
 					className={cn(
-						"prompt-well flex flex-col gap-2.5 rounded-xl border p-3",
+						"prompt-well flex flex-col gap-2.5 rounded-lg border p-3",
 						"transition-[border-color] duration-200 ease-snappy focus-within:border-primary/45",
 					)}
 					onSubmit={(event) => {
@@ -121,11 +125,15 @@ export function HeroPrompt({ className }: { className?: string }) {
 						</button>
 						<button
 							aria-label="Create video"
-							className="prompt-send grid size-9 shrink-0 place-items-center rounded-full text-primary-foreground transition-transform active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+							className="prompt-send grid size-9 shrink-0 place-items-center rounded-md text-primary-foreground transition-transform active:scale-95 disabled:pointer-events-none disabled:opacity-40"
 							disabled={!canSubmit}
 							type="submit"
 						>
-							<ArrowUpIcon aria-hidden="true" className="size-4" />
+							<ArrowUpIcon
+								aria-hidden="true"
+								className="size-4"
+								strokeWidth={2.5}
+							/>
 						</button>
 					</div>
 				</form>
