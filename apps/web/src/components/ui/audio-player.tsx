@@ -266,8 +266,10 @@ export function AudioPlayerProvider<TData = unknown>({
 	return (
 		<AudioPlayerContext.Provider value={api as AudioPlayerApi<unknown>}>
 			<AudioPlayerTimeContext.Provider value={time}>
+				{/* No crossOrigin: previews stream from presigned R2 URLs that don't
+				    send CORS headers, and playback needs no cross-origin data access. */}
 				{/* biome-ignore lint/a11y/useMediaCaption: programmatic audio previews have no captions */}
-				<audio className="hidden" crossOrigin="anonymous" ref={audioRef} />
+				<audio className="hidden" ref={audioRef} />
 				{children}
 			</AudioPlayerTimeContext.Provider>
 		</AudioPlayerContext.Provider>
