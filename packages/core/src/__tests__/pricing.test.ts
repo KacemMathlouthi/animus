@@ -39,23 +39,8 @@ describe("estimateLlmCostMicros", () => {
     ).toBe(5_000_000);
   });
 
-  it("prices each offered model exactly", () => {
-    // gpt-5.4-pro: $30/M input.
-    expect(
-      estimateLlmCostMicros({
-        model: "gpt-5.4-pro",
-        inputTokens: 1_000_000,
-        outputTokens: 0,
-      })
-    ).toBe(30_000_000);
-    // gemini-3.1-flash-lite: $0.25/M input.
-    expect(
-      estimateLlmCostMicros({
-        model: "gemini-3.1-flash-lite",
-        inputTokens: 1_000_000,
-        outputTokens: 0,
-      })
-    ).toBe(250_000);
+  it("prices each metered Claude model exactly", () => {
+    // Only the platform's Bedrock Claude models are priced (BYOK is not metered).
     // claude-sonnet-5: $2/M input.
     expect(
       estimateLlmCostMicros({
@@ -64,6 +49,14 @@ describe("estimateLlmCostMicros", () => {
         outputTokens: 0,
       })
     ).toBe(2_000_000);
+    // claude-sonnet-4-6: $3/M input.
+    expect(
+      estimateLlmCostMicros({
+        model: "claude-sonnet-4-6",
+        inputTokens: 1_000_000,
+        outputTokens: 0,
+      })
+    ).toBe(3_000_000);
   });
 
   it("falls back to the Opus tier for an unknown model", () => {
@@ -83,6 +76,78 @@ describe("estimateLlmCostMicros", () => {
         outputTokens: Number.NaN,
       })
     ).toBe(0);
+  });
+
+  it("prices cache-read tokens at 10% of the base input rate", () => {
+    // 1M input, all read from cache: $5/M * 0.1 = $0.50 = 500_000 µ$.
+    expect(
+      estimateLlmCostMicros({
+        model: "claude-opus-4-6",
+        inputTokens: 1_000_000,
+        outputTokens: 0,
+        cacheReadTokens: 1_000_000,
+      })
+    ).toBe(500_000);
+  });
+
+  it("prices cache-write tokens at 125% of the base input rate", () => {
+    // 1M input, all cache writes: $5/M * 1.25 = $6.25 = 6_250_000 µ$.
+    expect(
+      estimateLlmCostMicros({
+        model: "claude-opus-4-6",
+        inputTokens: 1_000_000,
+        outputTokens: 0,
+        cacheWriteTokens: 1_000_000,
+      })
+    ).toBe(6_250_000);
+  });
+
+  it("prices a mixed input (uncached + cache read + cache write) correctly", () => {
+    // 200k uncached ($1.00) + 700k read ($0.35) + 100k write ($0.625) = $1.975.
+    expect(
+      estimateLlmCostMicros({
+        model: "claude-opus-4-6",
+        inputTokens: 1_000_000,
+        outputTokens: 0,
+        cacheReadTokens: 700_000,
+        cacheWriteTokens: 100_000,
+      })
+    ).toBe(1_975_000);
+  });
+
+  it("clamps cached subsets so the uncached remainder never goes negative", () => {
+    // Cached subsets exceed the total: read is capped at the total, write at 0.
+    expect(
+      estimateLlmCostMicros({
+        model: "claude-opus-4-6",
+        inputTokens: 1_000_000,
+        outputTokens: 0,
+        cacheReadTokens: 2_000_000,
+        cacheWriteTokens: 2_000_000,
+      })
+    ).toBe(500_000); // all 1M priced as cache reads
+  });
+
+  it("omitting cache fields reproduces the flat all-input price", () => {
+    expect(
+      estimateLlmCostMicros({
+        model: "claude-opus-4-6",
+        inputTokens: 1_000_000,
+        outputTokens: 0,
+      })
+    ).toBe(5_000_000);
+  });
+
+  it("prices an unknown model at the Opus fallback tier", () => {
+    // Not in the Claude-only table → default $5/M input, still cache-aware.
+    expect(
+      estimateLlmCostMicros({
+        model: "some-mystery-model",
+        inputTokens: 1_000_000,
+        outputTokens: 0,
+        cacheReadTokens: 1_000_000,
+      })
+    ).toBe(500_000); // $5/M * 0.1 cache-read
   });
 });
 

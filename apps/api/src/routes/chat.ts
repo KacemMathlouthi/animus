@@ -174,8 +174,15 @@ chatRoute.post("/", async (c) => {
     // LLM usage accumulated per completed step. `totalUsage` reports nothing
     // for an aborted stream — and the most expensive turns (long renders cut
     // by the platform's duration cap, the user pressing Stop) are exactly the
-    // aborted ones, so metering must not depend on a clean finish.
-    const usageTotals = { inputTokens: 0, outputTokens: 0 };
+    // aborted ones, so metering must not depend on a clean finish. inputTokens
+    // is the total (including cached); the cache-read/write subsets are tracked
+    // separately so they're priced at the cache rates, not the full input rate.
+    const usageTotals = {
+      inputTokens: 0,
+      outputTokens: 0,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+    };
 
     // Idempotency key for settling this turn's cost. Must be unique PER
     // REQUEST, not per assistant message: a single assistant message spans
@@ -201,6 +208,8 @@ chatRoute.post("/", async (c) => {
           model: env.bedrockModel,
           inputTokens: usageTotals.inputTokens,
           outputTokens: usageTotals.outputTokens,
+          cacheReadTokens: usageTotals.cacheReadTokens,
+          cacheWriteTokens: usageTotals.cacheWriteTokens,
           isTtsMetered,
           ttsChars: meter.ttsChars,
         });
@@ -226,6 +235,10 @@ chatRoute.post("/", async (c) => {
       onStepFinish: (step) => {
         usageTotals.inputTokens += step.usage.inputTokens ?? 0;
         usageTotals.outputTokens += step.usage.outputTokens ?? 0;
+        usageTotals.cacheReadTokens +=
+          step.usage.inputTokenDetails?.cacheReadTokens ?? 0;
+        usageTotals.cacheWriteTokens +=
+          step.usage.inputTokenDetails?.cacheWriteTokens ?? 0;
       },
       telemetry: aiTelemetry({
         functionId: "manim-agent",
