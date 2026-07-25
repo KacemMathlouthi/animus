@@ -28,17 +28,6 @@ export const VOICES: ElevenLabs.Voice[] = [
 			"https://storage.googleapis.com/eleven-public-prod/premade/voices/EXAVITQu4vr4xnSDxMaL/01a3e33c-6e99-4ee7-8543-ff2216a32186.mp3",
 	},
 	{
-		voiceId: "XrExE9yKIg1WjnnlVkGX",
-		name: "Matilda",
-		labels: {
-			accent: "American",
-			gender: "female",
-			description: "Knowledgeable, professional",
-		},
-		previewUrl:
-			"https://storage.googleapis.com/eleven-public-prod/premade/voices/XrExE9yKIg1WjnnlVkGX/b930e18d-6b4d-466e-bab2-0ae97c6d8535.mp3",
-	},
-	{
 		voiceId: "CwhRBWXzGAHq8TQ4Fs17",
 		name: "Roger",
 		labels: {
@@ -70,16 +59,5 @@ export const VOICES: ElevenLabs.Voice[] = [
 		},
 		previewUrl:
 			"https://storage.googleapis.com/eleven-public-prod/premade/voices/SAz9YHcvj6GT2YYXdXww/e6c95f0b-2227-491a-b3d7-2249240decb7.mp3",
-	},
-	{
-		voiceId: "pFZP5JQG7iQjIQuC4Bku",
-		name: "Lily",
-		labels: {
-			accent: "British",
-			gender: "female",
-			description: "Warm, velvety",
-		},
-		previewUrl:
-			"https://storage.googleapis.com/eleven-public-prod/premade/voices/pFZP5JQG7iQjIQuC4Bku/89b68b35-b3dd-4348-a84a-a3c13a3c2b30.mp3",
 	},
 ];
