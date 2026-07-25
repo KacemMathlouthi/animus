@@ -46,8 +46,22 @@ export const schema = {
   conversationMessageRelations,
 };
 
-/** The underlying postgres.js connection. Exposed for graceful shutdown. */
-export const sql = postgres(getServerEnv().databaseUrl);
+/** The underlying postgres.js connection. Exposed for graceful shutdown.
+ *
+ * postgres.js defaults to `max: 10`, and this single pool is shared by every DB
+ * consumer in the API — Better Auth session lookups (one per request, refreshed
+ * every 60s past the cookie cache), the sidebar, the credit gauge, and the
+ * chat-turn transactions that hold a connection for their whole duration. Ten
+ * connections starve under real concurrency, so we size the pool explicitly. In
+ * prod the app connects through Neon's `-pooler` (PgBouncer) endpoint, so `max`
+ * is the client-side pool against the pooler — keep `max` × container-count
+ * under Neon's server-side ceiling. */
+export const sql = postgres(getServerEnv().databaseUrl, {
+  max: 20,
+  idle_timeout: 20,
+  connect_timeout: 10,
+  max_lifetime: 60 * 30,
+});
 
 export const db = drizzle(sql, { schema });
 
