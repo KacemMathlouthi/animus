@@ -2,10 +2,6 @@ import type { ChatStatus } from "ai";
 import { useState } from "react";
 import {
 	PromptInput,
-	PromptInputActionAddAttachments,
-	PromptInputActionMenu,
-	PromptInputActionMenuContent,
-	PromptInputActionMenuTrigger,
 	PromptInputBody,
 	PromptInputFooter,
 	type PromptInputMessage,
@@ -45,12 +41,7 @@ export function StudioPrompt({
 	};
 
 	return (
-		<PromptInput
-			className={className}
-			globalDrop
-			multiple
-			onSubmit={handleSubmit}
-		>
+		<PromptInput className={className} onSubmit={handleSubmit}>
 			<PromptInputBody>
 				<PromptInputTextarea
 					onChange={(event) => setText(event.target.value)}
@@ -59,14 +50,7 @@ export function StudioPrompt({
 				/>
 			</PromptInputBody>
 			<PromptInputFooter>
-				<PromptInputTools>
-					<PromptInputActionMenu>
-						<PromptInputActionMenuTrigger />
-						<PromptInputActionMenuContent className="w-max overflow-x-visible">
-							<PromptInputActionAddAttachments className="whitespace-nowrap" />
-						</PromptInputActionMenuContent>
-					</PromptInputActionMenu>
-				</PromptInputTools>
+				<PromptInputTools />
 				<PromptInputSubmit
 					disabled={!(isGenerating || text.trim())}
 					onStop={onStop}
