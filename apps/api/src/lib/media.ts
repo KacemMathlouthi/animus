@@ -22,15 +22,21 @@ const UNSAFE_NAME_CHARS = /[^a-zA-Z0-9_-]/g;
 const MEDIA_PREFIX = "videos";
 /** videos/<conversationId>/<file>.mp4 — pins the shape we mint and accept. */
 const MEDIA_KEY = /^videos\/([a-zA-Z0-9_-]+)\/[a-zA-Z0-9_-]+\.mp4$/;
-/** R2 keys for the music catalog the settings picker offers. Every id
- * currently resolves to the one licensed track in the bucket — swap entries
- * here as the curated library lands (ids mirror the web's MUSIC_TRACKS). */
-const FALLBACK_MUSIC_KEY = "music/The_Merchants_Of_Death.mp3";
+/** R2 keys for the curated background-music catalog the settings picker offers
+ * (ids mirror the web's MUSIC_TRACKS). All are public-domain classical
+ * recordings; see apps/api/assets/MUSIC_LICENSES.md for provenance. */
 const MUSIC_TRACK_KEYS: Record<string, string> = {
-  ambient: FALLBACK_MUSIC_KEY,
-  upbeat: FALLBACK_MUSIC_KEY,
-  cinematic: FALLBACK_MUSIC_KEY,
+  ambient: "music/Ambient.mp3",
+  upbeat: "music/Upbeat.mp3",
+  cinematic: "music/Cinematic.mp3",
 };
+/** Used when a stored/legacy track id isn't in the catalog (the ambient track). */
+const FALLBACK_MUSIC_KEY = "music/Ambient.mp3";
+
+/** Whether `id` is a known catalog track (guards the public preview route). */
+export function isMusicTrackId(id: string): boolean {
+  return Object.hasOwn(MUSIC_TRACK_KEYS, id);
+}
 
 let client: S3Client | null = null;
 

@@ -37,6 +37,7 @@ vi.mock("@aws-sdk/s3-request-presigner", () => ({ getSignedUrl }));
 const {
   backgroundMusicUrl,
   deleteConversationMedia,
+  isMusicTrackId,
   mediaKeyConversationId,
   saveVideo,
   signDownloadUrl,
@@ -97,28 +98,37 @@ describe("mediaKeyConversationId", () => {
 });
 
 describe("backgroundMusicUrl", () => {
-  it("presigns a GET for the catalog track's key", async () => {
+  it.each([
+    ["ambient", "music/Ambient.mp3"],
+    ["upbeat", "music/Upbeat.mp3"],
+    ["cinematic", "music/Cinematic.mp3"],
+  ])("presigns a GET for the %s track's key", async (track, key) => {
     getSignedUrl.mockResolvedValue("https://signed/music");
 
-    const url = await backgroundMusicUrl("ambient");
+    const url = await backgroundMusicUrl(track);
 
     expect(url).toBe("https://signed/music");
     const command = getSignedUrl.mock.calls[0]?.[1];
-    expect(command.input).toMatchObject({
-      Bucket: "animus-videos",
-      Key: "music/The_Merchants_Of_Death.mp3",
-    });
+    expect(command.input).toMatchObject({ Bucket: "animus-videos", Key: key });
   });
 
-  it("falls back to the default key for an unknown track id", async () => {
+  it("falls back to the ambient key for an unknown track id", async () => {
     getSignedUrl.mockResolvedValue("https://signed/music");
 
     await backgroundMusicUrl("no-such-track");
 
     const command = getSignedUrl.mock.calls[0]?.[1];
-    expect(command.input).toMatchObject({
-      Key: "music/The_Merchants_Of_Death.mp3",
-    });
+    expect(command.input).toMatchObject({ Key: "music/Ambient.mp3" });
+  });
+});
+
+describe("isMusicTrackId", () => {
+  it("accepts catalog ids and rejects everything else", () => {
+    expect(isMusicTrackId("ambient")).toBe(true);
+    expect(isMusicTrackId("upbeat")).toBe(true);
+    expect(isMusicTrackId("cinematic")).toBe(true);
+    expect(isMusicTrackId("no-such-track")).toBe(false);
+    expect(isMusicTrackId("")).toBe(false);
   });
 });
 

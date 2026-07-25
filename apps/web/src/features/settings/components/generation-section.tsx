@@ -27,18 +27,49 @@ import { SettingRow } from "./setting-row";
 import { SettingsSaveBar } from "./settings-save-bar";
 
 // Reuse the voice picker for music by describing tracks in the same shape.
-const MUSIC_OPTIONS: ElevenLabs.Voice[] = MUSIC_TRACKS.map((track) => ({
-	voiceId: track.id,
-	name: track.name,
-	previewUrl: track.preview,
-	labels: { description: track.mood },
-}));
+// previewUrl is filled in at runtime from a presigned R2 URL (see below).
+function toMusicOptions(previews: Record<string, string>): ElevenLabs.Voice[] {
+	return MUSIC_TRACKS.map((track) => ({
+		voiceId: track.id,
+		name: track.name,
+		previewUrl: previews[track.id],
+		labels: { description: track.mood },
+	}));
+}
 
 export function GenerationSection() {
 	const [config, setConfig] = useState<GenerationSettings>(GENERATION_DEFAULTS);
 	const [savedConfig, setSavedConfig] =
 		useState<GenerationSettings>(GENERATION_DEFAULTS);
 	const [saving, setSaving] = useState(false);
+	const [musicPreviews, setMusicPreviews] = useState<Record<string, string>>(
+		{},
+	);
+
+	// Resolve a presigned preview URL for each catalog track, so pressing play
+	// previews the real track the render would use.
+	useEffect(() => {
+		let active = true;
+		Promise.all(
+			MUSIC_TRACKS.map((track) =>
+				apiFetch<{ url: string }>(
+					`/api/media/music-preview?track=${encodeURIComponent(track.id)}`,
+				)
+					.then((data) => [track.id, data.url] as const)
+					.catch(() => null),
+			),
+		).then((entries) => {
+			if (!active) {
+				return;
+			}
+			setMusicPreviews(
+				Object.fromEntries(entries.filter((entry) => entry !== null)),
+			);
+		});
+		return () => {
+			active = false;
+		};
+	}, []);
 
 	// Load the user's saved settings; fall back to defaults if none exist yet.
 	useEffect(() => {
@@ -138,7 +169,7 @@ export function GenerationSection() {
 							placeholder="Select a track…"
 							searchPlaceholder="Search tracks…"
 							value={config.musicTrack}
-							voices={MUSIC_OPTIONS}
+							voices={toMusicOptions(musicPreviews)}
 						/>
 					</SettingRow>
 				) : null}
