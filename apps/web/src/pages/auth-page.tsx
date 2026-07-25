@@ -9,11 +9,21 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthBackdrop } from "@/features/auth/components/auth-backdrop";
 import { AuthDivider } from "@/features/auth/components/auth-divider";
+import { useCountdown } from "@/hooks/use-countdown";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { signIn, useSession } from "@/lib/auth-client";
 
 const STUDIO_PATH = "/studio";
 const DEFAULT_ERROR = "Something went wrong. Please try again.";
+/** Must match the magic-link `expiresIn` in packages/auth (60 * 5 seconds). */
+const MAGIC_LINK_TTL_MS = 5 * 60 * 1000;
+
+/** Seconds → "M:SS" for the expiry countdown. */
+function formatCountdown(totalSeconds: number): string {
+	const minutes = Math.floor(totalSeconds / 60);
+	const seconds = totalSeconds % 60;
+	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
 
 /** Only honor an internal, single-leading-slash path so the post-login redirect
  * can't be pointed at an external origin. */
@@ -43,8 +53,14 @@ export function AuthPage() {
 	const [email, setEmail] = useState("");
 	const [pending, setPending] = useState<Pending>(null);
 	const [sentTo, setSentTo] = useState<string | null>(null);
+	const [sentAt, setSentAt] = useState<number | null>(null);
 	const [error, setError] = useState<string | null>(() =>
 		searchParams.get("error") ? DEFAULT_ERROR : null,
+	);
+
+	// Live time left on the emailed link; 0 (idle) until a link is actually sent.
+	const secondsLeft = useCountdown(
+		sentAt === null ? 0 : sentAt + MAGIC_LINK_TTL_MS,
 	);
 
 	useDocumentTitle("Sign in");
@@ -90,6 +106,7 @@ export function AuthPage() {
 			return;
 		}
 		setSentTo(value);
+		setSentAt(Date.now());
 	}
 
 	return (
@@ -142,13 +159,38 @@ export function AuthPage() {
 									We sent a sign-in link to{" "}
 									<span className="font-medium text-foreground">{sentTo}</span>.
 								</p>
-								<p className="text-base text-muted-foreground">
-									Click it to continue. Expires in 5 minutes.
-								</p>
+								{secondsLeft > 0 ? (
+									<p className="text-base text-muted-foreground">
+										Click it to continue. Expires in{" "}
+										<span className="font-medium text-foreground tabular-nums">
+											{formatCountdown(secondsLeft)}
+										</span>
+										.
+									</p>
+								) : (
+									<p className="text-base text-muted-foreground" role="status">
+										That link has expired. Send a new one to keep going.
+									</p>
+								)}
 							</div>
+							{secondsLeft === 0 ? (
+								<Button
+									disabled={pending !== null}
+									onClick={() => void submitMagicLink()}
+									type="button"
+								>
+									{pending === "email" ? (
+										<Spinner data-icon="inline-start" />
+									) : null}
+									Resend link
+								</Button>
+							) : null}
 							<Button
 								className="px-0"
-								onClick={() => setSentTo(null)}
+								onClick={() => {
+									setSentTo(null);
+									setSentAt(null);
+								}}
 								type="button"
 								variant="link"
 							>
