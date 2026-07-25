@@ -33,6 +33,10 @@ export function VideoPlayer({
 	const ambientRef = useAmbientGlow(player.videoRef);
 
 	return (
+		// role="group" (not "application") keeps screen readers in normal reading
+		// mode; the div stays focusable for playback key shortcuts. A <fieldset>
+		// (the rule's suggestion) is a form control, not a media widget.
+		// biome-ignore lint/a11y/useSemanticElements: a media player is not a fieldset
 		<div
 			aria-label={`Video player: ${title}`}
 			className="group relative flex h-full w-full items-center justify-center overflow-hidden bg-muted outline-none data-[controls=false]:cursor-none"
@@ -42,7 +46,7 @@ export function VideoPlayer({
 			onPointerLeave={player.handlePointerLeave}
 			onPointerMove={player.registerActivity}
 			ref={player.containerRef}
-			role="application"
+			role="group"
 			// biome-ignore lint/a11y/noNoninteractiveTabindex: the media player is a keyboard-driven widget and must be focusable to receive shortcuts.
 			tabIndex={0}
 		>

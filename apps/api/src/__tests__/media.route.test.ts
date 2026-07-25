@@ -2,14 +2,18 @@ import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
+  backgroundMusicUrl,
   createShare,
+  isMusicTrackId,
   mediaKeyConversationId,
   ownedConversationTitle,
   signDownloadUrl,
   signMediaUrl,
   userOwnsConversation,
 } = vi.hoisted(() => ({
+  backgroundMusicUrl: vi.fn(),
   createShare: vi.fn(),
+  isMusicTrackId: vi.fn(),
   mediaKeyConversationId: vi.fn(),
   ownedConversationTitle: vi.fn(),
   signDownloadUrl: vi.fn(),
@@ -18,6 +22,8 @@ const {
 }));
 
 vi.mock("../lib/media.ts", () => ({
+  backgroundMusicUrl,
+  isMusicTrackId,
   mediaKeyConversationId,
   signDownloadUrl,
   signMediaUrl,
@@ -49,7 +55,9 @@ function appWith(user: TestUser) {
 }
 
 beforeEach(() => {
+  backgroundMusicUrl.mockReset();
   createShare.mockReset();
+  isMusicTrackId.mockReset();
   mediaKeyConversationId.mockReset();
   ownedConversationTitle.mockReset();
   signDownloadUrl.mockReset();
@@ -93,6 +101,32 @@ describe("GET /media/sign", () => {
       conversationId: "conv1",
       userId: "u1",
     });
+  });
+});
+
+describe("GET /media/music-preview", () => {
+  it("400s for an unknown track id without presigning", async () => {
+    isMusicTrackId.mockReturnValue(false);
+
+    const res = await appWith({ id: "u1" }).request(
+      "/media/music-preview?track=bogus"
+    );
+
+    expect(res.status).toBe(400);
+    expect(backgroundMusicUrl).not.toHaveBeenCalled();
+  });
+
+  it("returns a presigned url for a catalog track", async () => {
+    isMusicTrackId.mockReturnValue(true);
+    backgroundMusicUrl.mockResolvedValue("https://signed/music");
+
+    const res = await appWith({ id: "u1" }).request(
+      "/media/music-preview?track=ambient"
+    );
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ url: "https://signed/music" });
+    expect(backgroundMusicUrl).toHaveBeenCalledWith("ambient");
   });
 });
 

@@ -8,6 +8,8 @@ import { CreateShareInputSchema } from "@animus/core";
 import { type Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import {
+  backgroundMusicUrl,
+  isMusicTrackId,
   mediaKeyConversationId,
   signDownloadUrl,
   signMediaUrl,
@@ -47,6 +49,18 @@ async function ownedKey(
 mediaRoute.get("/sign", async (c) => {
   const key = await ownedKey(c, c.req.query("key"));
   const url = await signMediaUrl(key);
+  return c.json({ url });
+});
+
+/** Presigned URL for a catalog background track, so the settings picker can
+ * preview the actual track a user would get. Not conversation-scoped — the
+ * tracks are a fixed public-domain catalog — so it only validates the id. */
+mediaRoute.get("/music-preview", async (c) => {
+  const track = c.req.query("track") ?? "";
+  if (!isMusicTrackId(track)) {
+    throw new HTTPException(400, { message: "Unknown track" });
+  }
+  const url = await backgroundMusicUrl(track);
   return c.json({ url });
 });
 

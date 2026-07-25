@@ -9,6 +9,7 @@ import {
 	useLocation,
 	useNavigationType,
 } from "react-router";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { RequireAuth } from "@/features/auth/components/require-auth";
 import { AccountSection } from "@/features/settings/components/account-section";
 import { GenerationSection } from "@/features/settings/components/generation-section";
@@ -48,35 +49,37 @@ function App() {
 	return (
 		<BrowserRouter>
 			<ScrollToTop />
-			<Routes>
-				<Route element={<LandingPage />} path="/" />
-				<Route element={<AuthPage />} path="/auth" />
-				<Route element={<VerifyLoginPage />} path="/auth/verify" />
-				<Route element={<TermsPage />} path="/terms" />
-				<Route element={<PrivacyPage />} path="/privacy" />
-				<Route element={<SharePage />} path="/v/:token" />
-				<Route
-					element={
-						<RequireAuth>
-							<Outlet />
-						</RequireAuth>
-					}
-				>
-					<Route element={<StudioPage />} path="/studio" />
-					<Route element={<StudioPage />} path="/studio/c/:chatId" />
-					<Route element={<SettingsLayout />} path="/settings">
-						<Route
-							element={<Navigate replace to="/settings/account" />}
-							index
-						/>
-						<Route element={<AccountSection />} path="account" />
-						<Route element={<GenerationSection />} path="generation" />
-						<Route element={<UsageSection />} path="usage" />
-						<Route element={<SecretsSection />} path="secrets" />
+			<ErrorBoundary>
+				<Routes>
+					<Route element={<LandingPage />} path="/" />
+					<Route element={<AuthPage />} path="/auth" />
+					<Route element={<VerifyLoginPage />} path="/auth/verify" />
+					<Route element={<TermsPage />} path="/terms" />
+					<Route element={<PrivacyPage />} path="/privacy" />
+					<Route element={<SharePage />} path="/v/:token" />
+					<Route
+						element={
+							<RequireAuth>
+								<Outlet />
+							</RequireAuth>
+						}
+					>
+						<Route element={<StudioPage />} path="/studio" />
+						<Route element={<StudioPage />} path="/studio/c/:chatId" />
+						<Route element={<SettingsLayout />} path="/settings">
+							<Route
+								element={<Navigate replace to="/settings/account" />}
+								index
+							/>
+							<Route element={<AccountSection />} path="account" />
+							<Route element={<GenerationSection />} path="generation" />
+							<Route element={<UsageSection />} path="usage" />
+							<Route element={<SecretsSection />} path="secrets" />
+						</Route>
 					</Route>
-				</Route>
-				<Route element={<NotFoundPage />} path="*" />
-			</Routes>
+					<Route element={<NotFoundPage />} path="*" />
+				</Routes>
+			</ErrorBoundary>
 			<Analytics />
 		</BrowserRouter>
 	);

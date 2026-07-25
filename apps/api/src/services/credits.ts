@@ -75,6 +75,10 @@ export async function getOrCreateCredits(
 }
 
 export interface SettleUsageInput {
+  /** Cache-read subset of `inputTokens` (priced at the cache-read multiplier). */
+  cacheReadTokens?: number;
+  /** Cache-write subset of `inputTokens` (priced at the cache-write multiplier). */
+  cacheWriteTokens?: number;
   conversationId: string | null;
   inputTokens: number;
   /** Whether the LLM ran on our key (metered) or the user's own (not). */
@@ -99,6 +103,8 @@ export async function settleUsage(input: SettleUsageInput): Promise<number> {
         model: input.model,
         inputTokens: input.inputTokens,
         outputTokens: input.outputTokens,
+        cacheReadTokens: input.cacheReadTokens,
+        cacheWriteTokens: input.cacheWriteTokens,
       })
     : 0;
   const ttsCost = input.isTtsMetered ? ttsCostMicros(input.ttsChars) : 0;

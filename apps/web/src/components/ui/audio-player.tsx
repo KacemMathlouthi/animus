@@ -266,8 +266,10 @@ export function AudioPlayerProvider<TData = unknown>({
 	return (
 		<AudioPlayerContext.Provider value={api as AudioPlayerApi<unknown>}>
 			<AudioPlayerTimeContext.Provider value={time}>
+				{/* No crossOrigin: previews stream from presigned R2 URLs that don't
+				    send CORS headers, and playback needs no cross-origin data access. */}
 				{/* biome-ignore lint/a11y/useMediaCaption: programmatic audio previews have no captions */}
-				<audio className="hidden" crossOrigin="anonymous" ref={audioRef} />
+				<audio className="hidden" ref={audioRef} />
 				{children}
 			</AudioPlayerTimeContext.Provider>
 		</AudioPlayerContext.Provider>
@@ -307,7 +309,7 @@ export const AudioPlayerProgress = ({
 				otherProps.onPointerUp?.(e);
 			}}
 			className={cn(
-				"group/player relative flex h-4 touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
+				"group/player relative flex h-4 touch-none items-center select-none data-disabled:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
 				otherProps.className,
 			)}
 			onKeyDown={(e) => {
@@ -327,7 +329,7 @@ export const AudioPlayerProgress = ({
 				Number.isNaN(player.duration)
 			}
 		>
-			<SliderPrimitive.Track className="bg-muted relative h-[4px] w-full grow overflow-hidden rounded-full">
+			<SliderPrimitive.Track className="bg-muted relative h-1 w-full grow overflow-hidden rounded-full">
 				<SliderPrimitive.Range className="bg-primary absolute h-full" />
 			</SliderPrimitive.Track>
 			<SliderPrimitive.Thumb
@@ -544,7 +546,7 @@ export function AudioPlayerSpeed({
 					<Settings className="size-4" />
 				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="min-w-[120px]">
+			<DropdownMenuContent align="end" className="min-w-30">
 				{speeds.map((speed) => (
 					<DropdownMenuItem
 						key={speed}
@@ -583,7 +585,7 @@ export function AudioPlayerSpeedButtonGroup({
 		>
 			{speeds.map((speed) => (
 				<Button
-					className="min-w-[50px] font-mono text-xs"
+					className="min-w-12.5 font-mono text-xs"
 					key={speed}
 					onClick={() => player.setPlaybackRate(speed)}
 					size="sm"
