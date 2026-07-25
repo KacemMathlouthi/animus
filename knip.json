@@ -19,6 +19,17 @@
         "shadcn"
       ]
     },
+    "apps/video": {
+      "entry": ["src/index.ts", "remotion.config.ts"],
+      "project": "src/**/*.{ts,tsx}",
+      "ignoreDependencies": [
+        "tailwindcss",
+        "tw-animate-css",
+        "@fontsource-variable/geist",
+        "shadcn",
+        "streamdown"
+      ]
+    },
     "apps/api": {
       "project": "src/**/*.ts"
     },

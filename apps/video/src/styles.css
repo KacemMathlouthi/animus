@@ -1,0 +1,79 @@
+/* The video's stylesheet IS the product's stylesheet.
+ *
+ * Everything below the import is scanning configuration and a handful of
+ * motion primitives that only exist in the film. Design tokens, the brand
+ * gradients, the logo float/blink keyframes, `.cta-surface`, `.prompt-*`, the
+ * `.hero-word` gradient: all inherited from apps/web, so the video cannot
+ * drift from the site it is advertising. */
+@import "../../web/src/index.css";
+
+/* Tailwind v4 discovers utilities by scanning source; the imported stylesheet
+ * only auto-scans its own directory, so both trees are declared explicitly. */
+@source "../src";
+@source "../../web/src";
+
+/* Remotion drives every animation from the frame number, so CSS transitions
+ * and infinite keyframes must never run: they are wall-clock based and would
+ * desynchronise (and render nondeterministically). The one exception is the
+ * logo mark, which we re-drive from the frame in `<AnimatedLogo />`. */
+@layer base {
+	/* `!important` is load-bearing: Remotion updates one live DOM as the frame
+	 * advances, so any inherited `transition-*` utility would animate on the
+	 * wall clock and desynchronise from the timeline. Nothing weaker outranks a
+	 * Tailwind utility. */
+	*,
+	*::before,
+	*::after {
+		/* biome-ignore lint/complexity/noImportantStyles: see above */
+		transition: none !important;
+	}
+	html,
+	body,
+	#video-container {
+		background: transparent;
+	}
+}
+
+/* Film-only helpers ----------------------------------------------------- */
+
+/* The dark canvas every scene sits on: the app background with the same faint
+ * warm bloom the landing hero uses, so cuts feel like one continuous space. */
+.film-canvas {
+	background:
+		radial-gradient(
+			ellipse 80% 60% at 50% 0%,
+			color-mix(in srgb, var(--primary) 7%, transparent),
+			transparent 70%
+		),
+		var(--background);
+}
+
+/* Text that reads as "spoken by the product": the pixel-grid accent face with
+ * the hero's vertical gradient fill, used for the one word per line that
+ * carries the meaning. */
+.film-word {
+	font-family: var(--font-pixel-grid);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--primary) 72%, white) 0%,
+		var(--primary) 52%,
+		color-mix(in srgb, var(--primary) 68%, black) 100%
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+/* Chrome for anything pretending to be a real app surface on screen. */
+.film-panel {
+	background: var(--card);
+	border: 1px solid var(--border);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.04),
+		0 24px 70px -20px rgba(0, 0, 0, 0.85);
+}
+
+/* The Manim canvas inside the render panel: true black, like the real thing. */
+.film-manim {
+	background: #000;
+}

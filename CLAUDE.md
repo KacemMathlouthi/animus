@@ -38,6 +38,7 @@ state** (the Manim project files live across turns).
 apps/
   web/    # React 19 + Vite SPA — landing, auth, studio (chat + conversation sidebar), settings, legal, /v/:token share page. plugins/ holds the dev link-preview meta-injection plugin (see the meta-injection seam decision).
   api/    # Hono/Bun — auth, settings, conversations, the streaming agent loop (/api/chat), and the public share endpoints (share-card og.png, video.mp4, embed). Long-running.
+  video/  # the launch video, built in Remotion as code. Imports apps/web's index.css so the film uses the product's real tokens/fonts/classes; renders to out/launch.mp4, published by copying to apps/web/public/launch.mp4. See apps/video/README.md.
 packages/
   core/   # shared contracts: zod schemas, types, constants + the deterministic share-card SVG builder + link-preview meta builders (pure root) + server env (/env subpath)
   auth/   # Better Auth (magic link via Resend, GitHub + Google OAuth, sessions)
@@ -190,6 +191,32 @@ Cross-package "does it compile" = `bun run typecheck`.
   web + API sit behind `tryanimus.app` (the `/api` rewrite), so external
   viewers can play shared videos.
 
+- **Launch video: Remotion, in the monorepo, styled by the product itself.**
+  The film (`apps/video`) is built as code rather than in an NLE, and its
+  stylesheet **imports `apps/web/src/index.css`** — every token, radius,
+  gradient, font and keyframe on screen is the one the app ships, and the mark,
+  prompt shell, tool cards and studio chrome are rebuilt from the app's own
+  class names, so the video cannot drift from the site it advertises. What is
+  deliberately *not* imported is behaviour: the app's components carry routing,
+  auth and data hooks a renderer has no business booting, and Remotion needs
+  every animation driven by the frame number (CSS transitions and infinite
+  keyframes are wall-clock based and render nondeterministically — the
+  stylesheet kills them, and the logo's float/scan/blink is re-driven from the
+  frame). The edit is four beats from `launch-video/slides.typ` (hook, demo,
+  features, ask), 73s at 1920×1080/60fps, retimed from one file
+  (`src/lib/timing.ts`). The demo beat's payoff is a **real** Fourier series
+  (odd harmonics, 4/(πk), chained tip to tail) drawn in SVG, so the camera can
+  fly from the studio panel into the explainer without losing an edge. Two
+  bundler seams are load-bearing: Remotion does not read tsconfig `paths`, and
+  the imported stylesheet's `@font-face` points at the web app's public root —
+  both are aliased in `remotion.config.ts`. **The soundtrack is unlicensed:**
+  the deck specifies "In the Hall of the Mountain King" (Reznor/Ross), a
+  commercial master that cannot be committed and needs a sync licence for
+  YouTube or the landing page, so `public/soundtrack.m4a` is a silent
+  placeholder of the right length behind a single `SOUNDTRACK_FILE` constant.
+  Publishing a cut = copy `out/launch.mp4` to `apps/web/public/launch.mp4`,
+  which the landing page's `#video` section already serves.
+
 **Roadmap:** shell ✓ (settings backend; conversation persistence with generated
 titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` →
 `useChat` + Streamdown, real agent loop with HITL + Exa web-research tools) →
@@ -231,7 +258,9 @@ with a `402 OUT_OF_CREDITS` gate + depletion dialog; header balance gauge; see t
 Cost-control decision above) → deployed to prod ✓ (tryanimus.app — container
 image API + static web on Vercel behind one origin, Neon Postgres, Resend
 email, GitHub/Google OAuth + magic-link live; see the Hosting/Domain/Email
-decisions above) → **now:** first end-to-end prod video validation (blockers
+decisions above) → launch video ✓ (`apps/video`, Remotion, styled by the
+product's own stylesheet; see the Launch-video decision above — outstanding: the
+soundtrack licence) → **now:** first end-to-end prod video validation (blockers
 found and fixed so far: Vercel shadowing `AWS_*`, Bedrock throttling →
 retries, wrong voice guidance; still required: a paid ElevenLabs tier, an AWS
 Bedrock quota increase) → playback polish → generalize the render/repair loop
@@ -248,6 +277,8 @@ nullable-vs-required mismatch; an atomic title-generation claim.)
 
 - **Runtime / package manager / test runner:** Bun (never npm/npx/node)
 - **Monorepo:** Turborepo
+- **Launch video:** Remotion (`apps/video`), rendered from React with the web
+  app's stylesheet
 - **Web:** React 19 + Vite, React Router v7, Tailwind v4, shadcn/ai-elements
 - **API:** Hono
 - **LLM:** Vercel AI SDK (`ai`), Claude served via Amazon Bedrock

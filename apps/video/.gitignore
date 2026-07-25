@@ -1,0 +1,4 @@
+# Rendered output and Remotion's bundle cache. A finished cut is published by
+# copying it to apps/web/public/launch.mp4, never by committing it here.
+out/
+.remotion/

@@ -1,0 +1,15 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+	"root": false,
+	"extends": ["ultracite/biome/react"],
+	// `public/` is symlinks into apps/web/public — formatting through them would
+	// silently rewrite the web app's assets.
+	"files": {
+		"includes": ["**", "!public", "!out"]
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	}
+}
