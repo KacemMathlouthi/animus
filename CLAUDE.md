@@ -69,6 +69,13 @@ Cross-package "does it compile" = `bun run typecheck`.
 - **Models: Claude via Amazon Bedrock (default), with BYOK.** By default the
   agent resolves its model through `@ai-sdk/amazon-bedrock` — a Bedrock
   inference-profile id (`BEDROCK_MODEL`, e.g. `us.anthropic.claude-opus-4-6-v1`).
+  The **code default** is Opus 4.6; **prod is expected to set `BEDROCK_MODEL`
+  explicitly** on the `animus-api` Vercel project. Recommended prod value once
+  Sonnet 5 model access is enabled in the Bedrock console:
+  `us.anthropic.claude-sonnet-5` (~60% cheaper than Opus; the `@animus/core`
+  pricing table already prices `claude-sonnet-5`, and `priceForModel`
+  substring-matches the profile id, so metering stays correct). Leaving the env
+  unset means prod silently runs the Opus default at Opus rates.
   Credentials are passed to the provider **explicitly** from the validated
   server env (`BEDROCK_ACCESS_KEY_ID`/`BEDROCK_SECRET_ACCESS_KEY`/
   `BEDROCK_REGION`, falling back to `AWS_*` so local `.env` files keep
