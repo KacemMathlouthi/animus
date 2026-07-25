@@ -25,7 +25,13 @@ export function FaqsSection() {
 			className="mx-auto grid w-full max-w-5xl grid-cols-1 px-4 py-20 md:grid-cols-2 md:px-8 md:py-28"
 			id="faq"
 		>
-			<div className="flex flex-col justify-center gap-0.5 pb-8 text-center md:pr-8 md:pb-0 md:text-left">
+			{/* One real heading for assistive tech; the visual cascade repeats it
+			    decoratively and is hidden from screen readers to avoid 7× readout. */}
+			<h2 className="sr-only">Got any questions?</h2>
+			<div
+				aria-hidden="true"
+				className="flex flex-col justify-center gap-0.5 pb-8 text-center md:pr-8 md:pb-0 md:text-left"
+			>
 				{CASCADE.map((line, i) => (
 					<p
 						className={cn(
@@ -52,7 +58,7 @@ export function FaqsSection() {
 							value={item.id}
 						>
 							<DecorIcon
-								className="left-[13px] size-3 group-last:hidden"
+								className="left-3.25 size-3 group-last:hidden"
 								position="bottom-left"
 							/>
 

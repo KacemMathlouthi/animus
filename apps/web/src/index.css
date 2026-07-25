@@ -180,6 +180,27 @@
 	}
 }
 
+/* Global reduced-motion reset: neutralize entrance animations (tw-animate-css
+   `animate-in`, Streamdown's per-token blur-in) and transitions for users who
+   ask for less motion. The custom keyframes below are already gated behind
+   no-preference, so this covers the library/utility motion they can't reach. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		/* !important is the standard way to override library/utility motion
+		   (tw-animate-css, Streamdown) for reduced-motion users. */
+		/* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
+		animation-duration: 0.01ms !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
+		animation-iteration-count: 1 !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
+		transition-duration: 0.01ms !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
+		scroll-behavior: auto !important;
+	}
+}
+
 /* Logo mark "loading" animation — see logo-mark.tsx. The spirit ponders:
    it floats with a faint squash while its eyes scan side to side and blink.
    Transforms act in each group's own local box so they pivot on their centers.

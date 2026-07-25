@@ -64,7 +64,7 @@ describe("extractNarrationChars", () => {
   });
 
   it("does not count narration passed as a variable (no literal to measure)", () => {
-    const source = `self.voiceover(text=script)`;
+    const source = "self.voiceover(text=script)";
     expect(extractNarrationChars(source)).toBe(0);
   });
 
