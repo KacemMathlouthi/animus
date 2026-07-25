@@ -41,6 +41,33 @@ describe("extractNarrationChars", () => {
     expect(extractNarrationChars(source)).toBe("value is {x}".length);
   });
 
+  it("counts a positional narration without the text= keyword", () => {
+    const source = `with self.voiceover("Hello world") as tracker:`;
+    expect(extractNarrationChars(source)).toBe("Hello world".length);
+  });
+
+  it("counts a positional f-string narration", () => {
+    const source = `self.voiceover(f"value is {x}")`;
+    expect(extractNarrationChars(source)).toBe("value is {x}".length);
+  });
+
+  it("counts positional and keyword forms together", () => {
+    const source = `
+      with self.voiceover("First line") as t1:
+          self.play(Write(a))
+      with self.voiceover(text='Second') as t2:
+          self.play(Write(b))
+    `;
+    expect(extractNarrationChars(source)).toBe(
+      "First line".length + "Second".length
+    );
+  });
+
+  it("does not count narration passed as a variable (no literal to measure)", () => {
+    const source = `self.voiceover(text=script)`;
+    expect(extractNarrationChars(source)).toBe(0);
+  });
+
   it("returns 0 for a scene with no narration", () => {
     const source =
       "class Foo(Scene):\n    def construct(self):\n        self.play(Write(t))";
