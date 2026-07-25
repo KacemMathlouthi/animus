@@ -14,6 +14,7 @@ const {
   setConversationSandboxId,
   getDecryptedLlmKey,
   getDecryptedTtsKey,
+  getGenerationSettings,
   getOrCreateCredits,
   settleUsage,
 } = vi.hoisted(() => ({
@@ -27,6 +28,7 @@ const {
   setConversationSandboxId: vi.fn(),
   getDecryptedLlmKey: vi.fn(),
   getDecryptedTtsKey: vi.fn(),
+  getGenerationSettings: vi.fn(),
   getOrCreateCredits: vi.fn(),
   settleUsage: vi.fn(),
 }));
@@ -49,6 +51,7 @@ vi.mock("../services/credits.ts", () => ({ getOrCreateCredits, settleUsage }));
 vi.mock("../services/settings.ts", () => ({
   getDecryptedLlmKey,
   getDecryptedTtsKey,
+  getGenerationSettings,
 }));
 // Keep the pure helpers (isUIMessage, mergeIncomingMessage) faithful so the
 // route's validation and merge behavior is exercised for real; mock only IO.
@@ -151,6 +154,13 @@ beforeEach(() => {
   // Defaults: a metered user (no BYOK keys) with a healthy balance.
   getDecryptedLlmKey.mockResolvedValue(undefined);
   getDecryptedTtsKey.mockResolvedValue(undefined);
+  getGenerationSettings.mockResolvedValue({
+    videoTheme: "dark",
+    backgroundMusic: false,
+    musicTrack: "upbeat",
+    voiceId: "voice-user-choice",
+    font: "geist",
+  });
   getOrCreateCredits.mockResolvedValue({
     balanceMicros: FREE_GRANT_MICROS,
     grantMicros: FREE_GRANT_MICROS,
@@ -351,6 +361,10 @@ describe("POST /chat — happy path (metered)", () => {
         elevenLabsApiKey: "our-eleven-key",
         llmKey: undefined,
         meter: expect.objectContaining({ ttsChars: expect.any(Number) }),
+        // The user's generation settings shape the turn.
+        voiceId: "voice-user-choice",
+        backgroundMusic: false,
+        musicTrackId: "upbeat",
       })
     );
 

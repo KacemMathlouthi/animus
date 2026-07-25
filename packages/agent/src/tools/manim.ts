@@ -43,7 +43,8 @@ export type SaveVideo = (input: {
 /** A presigned URL the sandbox downloads the background track from (straight
  * from R2, no byte round-trip through the API). Implemented by the API so the
  * track can change without a sandbox rebuild. */
-export type BackgroundMusicUrl = () => Promise<string>;
+/** Presigns the R2 track for the user's chosen music track id. */
+export type BackgroundMusicUrl = (trackId: string) => Promise<string>;
 
 /** A mutable per-turn accumulator the API owns. `renderScene` adds the narration
  * characters it synthesizes so the API can meter TTS cost after the turn. */
@@ -102,9 +103,9 @@ function outputPath(
 async function muxBackgroundMusic(
   sandbox: Sandbox,
   masterPath: string,
-  backgroundMusicUrl: BackgroundMusicUrl
+  getMusicUrl: () => Promise<string>
 ): Promise<{ deliverPath: string; note?: string }> {
-  const url = await backgroundMusicUrl();
+  const url = await getMusicUrl();
   const finalPath = masterPath.replace(MP4_SUFFIX, ".music.mp4");
   // Download then mix in one shell step; the URL rides in the env (not the
   // command string) so its signature query params can't break quoting. A missing
@@ -135,6 +136,10 @@ export function createManimTools(deps: {
   conversationId: string;
   saveVideo: SaveVideo;
   backgroundMusicUrl: BackgroundMusicUrl;
+  /** The user's generation settings: whether to mix a music bed at all, and
+   * which catalog track to use when so. */
+  backgroundMusic: boolean;
+  musicTrackId: string;
   /** The effective ElevenLabs key for this turn (the user's own when they've
    * brought one, otherwise ours). Injected into the render command so narration
    * synthesizes against the right account. */
@@ -147,6 +152,8 @@ export function createManimTools(deps: {
     conversationId,
     saveVideo,
     backgroundMusicUrl,
+    backgroundMusic,
+    musicTrackId,
     elevenLabsApiKey,
     meter,
   } = deps;
@@ -275,11 +282,13 @@ export function createManimTools(deps: {
         }
 
         const masterPath = outputPath(output, file, scene, quality);
-        const { deliverPath, note } = await muxBackgroundMusic(
-          sandbox,
-          masterPath,
-          backgroundMusicUrl
-        );
+        // The music bed honors the user's settings: skipped entirely when
+        // background music is off, otherwise mixed from their chosen track.
+        const { deliverPath, note } = backgroundMusic
+          ? await muxBackgroundMusic(sandbox, masterPath, () =>
+              backgroundMusicUrl(musicTrackId)
+            )
+          : { deliverPath: masterPath, note: undefined };
         const deliveredLogs = note ? `${logs}\n\n${note}` : logs;
         try {
           const buffer = await sandbox.fs.downloadFile(deliverPath);

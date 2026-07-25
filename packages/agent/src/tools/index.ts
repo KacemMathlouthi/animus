@@ -31,6 +31,8 @@ interface ToolDependencies {
     conversationId: string;
     saveVideo: SaveVideo;
     backgroundMusicUrl: BackgroundMusicUrl;
+    backgroundMusic: boolean;
+    musicTrackId: string;
     elevenLabsApiKey: string;
     meter: TurnMeter;
   };

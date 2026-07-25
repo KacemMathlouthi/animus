@@ -22,8 +22,15 @@ const UNSAFE_NAME_CHARS = /[^a-zA-Z0-9_-]/g;
 const MEDIA_PREFIX = "videos";
 /** videos/<conversationId>/<file>.mp4 — pins the shape we mint and accept. */
 const MEDIA_KEY = /^videos\/([a-zA-Z0-9_-]+)\/[a-zA-Z0-9_-]+\.mp4$/;
-/** Background track muxed under every render. Fixed for now; user-configurable later. */
-const MUSIC_KEY = "music/The_Merchants_Of_Death.mp3";
+/** R2 keys for the music catalog the settings picker offers. Every id
+ * currently resolves to the one licensed track in the bucket — swap entries
+ * here as the curated library lands (ids mirror the web's MUSIC_TRACKS). */
+const FALLBACK_MUSIC_KEY = "music/The_Merchants_Of_Death.mp3";
+const MUSIC_TRACK_KEYS: Record<string, string> = {
+  ambient: FALLBACK_MUSIC_KEY,
+  upbeat: FALLBACK_MUSIC_KEY,
+  cinematic: FALLBACK_MUSIC_KEY,
+};
 
 let client: S3Client | null = null;
 
@@ -82,8 +89,8 @@ export async function saveVideo(input: {
 /** Presigned GET URL for the background track, so the sandbox downloads it
  * straight from R2 (no round-trip through the API). If absent, renderScene just
  * delivers a silent video. */
-export function backgroundMusicUrl(): Promise<string> {
-  return signMediaUrl(MUSIC_KEY);
+export function backgroundMusicUrl(trackId: string): Promise<string> {
+  return signMediaUrl(MUSIC_TRACK_KEYS[trackId] ?? FALLBACK_MUSIC_KEY);
 }
 
 /** Mint a short-lived presigned GET URL the browser can stream from directly. */

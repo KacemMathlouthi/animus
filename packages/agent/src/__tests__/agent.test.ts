@@ -58,6 +58,9 @@ function build(
     saveVideo: vi.fn(() => Promise.resolve("videos/conv/x.mp4")),
     backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
     elevenLabsApiKey: "el-test-key",
+    voiceId: "voice-agent-test",
+    backgroundMusic: true,
+    musicTrackId: "ambient",
     meter: { ttsChars: 0 },
     telemetry,
     llmKey,
@@ -71,6 +74,10 @@ describe("createManimAgent", () => {
     expect(captured.config?.model).toBe("model-sentinel");
     expect(typeof captured.config?.instructions).toBe("string");
     expect(captured.config?.instructions.length).toBeGreaterThan(0);
+    // The user's settings voice is threaded into the narration instruction.
+    expect(captured.config?.instructions).toContain(
+      'voice_id="voice-agent-test"'
+    );
   });
 
   it("raises the retry budget so provider throttling waits instead of dying", () => {

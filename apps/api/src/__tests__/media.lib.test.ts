@@ -97,15 +97,26 @@ describe("mediaKeyConversationId", () => {
 });
 
 describe("backgroundMusicUrl", () => {
-  it("presigns a GET for the fixed background music key", async () => {
+  it("presigns a GET for the catalog track's key", async () => {
     getSignedUrl.mockResolvedValue("https://signed/music");
 
-    const url = await backgroundMusicUrl();
+    const url = await backgroundMusicUrl("ambient");
 
     expect(url).toBe("https://signed/music");
     const command = getSignedUrl.mock.calls[0]?.[1];
     expect(command.input).toMatchObject({
       Bucket: "animus-videos",
+      Key: "music/The_Merchants_Of_Death.mp3",
+    });
+  });
+
+  it("falls back to the default key for an unknown track id", async () => {
+    getSignedUrl.mockResolvedValue("https://signed/music");
+
+    await backgroundMusicUrl("no-such-track");
+
+    const command = getSignedUrl.mock.calls[0]?.[1];
+    expect(command.input).toMatchObject({
       Key: "music/The_Merchants_Of_Death.mp3",
     });
   });
