@@ -65,12 +65,16 @@ export function LaunchVideo() {
               <img
                 alt=""
                 className={cn(posterClasses, "opacity-100 dark:opacity-0")}
+                height={1146}
                 src="/hero/hero-light.webp"
+                width={2880}
               />
               <img
                 alt=""
                 className={cn(posterClasses, "opacity-0 dark:opacity-100")}
+                height={1146}
                 src="/hero/hero-dark.webp"
+                width={2880}
               />
             </>
           )}

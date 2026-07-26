@@ -6,7 +6,10 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 
-type CacheEntry = { url: string; fetchedAt: number };
+interface CacheEntry {
+  fetchedAt: number;
+  url: string;
+}
 
 const cache = new Map<string, CacheEntry>();
 const inflight = new Map<string, Promise<string>>();

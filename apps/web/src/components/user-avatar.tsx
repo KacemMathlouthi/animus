@@ -6,14 +6,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
-type UserAvatarProps = {
-  name?: string | null;
+interface UserAvatarProps {
+  className?: string;
   email?: string | null;
   image?: string | null;
+  name?: string | null;
   /** Rounded-square instead of a circle (e.g. chat messages). */
   square?: boolean;
-  className?: string;
-};
+}
 
 /** A tileable grayscale film grain (SVG fractal noise), blended over the
  * gradient for texture. */

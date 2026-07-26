@@ -102,6 +102,7 @@ export function ChatMessage({
     <div className="flex items-start gap-3">
       <AgentAvatar />
       <Message className="max-w-full flex-1 sm:max-w-[80%]" from="assistant">
+        {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one branch per tool part type; splitting it now would conflict with the pending output-error rework of every branch */}
         {message.parts.map((part, index) => {
           // Append-only parts: index keys are stable here (parts never reorder).
           const key = `${message.id}-${index}`;

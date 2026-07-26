@@ -26,21 +26,26 @@ import type { UIDataTypes, UIMessage } from "ai";
 export type StudioPhase = "idle" | "loading" | "chat";
 
 /** The agent's interactive tools, typed for useChat so message tool-parts and
- * addToolOutput are type-safe end to end. Mirrors the agent's tool registry. */
+ * addToolOutput are type-safe end to end. Mirrors the agent's tool registry.
+ *
+ * MUST stay a type alias, not an interface: the AI SDK's `UITools` constraint
+ * is index-signature based, and an interface has no implicit index signature,
+ * so converting this breaks `UIMessage`'s type argument. */
+// biome-ignore lint/style/useConsistentTypeDefinitions: see above — an interface does not satisfy UITools
 type AnimusTools = {
   askUserQuestion: {
     input: AskUserQuestionInput;
     output: AskUserQuestionOutput;
   };
+  editFile: { input: EditFileInput; output: EditFileOutput };
   finalizeVideoPlan: { input: VideoPlan; output: FinalizeVideoPlanOutput };
+  listFiles: { input: ListFilesInput; output: ListFilesOutput };
+  readFile: { input: ReadFileInput; output: ReadFileOutput };
+  renderScene: { input: RenderSceneInput; output: RenderSceneOutput };
+  runCommand: { input: RunCommandInput; output: RunCommandOutput };
   webFetch: { input: WebFetchInput; output: WebFetchOutput };
   webSearch: { input: WebSearchInput; output: WebSearchOutput };
   writeFile: { input: WriteFileInput; output: WriteFileOutput };
-  editFile: { input: EditFileInput; output: EditFileOutput };
-  readFile: { input: ReadFileInput; output: ReadFileOutput };
-  listFiles: { input: ListFilesInput; output: ListFilesOutput };
-  runCommand: { input: RunCommandInput; output: RunCommandOutput };
-  renderScene: { input: RenderSceneInput; output: RenderSceneOutput };
 };
 
 export type AnimusUIMessage = UIMessage<never, UIDataTypes, AnimusTools>;

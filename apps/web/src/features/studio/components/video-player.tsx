@@ -37,6 +37,7 @@ export function VideoPlayer({
     // mode; the div stays focusable for playback key shortcuts. A <fieldset>
     // (the rule's suggestion) is a form control, not a media widget.
     // biome-ignore lint/a11y/useSemanticElements: a media player is not a fieldset
+    // biome-ignore lint/a11y/noNoninteractiveElementInteractions: role=group + tabIndex make this a deliberate keyboard-driven media widget
     <div
       aria-label={`Video player: ${title}`}
       className="group relative flex h-full w-full items-center justify-center overflow-hidden bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset data-[controls=false]:cursor-none"

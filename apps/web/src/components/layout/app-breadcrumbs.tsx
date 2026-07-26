@@ -8,10 +8,10 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-export type AppBreadcrumbSegment = {
-  title: string;
+export interface AppBreadcrumbSegment {
   href?: string;
-};
+  title: string;
+}
 
 export function AppBreadcrumbs({
   segments,

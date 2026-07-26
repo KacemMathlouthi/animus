@@ -3,12 +3,15 @@
 
 import { createContext, use, useEffect, useMemo, useState } from "react";
 
-export type PublishTarget = { videoKey: string; title: string };
+export interface PublishTarget {
+  title: string;
+  videoKey: string;
+}
 
-type PublishTargetContextValue = {
-  target: PublishTarget | null;
+interface PublishTargetContextValue {
   setTarget: (target: PublishTarget | null) => void;
-};
+  target: PublishTarget | null;
+}
 
 const PublishTargetContext = createContext<PublishTargetContextValue | null>(
   null

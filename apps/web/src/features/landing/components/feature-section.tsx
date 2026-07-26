@@ -35,9 +35,11 @@ export function FeatureSection() {
             <img
               alt="Raphael, The School of Athens"
               className="absolute inset-0 size-full object-cover"
+              height={823}
               loading="lazy"
               src="/features/research-grounded.webp"
               style={{ objectPosition: "50% 38%" }}
+              width={1100}
             />
             <div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-24">
               <h3 className="font-medium text-white text-xl">
@@ -57,9 +59,11 @@ export function FeatureSection() {
               <img
                 alt="Leonardo da Vinci, Vitruvian Man"
                 className="absolute inset-0 size-full object-cover"
+                height={1315}
                 loading="lazy"
                 src="/features/precision.webp"
                 style={{ objectPosition: "50% 30%" }}
+                width={950}
               />
               <div className="absolute inset-0 bg-black/45" />
               <div className="absolute inset-0 flex items-center justify-center px-4 pb-16">
@@ -85,9 +89,11 @@ export function FeatureSection() {
               <img
                 alt="Claude Lorrain, Seaport with the Embarkation of the Queen of Sheba"
                 className="absolute inset-0 size-full object-cover"
+                height={836}
                 loading="lazy"
                 src="/features/share.webp"
                 style={{ objectPosition: "50% 55%" }}
+                width={1100}
               />
               <div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-6 pt-16">
                 <h3 className="font-medium text-white text-xl">
@@ -106,9 +112,11 @@ export function FeatureSection() {
             <img
               alt="Caravaggio, The Lute Player"
               className="absolute inset-0 size-full object-cover"
+              height={859}
               loading="lazy"
               src="/features/narration.webp"
               style={{ objectPosition: "50% 40%" }}
+              width={1100}
             />
             <div className="absolute inset-x-0 bottom-0 space-y-1.5 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 pt-24">
               <h3 className="font-medium text-white text-xl">Real narration</h3>

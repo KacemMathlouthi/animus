@@ -9,11 +9,11 @@ import {
   notifyConversationsChanged,
 } from "@/lib/conversations";
 
-type StartConversation = {
-  start: (text: string) => void;
+interface StartConversation {
   creating: boolean;
   error: string | null;
-};
+  start: (text: string) => void;
+}
 
 export function useStartConversation(): StartConversation {
   const navigate = useNavigate();

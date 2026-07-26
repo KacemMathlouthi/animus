@@ -3,10 +3,10 @@ import { type ConversationDetail, getConversation } from "@/lib/conversations";
 
 const TITLE_POLL_INTERVAL_MS = 2500;
 
-type ConversationDetailState = {
+interface ConversationDetailState {
   detail: ConversationDetail | null;
   error: boolean;
-};
+}
 
 /** Load a conversation's detail and keep it fresh: it reloads whenever the
  * conversation set changes elsewhere (`animus:conversations-changed`) and polls

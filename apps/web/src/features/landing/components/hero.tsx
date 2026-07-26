@@ -19,7 +19,9 @@ export function HeroSection() {
             "[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]"
           )}
           fetchPriority="high"
+          height={1146}
           src="/hero/hero-light.webp"
+          width={2880}
         />
         <img
           alt=""
@@ -29,7 +31,9 @@ export function HeroSection() {
             "[-webkit-mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
             "[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]"
           )}
+          height={1146}
           src="/hero/hero-dark.webp"
+          width={2880}
         />
         <div className="absolute inset-0 bg-background/40 dark:bg-background/15" />
         <div

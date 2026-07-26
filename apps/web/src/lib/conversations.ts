@@ -7,21 +7,21 @@ import type {
 import type { UIMessage } from "ai";
 import { apiFetch } from "@/lib/api";
 
-export type ConversationDetail = {
+export interface ConversationDetail {
   conversation: ConversationSummary;
   messages: UIMessage[];
-};
+}
 
-export type ConversationGroup = {
-  label: string;
+export interface ConversationGroup {
   items: ConversationSummary[];
-};
+  label: string;
+}
 
-export type ListConversationsOptions = {
-  query?: string;
+export interface ListConversationsOptions {
   limit?: number;
   offset?: number;
-};
+  query?: string;
+}
 
 export async function createConversation() {
   const response = await apiFetch<CreateConversationResponse>(
@@ -46,13 +46,13 @@ export async function listConversations(
     params.set("offset", String(options.offset));
   }
   const query = params.toString();
-  return apiFetch<ConversationListResponse>(
+  return await apiFetch<ConversationListResponse>(
     query ? `/api/conversations?${query}` : "/api/conversations"
   );
 }
 
 export async function getConversation(id: string) {
-  return apiFetch<ConversationDetail>(`/api/conversations/${id}`);
+  return await apiFetch<ConversationDetail>(`/api/conversations/${id}`);
 }
 
 export async function renameConversation(

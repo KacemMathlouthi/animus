@@ -10,12 +10,12 @@ import {
 import { DecorIcon } from "@/components/decor-icon";
 import { cn } from "@/lib/utils";
 
-type UseCase = {
+interface UseCase {
+  decor?: React.ReactNode;
+  icon: LucideIcon;
   name: string;
   prompt: string;
-  icon: LucideIcon;
-  decor?: React.ReactNode;
-};
+}
 
 /* Each audience is introduced by the prompt they'd actually type — the card
    demos the product while it names who it's for. */

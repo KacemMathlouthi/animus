@@ -29,14 +29,17 @@ const PAGE_SIZE = 50;
 
 /** Provider brand icon for a metered model id (Bedrock profile ids embed the
  * vendor, BYOK model ids start with it). */
+const ANTHROPIC_MODEL = /anthropic|claude/i;
+const OPENAI_MODEL = /openai|gpt|^o\d/i;
+const GOOGLE_MODEL = /google|gemini/i;
 function modelIcon(model: string) {
-  if (/anthropic|claude/i.test(model)) {
+  if (ANTHROPIC_MODEL.test(model)) {
     return Anthropic;
   }
-  if (/openai|gpt|^o\d/i.test(model)) {
+  if (OPENAI_MODEL.test(model)) {
     return OpenAI;
   }
-  if (/google|gemini/i.test(model)) {
+  if (GOOGLE_MODEL.test(model)) {
     return Gemini;
   }
   return Bedrock;

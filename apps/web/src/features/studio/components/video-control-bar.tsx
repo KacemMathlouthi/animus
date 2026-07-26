@@ -1,4 +1,9 @@
-import * as SliderPrimitive from "@radix-ui/react-slider";
+import {
+  Range as SliderRange,
+  Root as SliderRoot,
+  Thumb as SliderThumb,
+  Track as SliderTrack,
+} from "@radix-ui/react-slider";
 import {
   GaugeIcon,
   MaximizeIcon,
@@ -56,7 +61,7 @@ export function VideoControlBar({
 }) {
   return (
     <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-linear-to-t from-black/70 to-transparent px-3 pt-8 pb-2 opacity-0 transition-opacity group-data-[controls=true]:opacity-100">
-      <SliderPrimitive.Root
+      <SliderRoot
         aria-label="Seek"
         className="group/seek relative flex h-4 pointer-coarse:h-11 w-full touch-none select-none items-center"
         disabled={!seekable}
@@ -66,11 +71,11 @@ export function VideoControlBar({
         step={0.1}
         value={[currentTime]}
       >
-        <SliderPrimitive.Track className="relative h-1 pointer-coarse:h-1.5 w-full grow overflow-hidden rounded-full bg-white/25">
-          <SliderPrimitive.Range className="absolute h-full bg-primary" />
-        </SliderPrimitive.Track>
-        <SliderPrimitive.Thumb className="block pointer-coarse:size-4 size-3 rounded-full bg-white opacity-0 pointer-coarse:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none group-hover/seek:opacity-100" />
-      </SliderPrimitive.Root>
+        <SliderTrack className="relative h-1 pointer-coarse:h-1.5 w-full grow overflow-hidden rounded-full bg-white/25">
+          <SliderRange className="absolute h-full bg-primary" />
+        </SliderTrack>
+        <SliderThumb className="block pointer-coarse:size-4 size-3 rounded-full bg-white opacity-0 pointer-coarse:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none group-hover/seek:opacity-100" />
+      </SliderRoot>
 
       <div className="flex items-center gap-1 text-white">
         <Button

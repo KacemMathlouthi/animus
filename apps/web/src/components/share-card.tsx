@@ -24,6 +24,7 @@ export function ShareCard({ title, seed }: { title: string; seed: string }) {
   return (
     <div
       className="h-full w-full [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: svg comes from @animus/core's buildShareCardSvg, which escapes every interpolated value; there is no user-supplied markup
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

@@ -12,22 +12,22 @@ import type {
 import { chatTransport } from "@/lib/chat";
 import { notifyCreditsChanged } from "@/lib/credit-events";
 
-type StudioChat = {
+interface StudioChat {
+  /** The error that ended the last turn, if it ended in one. */
+  error?: Error;
   messages: AnimusUIMessage[];
-  status: ChatStatus;
   phase: StudioPhase;
+  respondToTool: RespondToTool;
+  /** Re-runs the failed turn (regenerates from the last user message). */
+  retry: () => void;
+  send: (text: string) => void;
+  status: ChatStatus;
+  stop: () => void;
   /** R2 object key of the rendered explainer, once the render loop produces one.
    * Undefined until then — the side panel keeps animating while it's absent.
    * The player resolves it to a presigned URL via useSignedMediaUrl. */
   videoKey?: string;
-  send: (text: string) => void;
-  stop: () => void;
-  respondToTool: RespondToTool;
-  /** The error that ended the last turn, if it ended in one. */
-  error?: Error;
-  /** Re-runs the failed turn (regenerates from the last user message). */
-  retry: () => void;
-};
+}
 
 /** The studio's chat session over the streaming /api/chat endpoint. Keyed by
  * chatId; an optional initial prompt is sent once on mount. HITL tool calls pause

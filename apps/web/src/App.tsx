@@ -1,3 +1,5 @@
+// biome-ignore-all lint/style/useFilenamingConvention: App.tsx follows the React convention for the root component file
+
 import { Analytics } from "@vercel/analytics/react";
 import { useEffect } from "react";
 import {

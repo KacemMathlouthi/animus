@@ -9,15 +9,15 @@ import {
 const SEARCH_DEBOUNCE_MS = 180;
 const PAGE_SIZE = 30;
 
-type ConversationListState = {
+interface ConversationListState {
+  error: boolean;
   groups: ConversationGroup[];
-  query: string;
+  hasMore: boolean;
   loading: boolean;
   loadingMore: boolean;
-  error: boolean;
-  hasMore: boolean;
   loadMoreRef: React.RefObject<HTMLDivElement | null>;
-};
+  query: string;
+}
 
 /** The sidebar conversation list: debounced search, offset pagination driven by
  * an intersection observer, and a refresh whenever the conversation set changes

@@ -49,6 +49,7 @@ function InputGroupAddon({
   return (
     // biome-ignore lint/a11y/useSemanticElements: role="group" groups the addon affordances
     // biome-ignore lint/a11y/useKeyWithClickEvents: clicking the addon just forwards focus to the input; it is not an independent control
+    // biome-ignore lint/a11y/noNoninteractiveElementInteractions: the click only forwards focus; the input remains the interactive element
     <div
       role="group"
       data-slot="input-group-addon"

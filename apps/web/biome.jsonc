@@ -26,15 +26,19 @@
           "nursery": "off",
           "performance": "off",
           "style": "off",
-          "suspicious": {
-            "noBitwiseOperators": "off"
-          }
+          "suspicious": "off"
         }
       }
     }
   ],
   "linter": {
     "rules": {
+      "complexity": {
+        // Every hit is `void somePromise()` — the deliberate fire-and-forget
+        // marker for a promise we intentionally don't await. Removing it would
+        // hide the floating promise rather than fix anything.
+        "noVoid": "off"
+      },
       "style": {
         "noRestrictedImports": {
           "level": "error",

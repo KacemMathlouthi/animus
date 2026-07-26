@@ -29,9 +29,11 @@ function httpUrl(url: string): string | undefined {
   return;
 }
 
+const LEADING_WWW = /^www\./;
+
 function hostname(url: string): string {
   try {
-    return new URL(url).hostname.replace(/^www\./, "");
+    return new URL(url).hostname.replace(LEADING_WWW, "");
   } catch {
     return url;
   }

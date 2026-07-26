@@ -127,13 +127,13 @@ export function SharePage() {
   const ctaTarget = useCtaTarget();
   const [state, setState] = useState<LoadState>({ status: "loading" });
 
-  useDocumentTitle(
-    state.status === "ready"
-      ? state.share.title
-      : state.status === "error"
-        ? "Video unavailable"
-        : "Loading video"
-  );
+  let documentTitle = "Loading video";
+  if (state.status === "ready") {
+    documentTitle = state.share.title;
+  } else if (state.status === "error") {
+    documentTitle = "Video unavailable";
+  }
+  useDocumentTitle(documentTitle);
 
   useEffect(() => {
     if (!token) {

@@ -10,6 +10,8 @@ import {
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
 
+const TRAILING_NEWLINES = /(?:\r?\n)+$/u;
+
 export function StudioPrompt({
   status,
   onSubmit,
@@ -32,7 +34,7 @@ export function StudioPrompt({
     if (isGenerating) {
       return;
     }
-    const value = message.text.replace(/(?:\r?\n)+$/u, "");
+    const value = message.text.replace(TRAILING_NEWLINES, "");
     if (!value.trim()) {
       return;
     }

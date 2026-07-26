@@ -11,13 +11,13 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 
-type ErrorBoundaryProps = {
+interface ErrorBoundaryProps {
   children: ReactNode;
-};
+}
 
-type ErrorBoundaryState = {
+interface ErrorBoundaryState {
   hasError: boolean;
-};
+}
 
 /** Catches render/lifecycle errors anywhere in the tree below it and shows a
  * branded recovery panel instead of React's default blank white screen. A
