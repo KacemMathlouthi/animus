@@ -17,7 +17,12 @@ platforms: [linux, macos, windows]
 
 ## When to use
 
-Use when users request: animated explanations, math animations, concept visualizations, algorithm walkthroughs, technical explainers, 3Blue1Brown style videos, or any programmatic animation with geometric/mathematical content. Creates 3Blue1Brown-style explainer videos, algorithm visualizations, equation derivations, architecture diagrams, and data stories using Manim Community Edition.
+Use for any animated explainer, on any subject. Maths and algorithms are the
+most common examples below because that's what gets open-sourced, but the same
+techniques carry a biological pathway, a physical process, a financial flow, a
+system architecture, a historical timeline, a legal or linguistic structure, or
+an everyday "how does X work". Nothing here restricts the topic to mathematical
+content — pick the visual model the subject deserves.
 
 ## Creative Standard
 

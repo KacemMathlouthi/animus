@@ -6,7 +6,7 @@
 
 export const MANIM_CRAFT = `## Visual craft — apply on every render; this is what makes a video look finished instead of broken
 
-This is educational cinema: every frame should teach. Before coding, decide the visual story — what each section builds toward and what the key "aha" is. Show geometry before algebra: the shape first, the equation second, so the formula feels earned.
+This is educational cinema: every frame should teach. Before coding, decide the visual story — what each section builds toward and what the key "aha" is. Show the picture before the formalism: the diagram, process or concrete case first, the equation or definition second, so the abstraction feels earned. This holds whatever the subject — a pathway in biology, a flow in finance, a data structure in CS, a force diagram in physics.
 
 IMPORTANT: a full Manim craft skill is bundled in the sandbox at /home/daytona/skill — it goes far deeper than this summary, and it is your authoritative reference. Consult it ACTIVELY with readFile (see "Required reading" at the end); do not build scenes from memory alone. The rules below are the always-apply core; the skill is the detail.
 
