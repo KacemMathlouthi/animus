@@ -30,6 +30,11 @@ export function useConversationList(search: string): ConversationListState {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
+  // Mirrors `loadingMore` for the re-entrancy guard below. It has to be a ref:
+  // reading the state value would put it in the effect's dependency list, and
+  // the effect's own cleanup would then cancel the request its state update
+  // just started.
+  const loadingMoreRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const hasMore = items.length < total;
 
@@ -88,9 +93,10 @@ export function useConversationList(search: string): ConversationListState {
     let cancelled = false;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (!entries[0]?.isIntersecting || loadingMore || !hasMore) {
+        if (!entries[0]?.isIntersecting || loadingMoreRef.current || !hasMore) {
           return;
         }
+        loadingMoreRef.current = true;
         setLoadingMore(true);
         void listConversations({
           limit: PAGE_SIZE,
@@ -116,9 +122,8 @@ export function useConversationList(search: string): ConversationListState {
             }
           })
           .finally(() => {
-            if (!cancelled) {
-              setLoadingMore(false);
-            }
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
           });
       },
       { rootMargin: "160px" }
@@ -129,7 +134,7 @@ export function useConversationList(search: string): ConversationListState {
       cancelled = true;
       observer.disconnect();
     };
-  }, [hasMore, loadingMore, query, items.length]);
+  }, [hasMore, query, items.length]);
 
   const groups = useMemo(() => groupConversations(items), [items]);
 
