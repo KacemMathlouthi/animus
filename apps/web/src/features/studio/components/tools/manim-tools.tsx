@@ -201,7 +201,7 @@ export function RenderSceneTool({
 				<TriangleAlertIcon className="size-4 text-destructive" />
 				<p className="font-medium text-sm">Render failed: {input.scene}</p>
 			</div>
-			<pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-sm bg-muted/50 p-2 text-muted-foreground text-xs">
+			<pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all rounded-sm bg-muted/50 p-2 text-muted-foreground text-xs">
 				{output.logs || "No output."}
 			</pre>
 		</div>

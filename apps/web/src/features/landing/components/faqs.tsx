@@ -27,10 +27,14 @@ export function FaqsSection() {
 		>
 			{/* One real heading for assistive tech; the visual cascade repeats it
 			    decoratively and is hidden from screen readers to avoid 7× readout. */}
-			<h2 className="sr-only">Got any questions?</h2>
+			{/* Below md the decorative cascade is ~300px of aria-hidden noise, so
+			    it is dropped and this heading becomes the visible one instead. */}
+			<h2 className="pb-8 text-center font-semibold text-3xl tracking-tighter md:sr-only">
+				Got any questions?
+			</h2>
 			<div
 				aria-hidden="true"
-				className="flex flex-col justify-center gap-0.5 pb-8 text-center md:pr-8 md:pb-0 md:text-left"
+				className="hidden flex-col justify-center gap-0.5 pb-8 text-center md:flex md:pr-8 md:pb-0 md:text-left"
 			>
 				{CASCADE.map((line, i) => (
 					<p

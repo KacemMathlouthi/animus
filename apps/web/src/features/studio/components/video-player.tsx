@@ -78,7 +78,7 @@ export function VideoPlayer({
 
 			{/* Title, top gradient. Right padding clears the panel's Hide button. */}
 			<div className="pointer-events-none absolute inset-x-0 top-0 bg-linear-to-b from-black/70 to-transparent px-5 pt-4 pb-12 opacity-0 transition-opacity group-data-[controls=true]:opacity-100">
-				<p className="truncate pr-32 font-semibold text-white text-xl tracking-tight [text-shadow:0_1px_3px_rgb(0_0_0/0.5)]">
+				<p className="truncate pr-4 font-semibold text-white text-xl tracking-tight [text-shadow:0_1px_3px_rgb(0_0_0/0.5)] md:pr-32">
 					{title}
 				</p>
 			</div>

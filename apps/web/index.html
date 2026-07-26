@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- The hero's accent words use this face; without a preload the request
+         only starts after the CSS bundle parses, so they visibly swap in. -->
+    <link
+      rel="preload"
+      href="/fonts/GeistPixel-Grid.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <!-- share-meta:start -->
     <title>animus — Turn any question into a video that makes it click</title>
     <meta

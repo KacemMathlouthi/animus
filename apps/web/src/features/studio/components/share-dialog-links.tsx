@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createShareLink } from "@/lib/share";
+import { cn } from "@/lib/utils";
 
 const COPIED_RESET_MS = 2000;
 
@@ -143,12 +144,17 @@ export function ShareDialogLinks({
 					{SOCIALS.map((social) => (
 						<Button
 							asChild
-							className="h-11 w-full"
-							disabled={link.status !== "ready"}
+							// `disabled` does nothing on an <a>; while the link is minting
+							// these must be visibly and actually inert.
+							className={cn(
+								"h-11 w-full",
+								url ? "" : "pointer-events-none opacity-50",
+							)}
 							key={social.label}
 							variant="outline"
 						>
 							<a
+								aria-disabled={url ? undefined : true}
 								aria-label={`Share to ${social.label}`}
 								href={url ? social.href(url, title) : undefined}
 								rel="noopener noreferrer"
