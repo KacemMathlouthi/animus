@@ -13,12 +13,16 @@
       type="font/woff2"
       crossorigin
     />
+    <!-- The app defaults to dark; without this, mobile browser chrome renders light against a dark page. -->
+    <meta name="theme-color" content="#0b0a0a" />
     <!-- share-meta:start -->
     <title>animus — Turn any question into a video that makes it click</title>
     <meta
       name="description"
       content="animus turns any question into a narrated, animated explainer video, so the idea actually clicks and stays."
     />
+    <!-- Inside the share-meta markers on purpose: injectShareMeta replaces this whole block for /v/:token, so a share page can never inherit the homepage's canonical. -->
+    <link rel="canonical" href="https://tryanimus.app/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
