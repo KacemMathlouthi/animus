@@ -94,9 +94,12 @@ export function AccountSection() {
 						<Separator />
 						<div className="flex items-center justify-between py-3 text-sm">
 							<span className="text-muted-foreground">Email</span>
-							<div className="flex items-center gap-2">
-								<span className="break-all">{user.email}</span>
-								<Badge variant={user.emailVerified ? "secondary" : "outline"}>
+							<div className="flex min-w-0 items-center gap-2">
+								<span className="truncate">{user.email}</span>
+								<Badge
+									className="shrink-0"
+									variant={user.emailVerified ? "secondary" : "outline"}
+								>
 									{user.emailVerified ? "Verified" : "Unverified"}
 								</Badge>
 							</div>
@@ -127,7 +130,7 @@ export function AccountSection() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<fieldset className="grid grid-cols-3 gap-3">
+						<fieldset className="grid grid-cols-1 gap-3 sm:grid-cols-3">
 							<legend className="sr-only">Theme</legend>
 							{THEME_OPTIONS.map((option) => {
 								const selected = theme === option.value;

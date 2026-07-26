@@ -106,7 +106,7 @@ export function StudioWorkspace({
 			<div className="flex h-full min-h-0 flex-col">
 				<div className="flex shrink-0 items-center gap-1 border-b p-1.5">
 					<Button
-						className="flex-1"
+						className="h-11 flex-1"
 						onClick={() => setMobileView("chat")}
 						size="sm"
 						variant={mobileView === "chat" ? "secondary" : "ghost"}
@@ -114,7 +114,7 @@ export function StudioWorkspace({
 						Chat
 					</Button>
 					<Button
-						className="flex-1"
+						className="h-11 flex-1"
 						onClick={() => setMobileView("video")}
 						size="sm"
 						variant={mobileView === "video" ? "secondary" : "ghost"}

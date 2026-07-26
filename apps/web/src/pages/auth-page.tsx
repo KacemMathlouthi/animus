@@ -110,7 +110,9 @@ export function AuthPage() {
 	}
 
 	return (
-		<main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2">
+		// The height lock is scoped to lg, where the two-column layout actually
+		// starts — at md..lg it locked a single column and clipped the form.
+		<main className="relative lg:grid lg:h-screen lg:grid-cols-2 lg:overflow-hidden">
 			<div className="relative hidden h-full flex-col overflow-hidden border-r bg-secondary p-10 lg:flex">
 				<div className="absolute inset-0">
 					<AuthBackdrop />

@@ -10,7 +10,7 @@ export function CustomSidebarTrigger() {
 	return (
 		<Tooltip delayDuration={1000}>
 			<TooltipTrigger asChild>
-				<SidebarTrigger />
+				<SidebarTrigger className="pointer-coarse:size-11" />
 			</TooltipTrigger>
 			<TooltipContent className="px-2 py-1" side="right">
 				Toggle Sidebar{" "}

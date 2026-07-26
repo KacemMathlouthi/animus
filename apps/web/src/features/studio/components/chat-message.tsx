@@ -101,7 +101,7 @@ export function ChatMessage({
 	return (
 		<div className="flex items-start gap-3">
 			<AgentAvatar />
-			<Message className="max-w-[80%] flex-1" from="assistant">
+			<Message className="max-w-full flex-1 sm:max-w-[80%]" from="assistant">
 				{message.parts.map((part, index) => {
 					// Append-only parts: index keys are stable here (parts never reorder).
 					const key = `${message.id}-${index}`;

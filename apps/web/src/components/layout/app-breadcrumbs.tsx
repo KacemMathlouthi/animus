@@ -23,17 +23,21 @@ export function AppBreadcrumbs({
 	}
 
 	return (
-		<Breadcrumb>
-			<BreadcrumbList>
+		<Breadcrumb className="min-w-0">
+			{/* nowrap + truncate: the header is a fixed h-14, so a long conversation
+			    title must ellipsize rather than wrap and spill past the border. */}
+			<BreadcrumbList className="flex-nowrap">
 				{segments.map((segment, index) => {
 					const isLast = index === segments.length - 1;
 					return (
 						<Fragment key={segment.title}>
-							<BreadcrumbItem>
+							<BreadcrumbItem className="min-w-0">
 								{isLast || !segment.href ? (
-									<BreadcrumbPage>{segment.title}</BreadcrumbPage>
+									<BreadcrumbPage className="truncate">
+										{segment.title}
+									</BreadcrumbPage>
 								) : (
-									<BreadcrumbLink href={segment.href}>
+									<BreadcrumbLink className="truncate" href={segment.href}>
 										{segment.title}
 									</BreadcrumbLink>
 								)}

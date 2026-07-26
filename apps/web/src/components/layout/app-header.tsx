@@ -24,15 +24,15 @@ export function AppHeader({
 			)}
 		>
 			<DecorIcon className="hidden md:block" position="bottom-left" />
-			<div className="flex items-center gap-3">
+			<div className="flex min-w-0 items-center gap-3">
 				<CustomSidebarTrigger />
 				<Separator
-					className="mr-2 h-4 data-[orientation=vertical]:self-center"
+					className="mr-2 h-4 shrink-0 data-[orientation=vertical]:self-center"
 					orientation="vertical"
 				/>
 				<AppBreadcrumbs segments={breadcrumbs} />
 			</div>
-			<div className="flex items-center gap-3">
+			<div className="flex shrink-0 items-center gap-3">
 				<ThemeToggle />
 				<PublishMenu />
 				<Separator

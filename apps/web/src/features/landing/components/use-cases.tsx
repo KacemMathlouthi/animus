@@ -68,7 +68,7 @@ export function UseCases() {
 			</div>
 
 			<div className="relative mx-auto max-w-5xl border">
-				<div className="grid grid-cols-2 gap-px bg-border md:grid-cols-3">
+				<div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-2 md:grid-cols-3">
 					{data.map((item) => (
 						<UseCaseCard key={item.name} useCase={item}>
 							{item.decor}
