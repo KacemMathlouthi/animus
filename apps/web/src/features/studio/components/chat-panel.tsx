@@ -52,7 +52,10 @@ export function ChatPanel({
 						<Shimmer>Thinking through the explanation…</Shimmer>
 					) : null}
 					{status === "error" ? (
-						<div className="flex items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
+						<div
+							className="flex items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm"
+							role="alert"
+						>
 							<span className="text-destructive">
 								{error?.message ||
 									"Something went wrong while generating. Try again."}

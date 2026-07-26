@@ -39,7 +39,7 @@ export function VideoPlayer({
 		// biome-ignore lint/a11y/useSemanticElements: a media player is not a fieldset
 		<div
 			aria-label={`Video player: ${title}`}
-			className="group relative flex h-full w-full items-center justify-center overflow-hidden bg-muted outline-none data-[controls=false]:cursor-none"
+			className="group relative flex h-full w-full items-center justify-center overflow-hidden bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset data-[controls=false]:cursor-none"
 			data-controls={player.controlsShown}
 			onClick={player.handleClick}
 			onKeyDown={player.handleKeyDown}

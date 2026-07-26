@@ -116,7 +116,7 @@ export function HeroPrompt({ className }: { className?: string }) {
 
 					<div className="flex items-center justify-between">
 						<button
-							className="prompt-chip flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-medium text-muted-foreground text-xs transition-[filter,color] duration-200 ease-snappy hover:brightness-105 hover:text-foreground"
+							className="prompt-chip flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-medium text-muted-foreground text-xs outline-none transition-[filter,color] duration-200 ease-snappy hover:brightness-105 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
 							onClick={cyclePrompt}
 							type="button"
 						>
@@ -125,7 +125,7 @@ export function HeroPrompt({ className }: { className?: string }) {
 						</button>
 						<button
 							aria-label="Create video"
-							className="prompt-send grid size-9 shrink-0 place-items-center rounded-md text-primary-foreground transition-transform active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+							className="prompt-send grid size-9 shrink-0 place-items-center rounded-md text-primary-foreground outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
 							disabled={!canSubmit}
 							type="submit"
 						>

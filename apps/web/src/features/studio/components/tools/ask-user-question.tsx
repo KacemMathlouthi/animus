@@ -92,6 +92,7 @@ export function AskUserQuestionTool({
 				<div className="space-y-3" key="controls">
 					{input.allowFreeText === false ? null : (
 						<Textarea
+							aria-label="Your own answer"
 							onChange={(event) => setFreeText(event.target.value)}
 							placeholder="Or type your own answer…"
 							value={freeText}

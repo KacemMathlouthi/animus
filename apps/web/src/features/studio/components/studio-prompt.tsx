@@ -44,6 +44,7 @@ export function StudioPrompt({
 		<PromptInput className={className} onSubmit={handleSubmit}>
 			<PromptInputBody>
 				<PromptInputTextarea
+					aria-label="Message the agent"
 					onChange={(event) => setText(event.target.value)}
 					placeholder={placeholder}
 					value={text}
