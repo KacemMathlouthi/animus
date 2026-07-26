@@ -340,13 +340,26 @@ same change. Current coverage spans `@animus/core` schemas, the API routes
 (conversations, settings, media, share, and the `/api/chat` sync contract) and
 their services + middleware, the crypto egress gate (encrypt/decrypt round-trip),
 the agent runner + tools + title generation, and `@animus/auth` email delivery.
-Declarative/trivial modules (schema DDL, barrels, config constants, Better Auth
-wiring) are intentionally not unit-tested.
+On the **web** side it spans every `src/lib` module (api, chat transport,
+conversations, share, credit events, pending prompt, user), the hooks
+(conversation list + detail, studio chat, start conversation, signed media URL,
+document title, mobile breakpoint), and the components/pages that carry logic:
+the studio page + stage + prompt, the share page, the 404, and the error
+boundary. Declarative/trivial modules (schema DDL, barrels, config constants,
+Better Auth wiring) and presentational-only components are intentionally not
+unit-tested.
 
 ### Test runner
 - Use `vitest` (not `bun test`). Run: `bunx vitest run`.
 - Keep tests close to source in `__tests__/` folders.
 - Shared helpers in `src/__tests__/helpers/` (mock-logger, mock-fetch, fixtures).
+- **`apps/web`** runs under React Testing Library + jsdom via its own
+  `apps/web/vitest.config.ts` (the `@` alias and the browser-API stubs in
+  `src/__tests__/helpers/setup.ts` both live there). The monorepo coverage run
+  uses `vitest.coverage.config.ts` at the root, which enters each workspace as a
+  project — that file is deliberately **not** named `vitest.config.ts`, because a
+  root config by that name is inherited by every package that lacks one and its
+  `projects` globs then resolve to nothing.
 - For deterministic LLM behavior in agent tests, use the mock providers from
   `ai/test` (`MockLanguageModelV3`, `mockId`) together with
   `simulateReadableStream` from `ai` (it now lives in the main entry — the
