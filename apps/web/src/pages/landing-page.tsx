@@ -10,21 +10,21 @@ import { UseCases } from "@/features/landing/components/use-cases";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export function LandingPage() {
-	useDocumentTitle();
+  useDocumentTitle();
 
-	return (
-		<div className="min-h-svh overflow-x-clip bg-background" id="top">
-			<Header />
-			<main>
-				<HeroSection />
-				<LaunchVideo />
-				<FeatureSection />
-				<HowItWorks />
-				<UseCases />
-				<FaqsSection />
-				<CallToAction />
-			</main>
-			<Footer />
-		</div>
-	);
+  return (
+    <div className="min-h-svh overflow-x-clip bg-background" id="top">
+      <Header />
+      <main>
+        <HeroSection />
+        <LaunchVideo />
+        <FeatureSection />
+        <HowItWorks />
+        <UseCases />
+        <FaqsSection />
+        <CallToAction />
+      </main>
+      <Footer />
+    </div>
+  );
 }

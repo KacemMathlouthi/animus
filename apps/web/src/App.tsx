@@ -1,13 +1,13 @@
 import { Analytics } from "@vercel/analytics/react";
 import { useEffect } from "react";
 import {
-	BrowserRouter,
-	Navigate,
-	Outlet,
-	Route,
-	Routes,
-	useLocation,
-	useNavigationType,
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigationType,
 } from "react-router";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { RequireAuth } from "@/features/auth/components/require-auth";
@@ -26,63 +26,63 @@ import { TermsPage } from "@/pages/terms-page";
 import { VerifyLoginPage } from "@/pages/verify-login-page";
 
 function ScrollToTop() {
-	const location = useLocation();
-	const navigationType = useNavigationType();
-	useEffect(() => {
-		// Back/forward: let the browser restore the previous scroll position.
-		if (navigationType === "POP") {
-			return;
-		}
-		const target = location.hash
-			? document.getElementById(location.hash.slice(1))
-			: null;
-		if (target) {
-			target.scrollIntoView();
-			return;
-		}
-		window.scrollTo({ top: 0, behavior: "instant" });
-	}, [location, navigationType]);
-	return null;
+  const location = useLocation();
+  const navigationType = useNavigationType();
+  useEffect(() => {
+    // Back/forward: let the browser restore the previous scroll position.
+    if (navigationType === "POP") {
+      return;
+    }
+    const target = location.hash
+      ? document.getElementById(location.hash.slice(1))
+      : null;
+    if (target) {
+      target.scrollIntoView();
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [location, navigationType]);
+  return null;
 }
 
 function App() {
-	return (
-		<BrowserRouter>
-			<ScrollToTop />
-			<ErrorBoundary>
-				<Routes>
-					<Route element={<LandingPage />} path="/" />
-					<Route element={<AuthPage />} path="/auth" />
-					<Route element={<VerifyLoginPage />} path="/auth/verify" />
-					<Route element={<TermsPage />} path="/terms" />
-					<Route element={<PrivacyPage />} path="/privacy" />
-					<Route element={<SharePage />} path="/v/:token" />
-					<Route
-						element={
-							<RequireAuth>
-								<Outlet />
-							</RequireAuth>
-						}
-					>
-						<Route element={<StudioPage />} path="/studio" />
-						<Route element={<StudioPage />} path="/studio/c/:chatId" />
-						<Route element={<SettingsLayout />} path="/settings">
-							<Route
-								element={<Navigate replace to="/settings/account" />}
-								index
-							/>
-							<Route element={<AccountSection />} path="account" />
-							<Route element={<GenerationSection />} path="generation" />
-							<Route element={<UsageSection />} path="usage" />
-							<Route element={<SecretsSection />} path="secrets" />
-						</Route>
-					</Route>
-					<Route element={<NotFoundPage />} path="*" />
-				</Routes>
-			</ErrorBoundary>
-			<Analytics />
-		</BrowserRouter>
-	);
+  return (
+    <BrowserRouter>
+      <ScrollToTop />
+      <ErrorBoundary>
+        <Routes>
+          <Route element={<LandingPage />} path="/" />
+          <Route element={<AuthPage />} path="/auth" />
+          <Route element={<VerifyLoginPage />} path="/auth/verify" />
+          <Route element={<TermsPage />} path="/terms" />
+          <Route element={<PrivacyPage />} path="/privacy" />
+          <Route element={<SharePage />} path="/v/:token" />
+          <Route
+            element={
+              <RequireAuth>
+                <Outlet />
+              </RequireAuth>
+            }
+          >
+            <Route element={<StudioPage />} path="/studio" />
+            <Route element={<StudioPage />} path="/studio/c/:chatId" />
+            <Route element={<SettingsLayout />} path="/settings">
+              <Route
+                element={<Navigate replace to="/settings/account" />}
+                index
+              />
+              <Route element={<AccountSection />} path="account" />
+              <Route element={<GenerationSection />} path="generation" />
+              <Route element={<UsageSection />} path="usage" />
+              <Route element={<SecretsSection />} path="secrets" />
+            </Route>
+          </Route>
+          <Route element={<NotFoundPage />} path="*" />
+        </Routes>
+      </ErrorBoundary>
+      <Analytics />
+    </BrowserRouter>
+  );
 }
 
 export default App;

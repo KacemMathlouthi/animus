@@ -6,178 +6,178 @@
 @import "streamdown/styles.css";
 
 @font-face {
-	font-family: "Geist Pixel Grid";
-	src: url("/fonts/GeistPixel-Grid.woff2") format("woff2");
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
+  font-family: "Geist Pixel Grid";
+  src: url("/fonts/GeistPixel-Grid.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
 }
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-	--font-heading: var(--font-sans);
-	--font-sans: "Geist Variable", sans-serif;
-	--font-pixel-grid: "Geist Pixel Grid", "Geist Mono", monospace;
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", sans-serif;
+  --font-pixel-grid: "Geist Pixel Grid", "Geist Mono", monospace;
 
-	/* strong ease-out — entrances, presses, hovers */
-	--ease-snappy: cubic-bezier(0.23, 1, 0.32, 1);
-	/* strong ease-in-out — on-screen morphs */
-	--ease-fluid: cubic-bezier(0.77, 0, 0.175, 1);
-	/* iOS-like drawer / sheet */
-	--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  /* strong ease-out — entrances, presses, hovers */
+  --ease-snappy: cubic-bezier(0.23, 1, 0.32, 1);
+  /* strong ease-in-out — on-screen morphs */
+  --ease-fluid: cubic-bezier(0.77, 0, 0.175, 1);
+  /* iOS-like drawer / sheet */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-	/* Brand palette — a calm, collected teaching platform.
+  /* Brand palette — a calm, collected teaching platform.
 	   These are fixed constants; semantic tokens below map them per theme. */
-	--color-cream-paper: #fbfdf6;
-	--color-botanical-ink: #0a1d08;
-	--color-bark-brown: #31200b;
-	--color-warm-loam: #4a3212;
-	--color-forest-floor: #203b14;
-	--color-sage-mist: #eff2e8;
-	--color-lichen: #e0e5d5;
-	--color-moss-veil: #d7e8b5;
-	--color-eucalyptus: #c5ccb6;
-	--color-onyx: #000000;
+  --color-cream-paper: #fbfdf6;
+  --color-botanical-ink: #0a1d08;
+  --color-bark-brown: #31200b;
+  --color-warm-loam: #4a3212;
+  --color-forest-floor: #203b14;
+  --color-sage-mist: #eff2e8;
+  --color-lichen: #e0e5d5;
+  --color-moss-veil: #d7e8b5;
+  --color-eucalyptus: #c5ccb6;
+  --color-onyx: #000000;
 
-	--color-sidebar-ring: var(--sidebar-ring);
-	--color-sidebar-border: var(--sidebar-border);
-	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-	--color-sidebar-accent: var(--sidebar-accent);
-	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-	--color-sidebar-primary: var(--sidebar-primary);
-	--color-sidebar-foreground: var(--sidebar-foreground);
-	--color-sidebar: var(--sidebar);
-	--color-chart-5: var(--chart-5);
-	--color-chart-4: var(--chart-4);
-	--color-chart-3: var(--chart-3);
-	--color-chart-2: var(--chart-2);
-	--color-chart-1: var(--chart-1);
-	--color-ring: var(--ring);
-	--color-input: var(--input);
-	--color-border: var(--border);
-	--color-destructive: var(--destructive);
-	--color-accent-foreground: var(--accent-foreground);
-	--color-accent: var(--accent);
-	--color-muted-foreground: var(--muted-foreground);
-	--color-muted: var(--muted);
-	--color-secondary-foreground: var(--secondary-foreground);
-	--color-secondary: var(--secondary);
-	--color-primary-foreground: var(--primary-foreground);
-	--color-primary: var(--primary);
-	--color-popover-foreground: var(--popover-foreground);
-	--color-popover: var(--popover);
-	--color-card-foreground: var(--card-foreground);
-	--color-card: var(--card);
-	--color-foreground: var(--foreground);
-	--color-background: var(--background);
-	--radius-sm: calc(var(--radius) * 0.6);
-	--radius-md: calc(var(--radius) * 0.8);
-	--radius-lg: var(--radius);
-	--radius-xl: calc(var(--radius) * 1.4);
-	--radius-2xl: calc(var(--radius) * 1.8);
-	--radius-3xl: calc(var(--radius) * 2.2);
-	--radius-4xl: calc(var(--radius) * 2.6);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 /* Light — neutral white/black core. Botanical palette appears only as a hint:
    the CTA fill and the focus ring. Everything else is grayscale. */
 :root {
-	--background: #ffffff;
-	--foreground: #0c0c0c;
-	--card: #ffffff;
-	--card-foreground: #0c0c0c;
-	--popover: #ffffff;
-	--popover-foreground: #0c0c0c;
-	--primary: #4a3212; /* warm loam — the single chromatic accent */
-	--primary-foreground: #fbfdf6;
-	--secondary: #f5f5f4;
-	--secondary-foreground: #1c1c1a;
-	--muted: #f5f5f4;
-	--muted-foreground: #71716c;
-	--accent: #f5f5f4;
-	--accent-foreground: #1c1c1a;
-	--destructive: #9a3412;
-	--border: #e7e6e3;
-	--input: #e7e6e3;
-	--ring: #203b14; /* forest floor — green focus hint */
-	--chart-1: #4a3212;
-	--chart-2: #203b14;
-	--chart-3: #6f9e57;
-	--chart-4: #31200b;
-	--chart-5: #c5ccb6;
-	--radius: 0.625rem;
-	--sidebar: #fafafa;
-	--sidebar-foreground: #0c0c0c;
-	--sidebar-primary: #4a3212;
-	--sidebar-primary-foreground: #fbfdf6;
-	--sidebar-accent: #f5f5f4;
-	--sidebar-accent-foreground: #1c1c1a;
-	--sidebar-border: #e7e6e3;
-	--sidebar-ring: #203b14;
-	color-scheme: light;
+  --background: #ffffff;
+  --foreground: #0c0c0c;
+  --card: #ffffff;
+  --card-foreground: #0c0c0c;
+  --popover: #ffffff;
+  --popover-foreground: #0c0c0c;
+  --primary: #4a3212; /* warm loam — the single chromatic accent */
+  --primary-foreground: #fbfdf6;
+  --secondary: #f5f5f4;
+  --secondary-foreground: #1c1c1a;
+  --muted: #f5f5f4;
+  --muted-foreground: #71716c;
+  --accent: #f5f5f4;
+  --accent-foreground: #1c1c1a;
+  --destructive: #9a3412;
+  --border: #e7e6e3;
+  --input: #e7e6e3;
+  --ring: #203b14; /* forest floor — green focus hint */
+  --chart-1: #4a3212;
+  --chart-2: #203b14;
+  --chart-3: #6f9e57;
+  --chart-4: #31200b;
+  --chart-5: #c5ccb6;
+  --radius: 0.625rem;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #0c0c0c;
+  --sidebar-primary: #4a3212;
+  --sidebar-primary-foreground: #fbfdf6;
+  --sidebar-accent: #f5f5f4;
+  --sidebar-accent-foreground: #1c1c1a;
+  --sidebar-border: #e7e6e3;
+  --sidebar-ring: #203b14;
+  color-scheme: light;
 }
 
 /* Dark — neutral near-black core. Warm-sand CTA + sage focus ring as the hint. */
 .dark {
-	--background: #0a0a0a;
-	--foreground: #fafafa;
-	--card: #141414;
-	--card-foreground: #fafafa;
-	--popover: #141414;
-	--popover-foreground: #fafafa;
-	--primary: #d8b98a; /* warm sand — the single chromatic accent */
-	--primary-foreground: #20160a;
-	--secondary: #1c1c1c;
-	--secondary-foreground: #fafafa;
-	--muted: #1c1c1c;
-	--muted-foreground: #a1a19b;
-	--accent: #1f1f1f;
-	--accent-foreground: #fafafa;
-	--destructive: #e7795b;
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: #d8b98a; /* warm sand — brand focus, replaces the harsh green */
-	--chart-1: #d8b98a;
-	--chart-2: #6f9e57;
-	--chart-3: #d7e8b5;
-	--chart-4: #c5ccb6;
-	--chart-5: #4a3212;
-	--sidebar: #141414;
-	--sidebar-foreground: #fafafa;
-	--sidebar-primary: #d8b98a;
-	--sidebar-primary-foreground: #20160a;
-	--sidebar-accent: #1c1c1c;
-	--sidebar-accent-foreground: #fafafa;
-	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: #d8b98a;
-	color-scheme: dark;
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #141414;
+  --card-foreground: #fafafa;
+  --popover: #141414;
+  --popover-foreground: #fafafa;
+  --primary: #d8b98a; /* warm sand — the single chromatic accent */
+  --primary-foreground: #20160a;
+  --secondary: #1c1c1c;
+  --secondary-foreground: #fafafa;
+  --muted: #1c1c1c;
+  --muted-foreground: #a1a19b;
+  --accent: #1f1f1f;
+  --accent-foreground: #fafafa;
+  --destructive: #e7795b;
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: #d8b98a; /* warm sand — brand focus, replaces the harsh green */
+  --chart-1: #d8b98a;
+  --chart-2: #6f9e57;
+  --chart-3: #d7e8b5;
+  --chart-4: #c5ccb6;
+  --chart-5: #4a3212;
+  --sidebar: #141414;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #d8b98a;
+  --sidebar-primary-foreground: #20160a;
+  --sidebar-accent: #1c1c1c;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: #d8b98a;
+  color-scheme: dark;
 }
 
 @layer base {
-	* {
-		@apply border-border outline-ring/50;
-	}
-	body {
-		@apply bg-background text-foreground;
-		font-feature-settings: "ss01", "cv01", "cv11";
-		-webkit-font-smoothing: antialiased;
-	}
-	html {
-		@apply font-sans;
-		scroll-behavior: smooth;
-		scroll-padding-top: 5rem;
-	}
-	/* Brand text selection — uses the primary accent, so it adapts to the theme
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    font-feature-settings: "ss01", "cv01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  /* Brand text selection — uses the primary accent, so it adapts to the theme
 	   (warm loam in light, warm sand in dark). */
-	::selection {
-		background-color: var(--primary);
-		color: var(--primary-foreground);
-	}
-	::-moz-selection {
-		background-color: var(--primary);
-		color: var(--primary-foreground);
-	}
+  ::selection {
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+  }
+  ::-moz-selection {
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+  }
 }
 
 /* Global reduced-motion reset: neutralize entrance animations (tw-animate-css
@@ -185,20 +185,20 @@
    ask for less motion. The custom keyframes below are already gated behind
    no-preference, so this covers the library/utility motion they can't reach. */
 @media (prefers-reduced-motion: reduce) {
-	*,
-	*::before,
-	*::after {
-		/* !important is the standard way to override library/utility motion
+  *,
+  *::before,
+  *::after {
+    /* !important is the standard way to override library/utility motion
 		   (tw-animate-css, Streamdown) for reduced-motion users. */
-		/* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
-		animation-duration: 0.01ms !important;
-		/* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
-		animation-iteration-count: 1 !important;
-		/* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
-		transition-duration: 0.01ms !important;
-		/* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
-		scroll-behavior: auto !important;
-	}
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
+    transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion reset must win over utility animations */
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Logo mark "loading" animation — see logo-mark.tsx. The spirit ponders:
@@ -206,96 +206,96 @@
    Transforms act in each group's own local box so they pivot on their centers.
    Gated behind no-preference so reduced-motion users get a still mark. */
 @media (prefers-reduced-motion: no-preference) {
-	.logo-root,
-	.logo-body,
-	.logo-eyes-x,
-	.logo-eyes-y {
-		transform-box: fill-box;
-	}
-	.logo-root,
-	.logo-eyes-x,
-	.logo-eyes-y {
-		transform-origin: center;
-	}
-	.logo-body {
-		transform-origin: center bottom;
-	}
+  .logo-root,
+  .logo-body,
+  .logo-eyes-x,
+  .logo-eyes-y {
+    transform-box: fill-box;
+  }
+  .logo-root,
+  .logo-eyes-x,
+  .logo-eyes-y {
+    transform-origin: center;
+  }
+  .logo-body {
+    transform-origin: center bottom;
+  }
 
-	.logo--loading .logo-root {
-		animation: logo-float 2.8s ease-in-out infinite;
-		filter: drop-shadow(0 5px 4px rgb(0 0 0 / 0.18));
-		will-change: transform, filter;
-	}
-	.logo--loading .logo-body {
-		animation: logo-squash 2.8s ease-in-out infinite;
-	}
-	/* Snappy darts (custom cubic) for the eyes; the body stays smooth. */
-	.logo--loading .logo-eyes-x {
-		animation: logo-scan 2.8s cubic-bezier(0.6, 0, 0.2, 1) infinite;
-	}
-	.logo--loading .logo-eyes-y {
-		animation: logo-blink-loop 2.8s ease-in-out infinite;
-	}
+  .logo--loading .logo-root {
+    filter: drop-shadow(0 5px 4px rgb(0 0 0 / 0.18));
+    animation: logo-float 2.8s ease-in-out infinite;
+    will-change: transform, filter;
+  }
+  .logo--loading .logo-body {
+    animation: logo-squash 2.8s ease-in-out infinite;
+  }
+  /* Snappy darts (custom cubic) for the eyes; the body stays smooth. */
+  .logo--loading .logo-eyes-x {
+    animation: logo-scan 2.8s cubic-bezier(0.6, 0, 0.2, 1) infinite;
+  }
+  .logo--loading .logo-eyes-y {
+    animation: logo-blink-loop 2.8s ease-in-out infinite;
+  }
 }
 
 /* Two crisp blinks, timed to land as the gaze changes. */
 @keyframes logo-blink-loop {
-	0%,
-	12%,
-	19%,
-	45%,
-	52%,
-	100% {
-		transform: scaleY(1);
-	}
-	15%,
-	48% {
-		transform: scaleY(0.08);
-	}
+  0%,
+  12%,
+  19%,
+  45%,
+  52%,
+  100% {
+    transform: scaleY(1);
+  }
+  15%,
+  48% {
+    transform: scaleY(0.08);
+  }
 }
 
 /* Light, quick bob with a faint pondering head-tilt; shadow breathes with it. */
 @keyframes logo-float {
-	0%,
-	100% {
-		transform: translateY(0) rotate(-1.5deg);
-		filter: drop-shadow(0 5px 4px rgb(0 0 0 / 0.18));
-	}
-	50% {
-		transform: translateY(-4px) rotate(1.5deg);
-		filter: drop-shadow(0 9px 6px rgb(0 0 0 / 0.12));
-	}
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.5deg);
+    filter: drop-shadow(0 5px 4px rgb(0 0 0 / 0.18));
+  }
+  50% {
+    transform: translateY(-4px) rotate(1.5deg);
+    filter: drop-shadow(0 9px 6px rgb(0 0 0 / 0.12));
+  }
 }
 
 /* Jelly: squished at the bottom of the bob, stretched at the top. */
 @keyframes logo-squash {
-	0%,
-	100% {
-		transform: scaleX(1.035) scaleY(0.965);
-	}
-	50% {
-		transform: scaleX(0.99) scaleY(1.025);
-	}
+  0%,
+  100% {
+    transform: scaleX(1.035) scaleY(0.965);
+  }
+  50% {
+    transform: scaleX(0.99) scaleY(1.025);
+  }
 }
 
 /* "Hmm…" — eyes dart up-and-to-the-side, hold a beat, then dart back. */
 @keyframes logo-scan {
-	0%,
-	10% {
-		transform: translate(0, 0);
-	}
-	18%,
-	40% {
-		transform: translate(-3px, -2px);
-	}
-	48%,
-	72% {
-		transform: translate(3px, -2.5px);
-	}
-	80%,
-	100% {
-		transform: translate(0, 0);
-	}
+  0%,
+  10% {
+    transform: translate(0, 0);
+  }
+  18%,
+  40% {
+    transform: translate(-3px, -2px);
+  }
+  48%,
+  72% {
+    transform: translate(3px, -2.5px);
+  }
+  80%,
+  100% {
+    transform: translate(0, 0);
+  }
 }
 
 /* Entrance for interactive tool cards — a soft rise + de-blur as they appear
@@ -304,20 +304,20 @@
 /* Mirrors Streamdown's blurIn (blur 4px → 0, fade) so tool cards enter with the
  * same feel as streamed text. */
 @keyframes tool-in {
-	from {
-		opacity: 0;
-		filter: blur(4px);
-	}
-	to {
-		opacity: 1;
-		filter: blur(0);
-	}
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	.tool-enter {
-		animation: tool-in 200ms ease-out both;
-	}
+  .tool-enter {
+    animation: tool-in 200ms ease-out both;
+  }
 }
 
 /* Hero headline keywords — Geist Pixel Grid filled with a vertical primary
@@ -325,15 +325,15 @@
    prompt's send button below. Clipped to the glyphs, so the pixel blocks
    themselves carry the shading. */
 .hero-word {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--primary) 65%, white) 0%,
-		var(--primary) 55%,
-		color-mix(in srgb, var(--primary) 72%, black) 100%
-	);
-	-webkit-background-clip: text;
-	background-clip: text;
-	color: transparent;
+  color: transparent;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 65%, white) 0%,
+    var(--primary) 55%,
+    color-mix(in srgb, var(--primary) 72%, black) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 /* Shared flat plate surface — the single source of the CTA visual language,
@@ -341,78 +341,78 @@
    hero prompt shell: a theme-aware gradient plate with a thin border, one
    soft drop shadow, and a subtle top highlight. */
 .cta-surface {
-	border: 1px solid rgba(0, 0, 0, 0.1);
-	background: linear-gradient(180deg, #fbfaf5 0%, #eae4d8 100%);
-	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.9),
-		0 4px 12px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #fbfaf5 0%, #eae4d8 100%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 12px rgba(0, 0, 0, 0.1);
 }
 .dark .cta-surface {
-	border-color: transparent;
-	background: linear-gradient(180deg, #2c2c2c 0%, #161616 100%);
-	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.08),
-		0 4px 12px rgba(0, 0, 0, 0.18);
+  background: linear-gradient(180deg, #2c2c2c 0%, #161616 100%);
+  border-color: transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
 /* Flat input well; focus warms the border and casts a soft primary halo. */
 .prompt-well {
-	background: var(--background);
-	transition:
-		border-color 0.2s,
-		box-shadow 0.2s;
+  background: var(--background);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 .prompt-well:focus-within {
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 /* Primary send button — the CTA pill's gradient and highlight. */
 .prompt-send {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--primary) 85%, white) 0%,
-		var(--primary) 100%
-	);
-	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.4),
-		0 2px 4px rgba(0, 0, 0, 0.08);
-	transition: filter 0.2s;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 85%, white) 0%,
+    var(--primary) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: filter 0.2s;
 }
 .prompt-send:not(:disabled):hover {
-	filter: brightness(1.07);
+  filter: brightness(1.07);
 }
 
 /* Quiet chip for secondary actions. */
 .prompt-chip {
-	border: 1px solid var(--border);
-	background: var(--muted);
+  background: var(--muted);
+  border: 1px solid var(--border);
 }
 
 /* CTA button (components/ui/cta-button.tsx) — the dotted chevrons shimmer
    slowly at rest and march faster on hover/focus. Static dots when reduced
    motion is preferred. */
 @keyframes cta-dot-wave {
-	0%,
-	65%,
-	100% {
-		opacity: 0.75;
-		transform: translateX(0) scale(0.9);
-	}
-	32% {
-		opacity: 1;
-		transform: translateX(0.5px) scale(1.08);
-	}
+  0%,
+  65%,
+  100% {
+    opacity: 0.75;
+    transform: translateX(0) scale(0.9);
+  }
+  32% {
+    opacity: 1;
+    transform: translateX(0.5px) scale(1.08);
+  }
 }
 .cta-dot {
-	transform-box: fill-box;
-	transform-origin: center;
+  transform-origin: center;
+  transform-box: fill-box;
 }
 @media (prefers-reduced-motion: no-preference) {
-	.cta-dot {
-		animation: cta-dot-wave 1.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-	}
-	.cta-root:hover .cta-dot,
-	.cta-root:focus-visible .cta-dot {
-		animation-duration: 0.95s;
-	}
+  .cta-dot {
+    animation: cta-dot-wave 1.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  }
+  .cta-root:hover .cta-dot,
+  .cta-root:focus-visible .cta-dot {
+    animation-duration: 0.95s;
+  }
 }

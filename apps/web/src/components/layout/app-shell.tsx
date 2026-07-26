@@ -6,25 +6,25 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export function AppShell({
-	breadcrumbs,
-	children,
+  breadcrumbs,
+  children,
 }: {
-	breadcrumbs?: AppBreadcrumbSegment[];
-	children: React.ReactNode;
+  breadcrumbs?: AppBreadcrumbSegment[];
+  children: React.ReactNode;
 }) {
-	return (
-		<TooltipProvider delayDuration={0}>
-			<PublishTargetProvider>
-				<SidebarProvider>
-					<AppSidebar />
-					<SidebarInset className="h-svh">
-						<AppHeader breadcrumbs={breadcrumbs} />
-						<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-							{children}
-						</div>
-					</SidebarInset>
-				</SidebarProvider>
-			</PublishTargetProvider>
-		</TooltipProvider>
-	);
+  return (
+    <TooltipProvider delayDuration={0}>
+      <PublishTargetProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset className="h-svh">
+            <AppHeader breadcrumbs={breadcrumbs} />
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              {children}
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </PublishTargetProvider>
+    </TooltipProvider>
+  );
 }

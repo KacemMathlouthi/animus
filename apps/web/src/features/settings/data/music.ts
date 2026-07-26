@@ -4,25 +4,25 @@
  * Provenance: apps/api/assets/MUSIC_LICENSES.md. */
 
 export interface MusicTrack {
-	id: string;
-	name: string;
-	mood: string;
+  id: string;
+  mood: string;
+  name: string;
 }
 
 export const MUSIC_TRACKS: MusicTrack[] = [
-	{
-		id: "ambient",
-		name: "Ambient",
-		mood: "Calm, wistful",
-	},
-	{
-		id: "upbeat",
-		name: "Upbeat",
-		mood: "Bright, energetic",
-	},
-	{
-		id: "cinematic",
-		name: "Cinematic",
-		mood: "Warm, building",
-	},
+  {
+    id: "ambient",
+    name: "Ambient",
+    mood: "Calm, wistful",
+  },
+  {
+    id: "upbeat",
+    name: "Upbeat",
+    mood: "Bright, energetic",
+  },
+  {
+    id: "cinematic",
+    name: "Cinematic",
+    mood: "Warm, building",
+  },
 ];

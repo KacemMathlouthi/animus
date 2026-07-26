@@ -20,299 +20,299 @@ const MAGIC_LINK_TTL_MS = 5 * 60 * 1000;
 
 /** Seconds → "M:SS" for the expiry countdown. */
 function formatCountdown(totalSeconds: number): string {
-	const minutes = Math.floor(totalSeconds / 60);
-	const seconds = totalSeconds % 60;
-	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 /** Only honor an internal, single-leading-slash path so the post-login redirect
  * can't be pointed at an external origin. */
 function safeRedirect(from: unknown): string {
-	if (
-		typeof from === "string" &&
-		from.startsWith("/") &&
-		!from.startsWith("//")
-	) {
-		return from;
-	}
-	return STUDIO_PATH;
+  if (
+    typeof from === "string" &&
+    from.startsWith("/") &&
+    !from.startsWith("//")
+  ) {
+    return from;
+  }
+  return STUDIO_PATH;
 }
 
 type SocialProvider = "github" | "google";
 type Pending = SocialProvider | "email" | null;
 
 export function AuthPage() {
-	const { data: session, isPending } = useSession();
-	const location = useLocation();
-	const [searchParams] = useSearchParams();
+  const { data: session, isPending } = useSession();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
-	// Where to land after signing in: the page the guard bounced us from, else the studio.
-	const destination = safeRedirect(
-		(location.state as { from?: string } | null)?.from,
-	);
-	const [email, setEmail] = useState("");
-	const [pending, setPending] = useState<Pending>(null);
-	const [sentTo, setSentTo] = useState<string | null>(null);
-	const [sentAt, setSentAt] = useState<number | null>(null);
-	const [error, setError] = useState<string | null>(() =>
-		searchParams.get("error") ? DEFAULT_ERROR : null,
-	);
+  // Where to land after signing in: the page the guard bounced us from, else the studio.
+  const destination = safeRedirect(
+    (location.state as { from?: string } | null)?.from
+  );
+  const [email, setEmail] = useState("");
+  const [pending, setPending] = useState<Pending>(null);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [sentAt, setSentAt] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(() =>
+    searchParams.get("error") ? DEFAULT_ERROR : null
+  );
 
-	// Live time left on the emailed link; 0 (idle) until a link is actually sent.
-	const secondsLeft = useCountdown(
-		sentAt === null ? 0 : sentAt + MAGIC_LINK_TTL_MS,
-	);
+  // Live time left on the emailed link; 0 (idle) until a link is actually sent.
+  const secondsLeft = useCountdown(
+    sentAt === null ? 0 : sentAt + MAGIC_LINK_TTL_MS
+  );
 
-	useDocumentTitle("Sign in");
+  useDocumentTitle("Sign in");
 
-	// Already signed in — skip the form entirely.
-	if (!isPending && session) {
-		return <Navigate replace to={destination} />;
-	}
+  // Already signed in — skip the form entirely.
+  if (!isPending && session) {
+    return <Navigate replace to={destination} />;
+  }
 
-	const callbackURL = `${window.location.origin}${destination}`;
-	const errorCallbackURL = `${window.location.origin}/auth`;
+  const callbackURL = `${window.location.origin}${destination}`;
+  const errorCallbackURL = `${window.location.origin}/auth`;
 
-	async function handleSocial(provider: SocialProvider) {
-		setError(null);
-		setPending(provider);
-		const { error: err } = await signIn.social({
-			provider,
-			callbackURL,
-			errorCallbackURL,
-		});
-		// On success the browser redirects to the provider; we only land here on
-		// a pre-redirect failure.
-		if (err) {
-			setError(err.message ?? DEFAULT_ERROR);
-			setPending(null);
-		}
-	}
+  async function handleSocial(provider: SocialProvider) {
+    setError(null);
+    setPending(provider);
+    const { error: err } = await signIn.social({
+      provider,
+      callbackURL,
+      errorCallbackURL,
+    });
+    // On success the browser redirects to the provider; we only land here on
+    // a pre-redirect failure.
+    if (err) {
+      setError(err.message ?? DEFAULT_ERROR);
+      setPending(null);
+    }
+  }
 
-	async function submitMagicLink() {
-		const value = email.trim();
-		if (!value) {
-			return;
-		}
-		setError(null);
-		setPending("email");
-		const { error: err } = await signIn.magicLink({
-			email: value,
-			callbackURL,
-		});
-		setPending(null);
-		if (err) {
-			setError(err.message ?? DEFAULT_ERROR);
-			return;
-		}
-		setSentTo(value);
-		setSentAt(Date.now());
-	}
+  async function submitMagicLink() {
+    const value = email.trim();
+    if (!value) {
+      return;
+    }
+    setError(null);
+    setPending("email");
+    const { error: err } = await signIn.magicLink({
+      email: value,
+      callbackURL,
+    });
+    setPending(null);
+    if (err) {
+      setError(err.message ?? DEFAULT_ERROR);
+      return;
+    }
+    setSentTo(value);
+    setSentAt(Date.now());
+  }
 
-	return (
-		// The height lock is scoped to lg, where the two-column layout actually
-		// starts — at md..lg it locked a single column and clipped the form.
-		<main className="relative lg:grid lg:h-screen lg:grid-cols-2 lg:overflow-hidden">
-			<div className="relative hidden h-full flex-col overflow-hidden border-r bg-secondary p-10 lg:flex">
-				<div className="absolute inset-0">
-					<AuthBackdrop />
-				</div>
-				<div className="absolute inset-0 bg-linear-to-b from-background/30 via-transparent to-background" />
-				<div className="absolute inset-0 bg-[linear-gradient(170deg,var(--background)_0%,transparent_15%)]" />
-				<Link className="z-10 mr-auto" to="/">
-					<Wordmark className="text-2xl" />
-				</Link>
+  return (
+    // The height lock is scoped to lg, where the two-column layout actually
+    // starts — at md..lg it locked a single column and clipped the form.
+    <main className="relative lg:grid lg:h-screen lg:grid-cols-2 lg:overflow-hidden">
+      <div className="relative hidden h-full flex-col overflow-hidden border-r bg-secondary p-10 lg:flex">
+        <div className="absolute inset-0">
+          <AuthBackdrop />
+        </div>
+        <div className="absolute inset-0 bg-linear-to-b from-background/30 via-transparent to-background" />
+        <div className="absolute inset-0 bg-[linear-gradient(170deg,var(--background)_0%,transparent_15%)]" />
+        <Link className="z-10 mr-auto" to="/">
+          <Wordmark className="text-2xl" />
+        </Link>
 
-				<div className="z-10 mt-auto">
-					<blockquote className="space-y-2">
-						<p className="text-xl">
-							&ldquo;I described it over coffee — it animated the rest.&rdquo;
-						</p>
-						<footer className="font-mono font-semibold text-muted-foreground text-sm">
-							~ an early animus user
-						</footer>
-					</blockquote>
-				</div>
-			</div>
+        <div className="z-10 mt-auto">
+          <blockquote className="space-y-2">
+            <p className="text-xl">
+              &ldquo;I described it over coffee — it animated the rest.&rdquo;
+            </p>
+            <footer className="font-mono font-semibold text-muted-foreground text-sm">
+              ~ an early animus user
+            </footer>
+          </blockquote>
+        </div>
+      </div>
 
-			<div className="relative flex min-h-screen flex-col justify-center px-8">
-				<Button asChild className="absolute top-7 left-5" variant="ghost">
-					<Link to="/">
-						<ChevronLeftIcon data-icon="inline-start" />
-						Home
-					</Link>
-				</Button>
+      <div className="relative flex min-h-screen flex-col justify-center px-8">
+        <Button asChild className="absolute top-7 left-5" variant="ghost">
+          <Link to="/">
+            <ChevronLeftIcon data-icon="inline-start" />
+            Home
+          </Link>
+        </Button>
 
-				<div className="mx-auto w-full space-y-4 sm:max-w-md">
-					<Link className="lg:hidden" to="/">
-						<Wordmark />
-					</Link>
+        <div className="mx-auto w-full space-y-4 sm:max-w-md">
+          <Link className="lg:hidden" to="/">
+            <Wordmark />
+          </Link>
 
-					{sentTo ? (
-						<div className="space-y-4">
-							<div className="flex size-11 items-center justify-center rounded-full bg-secondary">
-								<MailCheckIcon className="size-5" />
-							</div>
-							<div className="flex flex-col space-y-1">
-								<h1 className="font-medium text-2xl tracking-tight">
-									Check your email
-								</h1>
-								<p className="text-base text-muted-foreground">
-									We sent a sign-in link to{" "}
-									<span className="font-medium text-foreground">{sentTo}</span>.
-								</p>
-								{secondsLeft > 0 ? (
-									<p className="text-base text-muted-foreground">
-										Click it to continue. Expires in{" "}
-										<span className="font-medium text-foreground tabular-nums">
-											{formatCountdown(secondsLeft)}
-										</span>
-										.
-									</p>
-								) : (
-									<p className="text-base text-muted-foreground" role="status">
-										That link has expired. Send a new one to keep going.
-									</p>
-								)}
-							</div>
-							{secondsLeft === 0 ? (
-								<Button
-									disabled={pending !== null}
-									onClick={() => void submitMagicLink()}
-									type="button"
-								>
-									{pending === "email" ? (
-										<Spinner data-icon="inline-start" />
-									) : null}
-									Resend link
-								</Button>
-							) : null}
-							<Button
-								className="px-0"
-								onClick={() => {
-									setSentTo(null);
-									setSentAt(null);
-								}}
-								type="button"
-								variant="link"
-							>
-								Use a different email
-							</Button>
-						</div>
-					) : (
-						<>
-							<div className="flex flex-col space-y-1">
-								<h1 className="font-medium text-2xl tracking-tight">
-									Sign in or create your account
-								</h1>
-								<p className="text-base text-muted-foreground">
-									Start turning topics into explainers in minutes.
-								</p>
-							</div>
+          {sentTo ? (
+            <div className="space-y-4">
+              <div className="flex size-11 items-center justify-center rounded-full bg-secondary">
+                <MailCheckIcon className="size-5" />
+              </div>
+              <div className="flex flex-col space-y-1">
+                <h1 className="font-medium text-2xl tracking-tight">
+                  Check your email
+                </h1>
+                <p className="text-base text-muted-foreground">
+                  We sent a sign-in link to{" "}
+                  <span className="font-medium text-foreground">{sentTo}</span>.
+                </p>
+                {secondsLeft > 0 ? (
+                  <p className="text-base text-muted-foreground">
+                    Click it to continue. Expires in{" "}
+                    <span className="font-medium text-foreground tabular-nums">
+                      {formatCountdown(secondsLeft)}
+                    </span>
+                    .
+                  </p>
+                ) : (
+                  <p className="text-base text-muted-foreground" role="status">
+                    That link has expired. Send a new one to keep going.
+                  </p>
+                )}
+              </div>
+              {secondsLeft === 0 ? (
+                <Button
+                  disabled={pending !== null}
+                  onClick={() => void submitMagicLink()}
+                  type="button"
+                >
+                  {pending === "email" ? (
+                    <Spinner data-icon="inline-start" />
+                  ) : null}
+                  Resend link
+                </Button>
+              ) : null}
+              <Button
+                className="px-0"
+                onClick={() => {
+                  setSentTo(null);
+                  setSentAt(null);
+                }}
+                type="button"
+                variant="link"
+              >
+                Use a different email
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col space-y-1">
+                <h1 className="font-medium text-2xl tracking-tight">
+                  Sign in or create your account
+                </h1>
+                <p className="text-base text-muted-foreground">
+                  Start turning topics into explainers in minutes.
+                </p>
+              </div>
 
-							{error ? (
-								<p
-									className="rounded-md bg-destructive/10 px-3 py-2 text-destructive text-sm"
-									role="alert"
-								>
-									{error}
-								</p>
-							) : null}
+              {error ? (
+                <p
+                  className="rounded-md bg-destructive/10 px-3 py-2 text-destructive text-sm"
+                  role="alert"
+                >
+                  {error}
+                </p>
+              ) : null}
 
-							<div className="space-y-2">
-								<Button
-									className="w-full"
-									disabled={pending !== null}
-									onClick={() => handleSocial("google")}
-									variant="outline"
-								>
-									{pending === "google" ? (
-										<Spinner data-icon="inline-start" />
-									) : (
-										<GoogleIcon data-icon="inline-start" />
-									)}
-									Continue with Google
-								</Button>
-								<Button
-									className="w-full"
-									disabled={pending !== null}
-									onClick={() => handleSocial("github")}
-									variant="outline"
-								>
-									{pending === "github" ? (
-										<Spinner data-icon="inline-start" />
-									) : (
-										<GithubIcon data-icon="inline-start" />
-									)}
-									Continue with GitHub
-								</Button>
-							</div>
+              <div className="space-y-2">
+                <Button
+                  className="w-full"
+                  disabled={pending !== null}
+                  onClick={() => handleSocial("google")}
+                  variant="outline"
+                >
+                  {pending === "google" ? (
+                    <Spinner data-icon="inline-start" />
+                  ) : (
+                    <GoogleIcon data-icon="inline-start" />
+                  )}
+                  Continue with Google
+                </Button>
+                <Button
+                  className="w-full"
+                  disabled={pending !== null}
+                  onClick={() => handleSocial("github")}
+                  variant="outline"
+                >
+                  {pending === "github" ? (
+                    <Spinner data-icon="inline-start" />
+                  ) : (
+                    <GithubIcon data-icon="inline-start" />
+                  )}
+                  Continue with GitHub
+                </Button>
+              </div>
 
-							<AuthDivider>OR</AuthDivider>
+              <AuthDivider>OR</AuthDivider>
 
-							<form
-								className="space-y-2"
-								onSubmit={(event) => {
-									event.preventDefault();
-									void submitMagicLink();
-								}}
-							>
-								<p
-									className="text-start text-muted-foreground text-xs"
-									id="email-hint"
-								>
-									Enter your email address to sign in or create an account
-								</p>
-								<div className="relative">
-									<AtSignIcon
-										aria-hidden="true"
-										className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-2.5 size-4 text-muted-foreground"
-									/>
-									<Input
-										aria-describedby="email-hint"
-										aria-label="Email address"
-										className="pl-8"
-										disabled={pending !== null}
-										onChange={(event) => setEmail(event.target.value)}
-										placeholder="your.email@example.com"
-										type="email"
-										value={email}
-									/>
-								</div>
+              <form
+                className="space-y-2"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void submitMagicLink();
+                }}
+              >
+                <p
+                  className="text-start text-muted-foreground text-xs"
+                  id="email-hint"
+                >
+                  Enter your email address to sign in or create an account
+                </p>
+                <div className="relative">
+                  <AtSignIcon
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    aria-describedby="email-hint"
+                    aria-label="Email address"
+                    className="pl-8"
+                    disabled={pending !== null}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="your.email@example.com"
+                    type="email"
+                    value={email}
+                  />
+                </div>
 
-								<Button
-									className="w-full"
-									disabled={pending !== null || !email.trim()}
-									type="submit"
-								>
-									{pending === "email" ? (
-										<Spinner data-icon="inline-start" />
-									) : null}
-									Continue with email
-								</Button>
-							</form>
-						</>
-					)}
+                <Button
+                  className="w-full"
+                  disabled={pending !== null || !email.trim()}
+                  type="submit"
+                >
+                  {pending === "email" ? (
+                    <Spinner data-icon="inline-start" />
+                  ) : null}
+                  Continue with email
+                </Button>
+              </form>
+            </>
+          )}
 
-					<p className="mt-8 text-muted-foreground text-xs">
-						By continuing, you agree to our{" "}
-						<Link
-							className="underline underline-offset-4 hover:text-primary"
-							to="/terms"
-						>
-							Terms of Service
-						</Link>{" "}
-						and{" "}
-						<Link
-							className="underline underline-offset-4 hover:text-primary"
-							to="/privacy"
-						>
-							Privacy Policy
-						</Link>
-						.
-					</p>
-				</div>
-			</div>
-		</main>
-	);
+          <p className="mt-8 text-muted-foreground text-xs">
+            By continuing, you agree to our{" "}
+            <Link
+              className="underline underline-offset-4 hover:text-primary"
+              to="/terms"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              className="underline underline-offset-4 hover:text-primary"
+              to="/privacy"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </div>
+      </div>
+    </main>
+  );
 }

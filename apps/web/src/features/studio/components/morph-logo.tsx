@@ -6,13 +6,13 @@ import { cn } from "@/lib/utils";
  * loading → render panel) via a shared `layoutId`. Only one instance is mounted
  * at a time, so motion tweens between them. */
 export function MorphLogo({ className }: { className?: string }) {
-	return (
-		<motion.div
-			className="shrink-0"
-			layoutId="animus-mark"
-			transition={{ type: "spring", bounce: 0.18, duration: 0.6 }}
-		>
-			<LogoMark animate="loading" className={cn("w-auto", className)} />
-		</motion.div>
-	);
+  return (
+    <motion.div
+      className="shrink-0"
+      layoutId="animus-mark"
+      transition={{ type: "spring", bounce: 0.18, duration: 0.6 }}
+    >
+      <LogoMark animate="loading" className={cn("w-auto", className)} />
+    </motion.div>
+  );
 }

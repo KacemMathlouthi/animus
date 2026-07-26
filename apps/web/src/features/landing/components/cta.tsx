@@ -4,34 +4,34 @@ import { CtaButton } from "@/components/ui/cta-button";
 import { useCtaTarget } from "@/features/landing/hooks/use-cta-target";
 
 export function CallToAction() {
-	const ctaTarget = useCtaTarget();
+  const ctaTarget = useCtaTarget();
 
-	return (
-		<div className="relative mx-4 my-20 flex max-w-3xl flex-col items-center justify-between gap-y-5 border-y px-4 py-14 md:mx-auto md:my-28 dark:bg-[radial-gradient(35%_80%_at_25%_0%,theme(--color-foreground/.06),transparent)]">
-			<DecorIcon className="size-4" position="top-left" />
-			<DecorIcon className="size-4" position="top-right" />
-			<DecorIcon className="size-4" position="bottom-left" />
-			<DecorIcon className="size-4" position="bottom-right" />
+  return (
+    <div className="relative mx-4 my-20 flex max-w-3xl flex-col items-center justify-between gap-y-5 border-y px-4 py-14 md:mx-auto md:my-28 dark:bg-[radial-gradient(35%_80%_at_25%_0%,theme(--color-foreground/.06),transparent)]">
+      <DecorIcon className="size-4" position="top-left" />
+      <DecorIcon className="size-4" position="top-right" />
+      <DecorIcon className="size-4" position="bottom-left" />
+      <DecorIcon className="size-4" position="bottom-right" />
 
-			<div className="pointer-events-none absolute -inset-y-6 -left-px w-px border-l" />
-			<div className="pointer-events-none absolute -inset-y-6 -right-px w-px border-r" />
-			<div className="absolute top-0 left-1/2 -z-10 h-full border-l border-dashed" />
+      <div className="pointer-events-none absolute -inset-y-6 -left-px w-px border-l" />
+      <div className="pointer-events-none absolute -inset-y-6 -right-px w-px border-r" />
+      <div className="absolute top-0 left-1/2 -z-10 h-full border-l border-dashed" />
 
-			<LogoMark className="h-10 w-auto" />
+      <LogoMark className="h-10 w-auto" />
 
-			<h2 className="text-balance text-center font-medium text-2xl tracking-tight sm:text-3xl md:text-4xl">
-				Stay curious. Stay sharp.
-			</h2>
-			<p className="mx-auto max-w-md text-balance text-center text-muted-foreground md:text-lg">
-				Next time you're curious, don't settle for an answer you'll forget by
-				morning. Turn it into an explainer that sticks.
-			</p>
+      <h2 className="text-balance text-center font-medium text-2xl tracking-tight sm:text-3xl md:text-4xl">
+        Stay curious. Stay sharp.
+      </h2>
+      <p className="mx-auto max-w-md text-balance text-center text-muted-foreground md:text-lg">
+        Next time you're curious, don't settle for an answer you'll forget by
+        morning. Turn it into an explainer that sticks.
+      </p>
 
-			<div className="flex items-center justify-center gap-2 pt-1">
-				<CtaButton className="h-12 w-[13rem]" to={ctaTarget}>
-					Ask your first question
-				</CtaButton>
-			</div>
-		</div>
-	);
+      <div className="flex items-center justify-center gap-2 pt-1">
+        <CtaButton className="h-12 w-[13rem]" to={ctaTarget}>
+          Ask your first question
+        </CtaButton>
+      </div>
+    </div>
+  );
 }

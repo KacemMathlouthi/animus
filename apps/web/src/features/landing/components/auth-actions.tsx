@@ -16,45 +16,45 @@ import { cn } from "@/lib/utils";
 let sessionResolvedOnce = false;
 
 export function AuthActions({ stacked = false }: { stacked?: boolean }) {
-	const { data, isPending } = useSession();
+  const { data, isPending } = useSession();
 
-	if (!isPending) {
-		sessionResolvedOnce = true;
-	}
+  if (!isPending) {
+    sessionResolvedOnce = true;
+  }
 
-	// Avoid flashing the signed-out buttons before the session first resolves;
-	// afterwards, refetches keep rendering the last-known state.
-	if (isPending && !sessionResolvedOnce) {
-		return null;
-	}
+  // Avoid flashing the signed-out buttons before the session first resolves;
+  // afterwards, refetches keep rendering the last-known state.
+  if (isPending && !sessionResolvedOnce) {
+    return null;
+  }
 
-	const size = stacked ? "default" : "sm";
-	const width = stacked ? "w-full" : undefined;
+  const size = stacked ? "default" : "sm";
+  const width = stacked ? "w-full" : undefined;
 
-	if (data) {
-		return (
-			<>
-				<Button asChild className={cn(width, !stacked && "ml-1")} size={size}>
-					<Link to="/studio">Open studio</Link>
-				</Button>
-				{stacked ? null : <NavUser />}
-			</>
-		);
-	}
+  if (data) {
+    return (
+      <>
+        <Button asChild className={cn(width, !stacked && "ml-1")} size={size}>
+          <Link to="/studio">Open studio</Link>
+        </Button>
+        {stacked ? null : <NavUser />}
+      </>
+    );
+  }
 
-	return (
-		<>
-			<Button
-				asChild
-				className={cn(width, !stacked && "ml-1")}
-				size={size}
-				variant="outline"
-			>
-				<Link to="/auth">Sign in</Link>
-			</Button>
-			<Button asChild className={width} size={size}>
-				<Link to="/auth">Get started</Link>
-			</Button>
-		</>
-	);
+  return (
+    <>
+      <Button
+        asChild
+        className={cn(width, !stacked && "ml-1")}
+        size={size}
+        variant="outline"
+      >
+        <Link to="/auth">Sign in</Link>
+      </Button>
+      <Button asChild className={width} size={size}>
+        <Link to="/auth">Get started</Link>
+      </Button>
+    </>
+  );
 }

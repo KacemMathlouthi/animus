@@ -9,35 +9,35 @@ import { apiFetch } from "@/lib/api";
 import { onCreditsChanged } from "@/lib/credit-events";
 
 interface UseCredits {
-	balance: CreditsBalance | null;
-	loading: boolean;
-	/** Fraction of the original grant remaining, clamped to 0–1 (gauge value). */
-	fraction: number;
-	refresh: () => void;
+  balance: CreditsBalance | null;
+  /** Fraction of the original grant remaining, clamped to 0–1 (gauge value). */
+  fraction: number;
+  loading: boolean;
+  refresh: () => void;
 }
 
 export function useCredits(): UseCredits {
-	const [balance, setBalance] = useState<CreditsBalance | null>(null);
-	const [loading, setLoading] = useState(true);
+  const [balance, setBalance] = useState<CreditsBalance | null>(null);
+  const [loading, setLoading] = useState(true);
 
-	const load = useCallback(() => {
-		apiFetch<CreditsBalance>("/api/credits")
-			.then(setBalance)
-			.catch(() => {
-				// Leave the last known balance; the gauge simply won't update.
-			})
-			.finally(() => setLoading(false));
-	}, []);
+  const load = useCallback(() => {
+    apiFetch<CreditsBalance>("/api/credits")
+      .then(setBalance)
+      .catch(() => {
+        // Leave the last known balance; the gauge simply won't update.
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-	useEffect(() => {
-		load();
-		return onCreditsChanged(load);
-	}, [load]);
+  useEffect(() => {
+    load();
+    return onCreditsChanged(load);
+  }, [load]);
 
-	const fraction =
-		balance && balance.grantMicros > 0
-			? Math.max(0, Math.min(1, balance.balanceMicros / balance.grantMicros))
-			: 1;
+  const fraction =
+    balance && balance.grantMicros > 0
+      ? Math.max(0, Math.min(1, balance.balanceMicros / balance.grantMicros))
+      : 1;
 
-	return { balance, loading, fraction, refresh: load };
+  return { balance, loading, fraction, refresh: load };
 }

@@ -1,13 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="25 19 70 93">
+<svg viewBox="25 19 70 93" xmlns="http://www.w3.org/2000/svg">
   <title>animus</title>
   <defs>
-    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#e7b277"/>
-      <stop offset="1" stop-color="#7a4717"/>
+    <linearGradient id="body" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#e7b277" />
+      <stop offset="1" stop-color="#7a4717" />
     </linearGradient>
-    <linearGradient id="eye" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0b0a0a"/>
-      <stop offset="1" stop-color="#5f5a55"/>
+    <linearGradient id="eye" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b0a0a" />
+      <stop offset="1" stop-color="#5f5a55" />
     </linearGradient>
   </defs>
 
@@ -27,7 +27,11 @@
 
   <!-- eyes — same vertical capsules as the original mark -->
   <g fill="url(#eye)" transform="translate(5.2 -11.2) scale(0.6)">
-    <path d="m74.6 97.4h0.2c3.2 0 5.6 2.6 5.6 5.8l0.1 17.9c-0.1 3.1-2.4 5.9-5.9 6-2.9-0.1-5.7-2.1-5.7-6.2v-17.9c0-3.1 2.5-5.6 5.7-5.6z"/>
-    <path d="m105.4 97.4h0.1c3 0 5.7 2.5 5.7 5.8v17.8c0 3-2.5 6.1-6 6.1-2.8-0.1-5.7-2.3-5.8-6.1v-18c0.2-3.1 2.6-5.6 6-5.6z"/>
+    <path
+      d="m74.6 97.4h0.2c3.2 0 5.6 2.6 5.6 5.8l0.1 17.9c-0.1 3.1-2.4 5.9-5.9 6-2.9-0.1-5.7-2.1-5.7-6.2v-17.9c0-3.1 2.5-5.6 5.7-5.6z"
+    />
+    <path
+      d="m105.4 97.4h0.1c3 0 5.7 2.5 5.7 5.8v17.8c0 3-2.5 6.1-6 6.1-2.8-0.1-5.7-2.3-5.8-6.1v-18c0.2-3.1 2.6-5.6 6-5.6z"
+    />
   </g>
 </svg>

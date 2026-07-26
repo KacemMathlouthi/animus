@@ -1,14 +1,14 @@
 {
-	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"rewrites": [
-		{
-			"source": "/api/:path*",
-			"destination": "https://animus-api.vercel.app/api/:path*"
-		},
-		{
-			"source": "/v/:token",
-			"destination": "https://animus-api.vercel.app/api/share/:token/page"
-		},
-		{ "source": "/(.*)", "destination": "/index.html" }
-	]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://animus-api.vercel.app/api/:path*"
+    },
+    {
+      "source": "/v/:token",
+      "destination": "https://animus-api.vercel.app/api/share/:token/page"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
