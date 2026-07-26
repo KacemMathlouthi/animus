@@ -11,9 +11,9 @@ platforms: [linux, macos, windows]
 > (visual design, layout, frame-safety, pacing, typography), NOT its
 > pipeline. In animus the whole video is ONE VoiceoverScene rendered ONCE via the
 > `renderScene` tool — see "Pipeline" below. Use the design rules and the
-> `references/` files as technique references; the values stated throughout
-> this skill (background, font, narration call) already match animus's
-> defaults, so there is nothing left to override.
+> `references/` files as technique references. Where this skill and the system
+> prompt ever disagree, **the system prompt wins** — it is the current source of
+> truth for background, font, and the narration call.
 
 ## When to use
 
@@ -126,7 +126,7 @@ consistently in this sandbox. Avoid common proportional fonts like
 uneven kerning with them, and they aren't installed here anyway.
 
 ```python
-FONT = "Latin Modern Roman"  # define once at top of file
+FONT = "DejaVu Serif"  # define once at top of file
 
 Text("Fourier Series", font_size=48, font=FONT, weight=BOLD)  # titles
 Text("n=1: sin(x)", font_size=20, font=FONT)                  # labels
@@ -157,7 +157,7 @@ from manim_voiceover.services.elevenlabs import ElevenLabsService
 PRIMARY = "#58C4DD"
 SECONDARY = "#83C167"
 ACCENT = "#FFFF00"
-FONT = "Latin Modern Roman"
+FONT = "DejaVu Serif"
 
 class Explainer(VoiceoverScene):
     def construct(self):

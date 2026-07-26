@@ -283,7 +283,7 @@ text = Text(
 # Different fonts per word (t2f = text-to-font)
 text = Text(
     "Mix fonts sparingly, e.g. a serif body with a different accent word",
-    t2f={"serif": "Latin Modern Roman", "accent": "Latin Modern Roman"}
+    t2f={"serif": "DejaVu Serif", "accent": "DejaVu Serif"}
 )
 
 # Italic/slant per word (t2s = text-to-slant)

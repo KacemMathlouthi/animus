@@ -87,9 +87,13 @@ manim -ql --resolution 1080,1080 script.py Scene  # 1:1 square
 animus renders one continuous scene, not multiple stitched scenes:
 
 1. Test-render the scene at `-ql` while iterating
-2. Preview stills at key moments (`-s`) for text-heavy sections
-3. Fix and re-render until clean
+2. Read the render log and fix what it reports
+3. Re-render until clean
 4. Deliver via the `renderScene` tool at high quality, exactly once
+
+You cannot see rendered frames — there is no image-reading tool — so do not
+render stills (`-s`) expecting to inspect them. Reason from the code, the
+frame-safety rules, and the render log instead.
 
 ## manim.cfg — Project Configuration
 
@@ -98,7 +102,6 @@ Create `manim.cfg` in the project directory for per-project defaults:
 ```ini
 [CLI]
 quality = low_quality
-preview = True
 media_dir = ./media
 
 [tex]

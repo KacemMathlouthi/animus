@@ -276,7 +276,9 @@ nullable-vs-required mismatch; an atomic title-generation claim.)
   `experimental_telemetry` → OTLP). Gated on `BRAINTRUST_API_KEY`; no-op when
   unset. Init in `apps/api/src/observability/telemetry.ts`; per-turn settings
   built by `aiTelemetry()` and passed into the agent + title generation.
-- **Retries:** `p-retry` (for external calls — Daytona, model providers)
+- **Retries:** the AI SDK's own `maxRetries` on the model call. External calls
+  (Daytona, R2, Exa) are deliberately unretried — a retry library was specified
+  once but never adopted, so don't document one that isn't here.
 - **Lint / format:** Ultracite + Biome
 - **Dead-code / deps:** Knip
 
@@ -320,8 +322,8 @@ bun run snapshot:build # build/refresh the prebaked Manim+LaTeX Daytona snapshot
 - Async/await style preferred.
 - **All external inputs must be schema-validated** (Zod). Keep services stateless
   per request.
-- Retry transient external failures (`p-retry`); never blindly retry
-  abort/timeout.
+- Never blindly retry abort/timeout. If you add retries to an external call,
+  add the dependency in the same change rather than assuming one exists.
 - Use structured logs: `logger.info({ ...ctx }, "message")`.
 - **No dead code**, no commented-out blocks, no unreferenced wiring. If a feature
   is added, wire it fully and test it in the same change.

@@ -9,7 +9,7 @@ Before writing any Manim code:
 - [ ] Narration script written with visual beats marked
 - [ ] Scene list with purpose, duration, and layout for each
 - [ ] Color palette defined with meaning assignments (`PRIMARY` = main concept, etc.)
-- [ ] `FONT = "Latin Modern Roman"` set as the font constant
+- [ ] `FONT = "DejaVu Serif"` set as the font constant
 - [ ] Target resolution and aspect ratio decided
 
 ## Text Quality
@@ -44,7 +44,7 @@ if text.width > config.frame_width - 1.0:
 
 ```python
 # RULE: Define FONT once, use everywhere
-FONT = "Latin Modern Roman"
+FONT = "DejaVu Serif"
 
 # WRONG: mixing fonts
 Text("Title", font="Helvetica")
@@ -156,7 +156,7 @@ Once a color is assigned a meaning, it keeps that meaning for the entire video:
 When showing a number changing:
 ```python
 # GOOD: DecimalNumber with smooth animation
-counter = DecimalNumber(0, font_size=48, num_decimal_places=0, font="Latin Modern Roman")
+counter = DecimalNumber(0, font_size=48, num_decimal_places=0, font="DejaVu Serif")
 self.play(counter.animate.set_value(1000), run_time=3, rate_func=rush_from)
 
 # BAD: Text that jumps between values

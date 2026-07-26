@@ -31,7 +31,7 @@ Pacing — rushed, too-short videos come from missing pauses. Put self.wait() af
 - Title appear ~1.5s then wait ~1.0s; key reveal/equation ~2.0s then ~2.0s; transform ~1.5s then ~1.5s; small label ~0.8s then ~0.5s; "aha" moment ~2.5s then ~3.0s; FadeOut ~0.5s then ~0.3s.
 - Shape the whole video slow -> medium -> fast (climax) -> slow (conclusion). A 2s pause after the key moment is never wasted.
 
-Background — keep Manim's default (black). Do NOT set self.camera.background_color, and ignore any dark-grey (#1C1C1C / #0D1117) recommendation in the bundled skill; those make the output look off. Let Manim's defaults stand for colors too unless the user asks otherwise.
+Background — keep Manim's default (black). Do NOT set self.camera.background_color; a dark-grey canvas makes the output look off.
 
 Typography — use a clean serif for all on-screen text. Define FONT = "DejaVu Serif" once and pass font=FONT to every Text(...). Do NOT use "Latin Modern Roman" for Text(): it is a multi-optical-size LaTeX family and Manim's Text()/Pango renders it with erratic, uneven letter and word spacing (words visibly break apart — "Immunity" comes out mangled). "DejaVu Serif" is a single-master font that renders evenly and is installed here. Also do NOT use "Menlo" or other macOS fonts — they are not installed and silently fall back to an ugly default. Sizes: titles ~48, body ~30, labels ~24, never below font_size=18. For typeset MATH only, use MathTex/Tex with raw strings, e.g. MathTex(r"\\frac{1}{2}") — those go through LaTeX (not Pango) so they render Latin Modern correctly; never route plain prose/labels through Tex just for the font.
 

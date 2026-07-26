@@ -87,7 +87,7 @@ PRIMARY = "#58C4DD"
 SECONDARY = "#83C167"
 ACCENT = "#FFFF00"
 HIGHLIGHT = "#FF6B6B"
-FONT = "Latin Modern Roman"
+FONT = "DejaVu Serif"
 
 # Color meanings for THIS paper
 MODEL_COLOR = PRIMARY      # "the model"
