@@ -1,7 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalDependencies": ["tsconfig.base.json", "biome.jsonc", ".env"],
+  "globalDependencies": [
+    "tsconfig.base.json",
+    "biome.jsonc",
+    "vitest.config.ts",
+    ".env"
+  ],
   "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build": {
@@ -16,12 +21,10 @@
       "dependsOn": ["^build"]
     },
     "typecheck": {
-      "dependsOn": ["^build"],
-      "outputs": ["**/*.tsbuildinfo"]
+      "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "dependsOn": ["^build"]
     },
     "test:live": {
       "cache": false,

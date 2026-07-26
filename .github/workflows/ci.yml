@@ -22,6 +22,8 @@ jobs:
   ci:
     name: ${{ matrix.task }}
     runs-on: ubuntu-latest
+    # A hung task would otherwise burn the 6-hour runner default.
+    timeout-minutes: 15
     strategy:
       # Run every check even if one fails, so the PR shows all results at once.
       fail-fast: false
@@ -62,6 +64,7 @@ jobs:
   coverage:
     name: coverage
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: write

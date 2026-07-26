@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unjs.io/schema.json",
+  "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
     ".": {
       "entry": []

@@ -49,4 +49,3 @@ docs/cost-control.md
 # launch-video brief for the motion designer (local only)
 launch-video/
 .vercel
-.env*
