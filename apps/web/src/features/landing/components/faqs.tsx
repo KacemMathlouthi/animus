@@ -110,13 +110,13 @@ const faqs = [
 		id: "item-4",
 		title: "Can I edit the storyboard before it becomes a video?",
 		content:
-			"Yes. animus shows you the scene-by-scene plan with narration first. You can reorder, rewrite, or cut scenes before committing to the final video.",
+			"Yes. animus shows you the scene-by-scene plan with narration first, and you can tell it to reorder, rewrite, or cut anything before it renders.",
 	},
 	{
 		id: "item-5",
 		title: "How does it stay accurate?",
 		content:
-			"Every explainer begins with a research pass over real sources. The narration is written against those findings, and you can trace claims back to where they came from.",
+			"Every explainer begins with a research pass over real sources. The narration is written against those findings, and the sources it read appear in the chat as it works.",
 	},
 	{
 		id: "item-6",
