@@ -9,15 +9,15 @@ import App from "./App.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
-	throw new Error("Root element #root not found");
+  throw new Error("Root element #root not found");
 }
 
 createRoot(rootElement).render(
-	<StrictMode>
-		<ThemeProvider defaultTheme="dark" storageKey="animus-theme">
-			<App />
-			<Toaster position="bottom-right" />
-			<SpeedInsights />
-		</ThemeProvider>
-	</StrictMode>,
+  <StrictMode>
+    <ThemeProvider defaultTheme="dark" storageKey="animus-theme">
+      <App />
+      <Toaster position="bottom-right" />
+      <SpeedInsights />
+    </ThemeProvider>
+  </StrictMode>
 );

@@ -97,7 +97,7 @@ area = always_redraw(lambda: axes.get_area(
 
 # Label that reconstructs its text
 counter = always_redraw(lambda: Text(
-    f"n = {int(x_tracker.get_value())}", font_size=24, font="Latin Modern Roman"
+    f"n = {int(x_tracker.get_value())}", font_size=24, font="DejaVu Serif"
 ).to_corner(UR))
 ```
 
@@ -121,7 +121,7 @@ self.play(tracker.animate.set_value(100), run_time=3)
 ### Variable: the labeled version
 
 ```python
-var = Variable(0, Text("x", font_size=24, font="Latin Modern Roman"), num_decimal_places=2)
+var = Variable(0, Text("x", font_size=24, font="DejaVu Serif"), num_decimal_places=2)
 self.add(var)
 self.play(var.tracker.animate.set_value(PI), run_time=2)
 # Displays: x = 3.14
@@ -220,7 +220,7 @@ node_b = Dot(RIGHT * 2, color=SECONDARY)
 edge = Line().add_updater(lambda m: m.put_start_and_end_on(
     node_a.get_center(), node_b.get_center()
 ))
-label = Text("edge", font_size=18, font="Latin Modern Roman").add_updater(
+label = Text("edge", font_size=18, font="DejaVu Serif").add_updater(
     lambda m: m.move_to(edge.get_center() + UP * 0.3)
 )
 
@@ -240,7 +240,7 @@ curve = always_redraw(lambda: axes.plot(
     x_range=[0, 2*PI], color=PRIMARY
 ))
 param_label = always_redraw(lambda: Text(
-    f"a = {a_tracker.get_value():.1f}", font_size=24, font="Latin Modern Roman"
+    f"a = {a_tracker.get_value():.1f}", font_size=24, font="DejaVu Serif"
 ).to_corner(UR))
 
 self.add(curve, param_label)

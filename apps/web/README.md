@@ -16,12 +16,16 @@ brand **share card** (`src/components/share-card.tsx`, rendering
 Vite plugin** that injects per-share Open Graph / Twitter meta into `index.html`
 for `/v/:token` requests (crawlers don't run JS), and `vite.config.ts` proxies
 `/api` so one origin serves the app and the crawler-fetched card/video/embed
-URLs. In production that injection moves to an edge function / proxy — see the
-meta-injection seam decision in [`CLAUDE.md`](../../CLAUDE.md).
+URLs. In production that injection is served by the API's
+`GET /api/share/:token/page`, wired to the real URL by a `/v/:token` rewrite in
+`vercel.json` (placed before the SPA fallback) — see the meta-injection seam
+decision in [`CLAUDE.md`](../../CLAUDE.md).
 
 ## Conventions
 
-- **Tabs** for indentation (the rest of the repo uses 2 spaces); enforced by
+- **Tabs** for indentation (the rest of the repo uses 2 spaces) — currently a
+  Biome default rather than a configured choice, since this workspace's config
+  doesn't extend the root one; see the tracked fix. Otherwise enforced by
   Biome/Ultracite.
 - Talk to the API through `src/lib/api.ts` (`apiFetch`), which sends the session
   cookie and throws on non-2xx.

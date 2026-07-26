@@ -1,8 +1,9 @@
 /** Resolves the agent's language model.
  *
- * Default: Claude via Amazon Bedrock (our key, metered). Credentials/region come
- * from AWS_* env vars or the AWS credential chain (nothing passed explicitly),
- * and the id is a Bedrock inference profile from env.
+ * Default: Claude via Amazon Bedrock (our key, metered). Credentials/region are
+ * passed to the provider explicitly from the validated server env — never via
+ * the SDK's implicit AWS_* chain, which Vercel shadows at runtime (see getModel
+ * below). The id is a Bedrock inference profile from env.
  *
  * BYOK: when the caller passes a decrypted LLM key, the agent runs on that
  * provider's own SDK client with the user's chosen model — and that turn is not

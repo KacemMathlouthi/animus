@@ -11,13 +11,18 @@ platforms: [linux, macos, windows]
 > (visual design, layout, frame-safety, pacing, typography), NOT its
 > pipeline. In animus the whole video is ONE VoiceoverScene rendered ONCE via the
 > `renderScene` tool — see "Pipeline" below. Use the design rules and the
-> `references/` files as technique references; the values stated throughout
-> this skill (background, font, narration call) already match animus's
-> defaults, so there is nothing left to override.
+> `references/` files as technique references. Where this skill and the system
+> prompt ever disagree, **the system prompt wins** — it is the current source of
+> truth for background, font, and the narration call.
 
 ## When to use
 
-Use when users request: animated explanations, math animations, concept visualizations, algorithm walkthroughs, technical explainers, 3Blue1Brown style videos, or any programmatic animation with geometric/mathematical content. Creates 3Blue1Brown-style explainer videos, algorithm visualizations, equation derivations, architecture diagrams, and data stories using Manim Community Edition.
+Use for any animated explainer, on any subject. Maths and algorithms are the
+most common examples below because that's what gets open-sourced, but the same
+techniques carry a biological pathway, a physical process, a financial flow, a
+system architecture, a historical timeline, a legal or linguistic structure, or
+an everyday "how does X work". Nothing here restricts the topic to mathematical
+content — pick the visual model the subject deserves.
 
 ## Creative Standard
 
@@ -126,7 +131,7 @@ consistently in this sandbox. Avoid common proportional fonts like
 uneven kerning with them, and they aren't installed here anyway.
 
 ```python
-FONT = "Latin Modern Roman"  # define once at top of file
+FONT = "DejaVu Serif"  # define once at top of file
 
 Text("Fourier Series", font_size=48, font=FONT, weight=BOLD)  # titles
 Text("n=1: sin(x)", font_size=20, font=FONT)                  # labels
@@ -157,7 +162,7 @@ from manim_voiceover.services.elevenlabs import ElevenLabsService
 PRIMARY = "#58C4DD"
 SECONDARY = "#83C167"
 ACCENT = "#FFFF00"
-FONT = "Latin Modern Roman"
+FONT = "DejaVu Serif"
 
 class Explainer(VoiceoverScene):
     def construct(self):

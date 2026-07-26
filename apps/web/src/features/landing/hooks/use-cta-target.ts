@@ -4,6 +4,6 @@
 import { useSession } from "@/lib/auth-client";
 
 export function useCtaTarget() {
-	const { data } = useSession();
-	return data ? "/studio" : "/auth";
+  const { data } = useSession();
+  return data ? "/studio" : "/auth";
 }

@@ -14,37 +14,37 @@ export const AMBIENT_HEIGHT = 36;
  * (the try/catch guards the odd engine that throws instead).
  */
 export function useAmbientGlow(
-	videoRef: RefObject<HTMLVideoElement | null>,
+  videoRef: RefObject<HTMLVideoElement | null>
 ): RefObject<HTMLCanvasElement | null> {
-	const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-	useEffect(() => {
-		const video = videoRef.current;
-		const canvas = canvasRef.current;
-		if (!(video && canvas)) {
-			return;
-		}
-		const ctx = canvas.getContext("2d");
-		if (!ctx) {
-			return;
-		}
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!(video && canvas)) {
+      return;
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return;
+    }
 
-		let frame = 0;
-		const draw = () => {
-			// HAVE_CURRENT_DATA — there is a frame to copy.
-			if (video.readyState >= 2) {
-				try {
-					ctx.drawImage(video, 0, 0, AMBIENT_WIDTH, AMBIENT_HEIGHT);
-				} catch {
-					// Cross-origin restriction quirk; playback itself is unaffected.
-				}
-			}
-			frame = requestAnimationFrame(draw);
-		};
-		frame = requestAnimationFrame(draw);
+    let frame = 0;
+    const draw = () => {
+      // HAVE_CURRENT_DATA — there is a frame to copy.
+      if (video.readyState >= 2) {
+        try {
+          ctx.drawImage(video, 0, 0, AMBIENT_WIDTH, AMBIENT_HEIGHT);
+        } catch {
+          // Cross-origin restriction quirk; playback itself is unaffected.
+        }
+      }
+      frame = requestAnimationFrame(draw);
+    };
+    frame = requestAnimationFrame(draw);
 
-		return () => cancelAnimationFrame(frame);
-	}, [videoRef]);
+    return () => cancelAnimationFrame(frame);
+  }, [videoRef]);
 
-	return canvasRef;
+  return canvasRef;
 }

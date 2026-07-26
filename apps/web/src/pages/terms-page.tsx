@@ -1,98 +1,144 @@
 import { LegalLayout } from "@/features/legal/components/legal-layout";
 
-const ISSUES_URL = "https://github.com/KacemMathlouthi/animus/issues";
+const SUPPORT_EMAIL = "privacy@tryanimus.app";
+const REPO_URL = "https://github.com/KacemMathlouthi/animus";
 
 export function TermsPage() {
-	return (
-		<LegalLayout lastUpdated="June 17, 2026" title="Terms of Service">
-			<p>
-				animus is a free, open-source project that turns a topic into a
-				narrated, animated explainer video (the "Service"). It is built for fun
-				and experimentation rather than as a commercial product. By using the
-				Service, you agree to these terms. If you do not agree, please don't use
-				it.
-			</p>
+  return (
+    <LegalLayout lastUpdated="July 26, 2026" title="Terms of Service">
+      <p>
+        animus turns a topic into a narrated, animated explainer video (the
+        "Service"). By using it, you agree to these terms. If you do not agree,
+        please don't use it.
+      </p>
 
-			<h2>1. The Service</h2>
-			<p>
-				You describe a topic and the Service generates an explainer video from
-				it. It is experimental: output is produced by automated systems and may
-				be wrong, incomplete, or odd, so review it before relying on or sharing
-				it. Features may change, and the Service may be unavailable, reset, or
-				shut down at any time.
-			</p>
+      <h2>1. The Service</h2>
+      <p>
+        You describe a topic and an AI agent researches it, writes Manim code in
+        a cloud sandbox, and renders a narrated video. Output is produced by
+        automated systems and may be wrong, incomplete, or odd — review it
+        before relying on it or sharing it. Features may change, and the Service
+        may be unavailable, reset, or discontinued at any time.
+      </p>
 
-			<h2>2. Open source</h2>
-			<p>
-				The code behind animus is open source on{" "}
-				<a
-					href="https://github.com/KacemMathlouthi/animus"
-					rel="noreferrer"
-					target="_blank"
-				>
-					GitHub
-				</a>{" "}
-				and is licensed under the terms in that repository. Those terms govern
-				the code itself; this page covers your use of the hosted Service.
-			</p>
+      <h2>2. The code</h2>
+      <p>
+        animus is open source under the MIT license; see the{" "}
+        <a href={REPO_URL} rel="noreferrer" target="_blank">
+          repository
+        </a>
+        . That license governs the code itself. This page governs your use of
+        the hosted Service.
+      </p>
 
-			<h2>3. Accounts</h2>
-			<p>
-				You can sign in with a magic link sent to your email, or with a GitHub
-				or Google account. You are responsible for the inbox or account you use
-				to sign in and for what happens under your account.
-			</p>
+      <h2>3. Accounts</h2>
+      <p>
+        You can sign in with a magic link sent to your email, or with a GitHub
+        or Google account. You are responsible for the inbox or account you sign
+        in with and for activity under your account. You must be at least 13
+        years old, or older where your country requires it.
+      </p>
 
-			<h2>4. Be reasonable</h2>
-			<p>This is a small project, so please use it considerately. Don't:</p>
-			<ul>
-				<li>
-					create content that is illegal, infringing, or harmful to others;
-				</li>
-				<li>
-					try to break, overload, or gain unauthorized access to the Service;
-				</li>
-				<li>or pass off generated output in deceptive or unlawful ways.</li>
-			</ul>
+      <h2>4. Credits and payment</h2>
+      <p>
+        New accounts receive a starting balance of free credits. Generating a
+        video consumes credits based on the model tokens and narration used, and
+        turns are refused when your balance runs out. If you bring your own
+        model or narration key, that part of the work runs on your account and
+        isn't metered here — you pay that provider directly.
+      </p>
+      <p>
+        Free credits have no cash value, are not refundable or transferable, and
+        may be changed, expired, or withdrawn at any time. They are not a
+        payment instrument, and nothing here promises a particular number of
+        videos.
+      </p>
 
-			<h2>5. Your content and output</h2>
-			<p>
-				You keep ownership of the prompts and materials you submit, and of the
-				videos the Service generates for you. The Service only uses what you
-				submit in order to produce your output and keep things running. You are
-				responsible for having the rights to whatever you put in.
-			</p>
+      <h2>5. Acceptable use</h2>
+      <p>Don't use the Service to:</p>
+      <ul>
+        <li>
+          create content that is illegal, infringing, defamatory, or harmful to
+          others;
+        </li>
+        <li>
+          generate synthetic speech that imitates a real person's voice, or that
+          is presented as a real person's words, without that person's
+          permission;
+        </li>
+        <li>
+          produce material that misleads people about who created it or whether
+          it is real, including in political or commercial contexts;
+        </li>
+        <li>
+          break, overload, or gain unauthorized access to the Service, or use
+          the sandbox to attack anything else;
+        </li>
+        <li>
+          create accounts in bulk, or otherwise work around credit limits.
+        </li>
+      </ul>
+      <p>
+        Narration is generated by ElevenLabs, and their terms apply to the
+        speech produced. The voice-imitation rule above is not optional.
+      </p>
 
-			<h2>6. No warranty</h2>
-			<p>
-				The Service is provided "as is", with no warranties of any kind. There
-				is no guarantee that it will work, stay available, be accurate, or that
-				anything you create will be preserved. Keep your own copies of anything
-				you care about.
-			</p>
+      <h2>6. Your content and output</h2>
+      <p>
+        You keep ownership of the prompts and materials you submit and of the
+        videos generated for you. You grant us only the permission needed to run
+        the Service: to process your inputs, store your conversations and
+        videos, and serve any video you choose to publish. You are responsible
+        for having the rights to whatever you put in.
+      </p>
 
-			<h2>7. Liability</h2>
-			<p>
-				To the extent allowed by law, the maintainers are not liable for any
-				damages or losses arising from your use of the Service. It's a hobby
-				project, so use it at your own risk.
-			</p>
+      <h2>7. Publishing and takedowns</h2>
+      <p>
+        Publishing a video creates an unlisted public link that anyone holding
+        it can view and download. Deleting the conversation removes it.
+      </p>
+      <p>
+        If you believe something published through the Service infringes your
+        rights, email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>{" "}
+        with the link and enough detail to identify the work and your claim.
+        Reported content may be removed while it is reviewed.
+      </p>
 
-			<h2>8. Changes</h2>
-			<p>
-				These terms may change as the project evolves. When they do, the "Last
-				updated" date above will change. Continuing to use the Service means you
-				accept the current version.
-			</p>
+      <h2>8. Suspension and termination</h2>
+      <p>
+        You can stop using the Service and ask for your account to be deleted at
+        any time. We may suspend or terminate an account that breaks these
+        terms, abuses the credit system, or puts the Service or other users at
+        risk — where it's reasonable to do so, with notice.
+      </p>
 
-			<h2>9. Contact</h2>
-			<p>
-				Questions or concerns? Open an issue on{" "}
-				<a href={ISSUES_URL} rel="noreferrer" target="_blank">
-					GitHub
-				</a>
-				.
-			</p>
-		</LegalLayout>
-	);
+      <h2>9. No warranty</h2>
+      <p>
+        The Service is provided "as is", with no warranties of any kind. There
+        is no guarantee that it will work, stay available, be accurate, or that
+        anything you create will be preserved. Keep your own copies of anything
+        you care about.
+      </p>
+
+      <h2>10. Liability</h2>
+      <p>
+        To the extent allowed by law, we are not liable for any indirect or
+        consequential damages, lost data, or lost profits arising from your use
+        of the Service.
+      </p>
+
+      <h2>11. Changes</h2>
+      <p>
+        These terms will change as the product does. When they do, the "Last
+        updated" date above changes with them. Continuing to use the Service
+        means you accept the current version.
+      </p>
+
+      <h2>12. Contact</h2>
+      <p>
+        Questions or concerns:{" "}
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+      </p>
+    </LegalLayout>
+  );
 }

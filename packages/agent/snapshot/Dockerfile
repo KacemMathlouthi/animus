@@ -31,6 +31,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       tipa \
       fontconfig \
       fonts-lmodern \
+      # DejaVu is what the prompt mandates for Text(); it currently arrives
+      # transitively, so require it explicitly rather than by luck.
+      fonts-dejavu-core \
       sox \
       libsox-fmt-all \
     && fc-cache -f \

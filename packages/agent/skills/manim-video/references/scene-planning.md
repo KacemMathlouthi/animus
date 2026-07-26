@@ -48,7 +48,6 @@ End scene with a shape, start next scene by transforming it.
 
 ```python
 # Shared constants at file top
-BG = "#1C1C1C"
 PRIMARY = "#58C4DD"
 SECONDARY = "#83C167"
 ACCENT = "#FFFF00"
@@ -96,7 +95,7 @@ FAST = 0.8; NORMAL = 1.5; SLOW = 2.5
 - **Resolution**: 480p (draft) / 1080p (final)
 
 ## Color Palette
-- Background: #1C1C1C
+- Background: Manim's default black (do not override)
 - Primary: #58C4DD -- [purpose]
 - Secondary: #83C167 -- [purpose]
 - Accent: #FFFF00 -- [purpose]

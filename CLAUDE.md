@@ -39,7 +39,7 @@ apps/
   web/    # React 19 + Vite SPA — landing, auth, studio (chat + conversation sidebar), settings, legal, /v/:token share page. plugins/ holds the dev link-preview meta-injection plugin (see the meta-injection seam decision).
   api/    # Hono/Bun — auth, settings, conversations, the streaming agent loop (/api/chat), and the public share endpoints (share-card og.png, video.mp4, embed). Long-running.
 packages/
-  core/   # shared contracts: zod schemas, types, constants + the deterministic share-card SVG builder + link-preview meta builders (pure root) + server env (/env subpath)
+  core/   # shared contracts: zod schemas, types, constants + the deterministic share-card SVG builder + link-preview meta builders (pure root) + server env (/env subpath) + tool I/O contracts shared by the agent and the web (/tools subpath)
   auth/   # Better Auth (magic link via Resend, GitHub + Google OAuth, sessions)
   db/     # Drizzle + Postgres (schema, client, migrations)
   agent/  # the AI SDK agent loop, prompts, and the full tool set: HITL (askUserQuestion, finalizeVideoPlan), Exa web research (webSearch/webFetch), and the Manim sandbox tools (writeFile/editFile/runCommand/readFile/listFiles/renderScene). Ships the manim-video skill (skills/manim-video) and the prebaked snapshot Dockerfile.
@@ -62,7 +62,7 @@ Cross-package "does it compile" = `bun run typecheck`.
   installed (no per-turn bootstrap). The snapshot is built from
   `packages/agent/snapshot/Dockerfile` via `bun run snapshot:build` (registers it
   as `animus-manim:<tag>`; the tag currently in use is `SNAPSHOT_NAME` in
-  `packages/agent/src/sandbox/index.ts` — `animus-manim:0.6`). The lifecycle lives
+  `packages/agent/src/sandbox/index.ts` — `animus-manim:0.8`). The lifecycle lives
   in `packages/agent/src/sandbox` as plain functions
   (`ensureSandbox`/`destroySandbox`) returning the Daytona handle directly — the
   tools call the SDK natively (no wrapper adapter).
@@ -269,11 +269,16 @@ nullable-vs-required mismatch; an atomic title-generation claim.)
   share-card SVG to PNG for Open Graph (bundled Geist fonts + curated paintings in
   `apps/api/assets`)
 - **Logging:** Pino (structured)
+- **Web analytics:** `@vercel/analytics` + `@vercel/speed-insights`, mounted on
+  every route (`App.tsx` / `main.tsx`). Both are third-party client-side
+  trackers, so the privacy policy has to name them.
 - **LLM observability:** Braintrust via OpenTelemetry (AI SDK
   `experimental_telemetry` → OTLP). Gated on `BRAINTRUST_API_KEY`; no-op when
   unset. Init in `apps/api/src/observability/telemetry.ts`; per-turn settings
   built by `aiTelemetry()` and passed into the agent + title generation.
-- **Retries:** `p-retry` (for external calls — Daytona, model providers)
+- **Retries:** the AI SDK's own `maxRetries` on the model call. External calls
+  (Daytona, R2, Exa) are deliberately unretried — a retry library was specified
+  once but never adopted, so don't document one that isn't here.
 - **Lint / format:** Ultracite + Biome
 - **Dead-code / deps:** Knip
 
@@ -317,8 +322,8 @@ bun run snapshot:build # build/refresh the prebaked Manim+LaTeX Daytona snapshot
 - Async/await style preferred.
 - **All external inputs must be schema-validated** (Zod). Keep services stateless
   per request.
-- Retry transient external failures (`p-retry`); never blindly retry
-  abort/timeout.
+- Never blindly retry abort/timeout. If you add retries to an external call,
+  add the dependency in the same change rather than assuming one exists.
 - Use structured logs: `logger.info({ ...ctx }, "message")`.
 - **No dead code**, no commented-out blocks, no unreferenced wiring. If a feature
   is added, wire it fully and test it in the same change.
@@ -394,8 +399,15 @@ assume — confirm.
 
 ## Project conventions
 
-- **Formatting is enforced by Biome/Ultracite.** `apps/web` uses **tabs**;
-  `apps/api` and `packages/*` use **2-space** indent. Run `bunx ultracite check`
+- **Formatting is enforced by Biome/Ultracite** — but **only outside
+  `apps/web` today**. `apps/web/biome.jsonc` sets `root: false` and extends only
+  `ultracite/biome/react`, which carries no formatter and no core rules, and a
+  nested Biome 2 config does not inherit the root config without an explicit
+  `"//"`. So the web app's **tabs** are a Biome default, not a decision, and its
+  lint bar is weaker than the rest of the repo while `ultracite check` still
+  passes green. Fixing that extends config is a tracked item and lands a
+  repo-wide reformat to **2-space** (what `apps/api` and `packages/*` use today).
+  Run `bunx ultracite check`
   before committing.
 - **No TS `enum`** (`erasableSyntaxOnly`) — use `as const` arrays + union types.
 - **`verbatimModuleSyntax`** — type-only imports must use `import type` / inline

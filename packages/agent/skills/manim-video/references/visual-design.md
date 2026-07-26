@@ -63,21 +63,27 @@ PRIMARY="#00F5FF"; SECONDARY="#FF00FF"; ACCENT="#39FF14"
 
 ## Font Selection
 
-Use the LaTeX serif, `"Latin Modern Roman"`, for all `Text()` — it's
-installed via TeX Live and renders consistently in this sandbox. Avoid
-common proportional fonts like Helvetica, Inter, SF Pro, or Arial: Manim's
-Pango text renderer can produce broken kerning with them, and none of them
-are installed here anyway.
+Use `"DejaVu Serif"` for all `Text()` — a single-master serif that is
+installed in this sandbox and renders evenly through Pango.
+
+Do **not** use `"Latin Modern Roman"` for `Text()`. It is a multi-optical-size
+LaTeX family, and Manim's `Text()` (Pango, not LaTeX) renders it with erratic
+letter and word spacing — words visibly break apart. It is still the right
+face for *typeset math*, which goes through `MathTex`/`Tex` and therefore
+through LaTeX rather than Pango.
+
+Avoid common proportional fonts like Helvetica, Inter, SF Pro, or Arial:
+Pango can produce broken kerning with them, and none are installed here.
 
 ### Recommended Font
 
 | Use case | Font |
 |----------|------|
-| **All text (default)** | `"Latin Modern Roman"` |
+| **All text (default)** | `"DejaVu Serif"` |
 | Math | Use `MathTex` (renders via LaTeX, not Pango) |
 
 ```python
-FONT = "Latin Modern Roman"  # define once at top of file
+FONT = "DejaVu Serif"  # define once at top of file
 
 title = Text("Fourier Series", font_size=48, color=PRIMARY, weight=BOLD, font=FONT)
 label = Text("n=1: (4/pi) sin(x)", font_size=20, color=BLUE, font=FONT)
@@ -89,8 +95,8 @@ equation = MathTex(r"\nabla L = \frac{\partial L}{\partial w}")
 
 ### Font Availability
 
-`"Latin Modern Roman"` ships with the sandbox's TeX Live install, so it's
-always available — no fallback needed.
+`"DejaVu Serif"` is installed in the sandbox image, so it's always
+available — no fallback needed.
 
 ### Fine-Grained Text Control
 
@@ -98,13 +104,13 @@ always available — no fallback needed.
 
 ```python
 # Letter spacing (Pango units: 1/1024 of a point)
-MarkupText('<span letter_spacing="6000">HERMES</span>', font_size=18, font="Latin Modern Roman")
+MarkupText('<span letter_spacing="6000">HERMES</span>', font_size=18, font="DejaVu Serif")
 
 # Bold specific words
-MarkupText('This is <b>important</b>', font_size=24, font="Latin Modern Roman")
+MarkupText('This is <b>important</b>', font_size=24, font="DejaVu Serif")
 
 # Color specific words
-MarkupText('Red <span foreground="#FF6B6B">warning</span>', font_size=24, font="Latin Modern Roman")
+MarkupText('Red <span foreground="#FF6B6B">warning</span>', font_size=24, font="DejaVu Serif")
 ```
 
 ### Minimum Font Size

@@ -2,25 +2,25 @@
 import { useEffect, useState } from "react";
 
 export function useScroll(downThreshold: number, upThreshold?: number) {
-	const [scrolled, setScrolled] = useState(false);
-	const scrollUpThreshold = upThreshold ?? downThreshold / 2;
+  const [scrolled, setScrolled] = useState(false);
+  const scrollUpThreshold = upThreshold ?? downThreshold / 2;
 
-	useEffect(() => {
-		const handleScroll = () => {
-			const y = window.scrollY;
-			// Hysteresis: different thresholds for up/down to prevent flickering
-			setScrolled((prev) => {
-				if (prev) {
-					return y > scrollUpThreshold;
-				}
-				return y > downThreshold;
-			});
-		};
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY;
+      // Hysteresis: different thresholds for up/down to prevent flickering
+      setScrolled((prev) => {
+        if (prev) {
+          return y > scrollUpThreshold;
+        }
+        return y > downThreshold;
+      });
+    };
 
-		window.addEventListener("scroll", handleScroll, { passive: true });
-		handleScroll();
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, [downThreshold, scrollUpThreshold]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [downThreshold, scrollUpThreshold]);
 
-	return scrolled;
+  return scrolled;
 }

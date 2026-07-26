@@ -4,89 +4,93 @@ import { HeroPrompt } from "@/features/landing/components/hero-prompt";
 import { cn } from "@/lib/utils";
 
 export function HeroSection() {
-	return (
-		<section className="relative isolate flex min-h-svh flex-col items-center justify-center gap-5 px-4 py-20">
-			<div
-				aria-hidden="true"
-				className="absolute inset-0 -z-1 size-full overflow-hidden"
-			>
-				<img
-					alt=""
-					className={cn(
-						"absolute bottom-0 left-1/2 h-auto w-[180%] max-w-none -translate-x-1/2 md:left-0 md:w-full md:max-w-full md:translate-x-0",
-						"opacity-100 transition-opacity duration-700 ease-fluid dark:opacity-0",
-						"[-webkit-mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
-						"[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
-					)}
-					fetchPriority="high"
-					src="/hero/hero-light.webp"
-				/>
-				<img
-					alt=""
-					className={cn(
-						"absolute bottom-0 left-1/2 h-auto w-[180%] max-w-none -translate-x-1/2 md:left-0 md:w-full md:max-w-full md:translate-x-0",
-						"opacity-0 transition-opacity duration-700 ease-fluid dark:opacity-100",
-						"[-webkit-mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
-						"[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
-					)}
-					src="/hero/hero-dark.webp"
-				/>
-				<div className="absolute inset-0 bg-background/40 dark:bg-background/15" />
-				<div
-					className={cn(
-						"absolute -inset-x-20 inset-y-0 z-0 rounded-full",
-						"bg-[radial-gradient(ellipse_at_center,theme(--color-foreground/.05),transparent,transparent)]",
-						"blur-[50px]",
-					)}
-				/>
-				<div className="absolute inset-y-0 left-4 w-px bg-linear-to-b from-transparent via-border to-border md:left-8" />
-				<div className="absolute inset-y-0 right-4 w-px bg-linear-to-b from-transparent via-border to-border md:right-8" />
-				<div className="absolute inset-y-0 left-8 w-px bg-linear-to-b from-transparent via-border/50 to-border/50 md:left-12" />
-				<div className="absolute inset-y-0 right-8 w-px bg-linear-to-b from-transparent via-border/50 to-border/50 md:right-12" />
-			</div>
+  return (
+    <section className="relative isolate flex min-h-svh flex-col items-center justify-center gap-5 px-4 py-20">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-1 size-full overflow-hidden"
+      >
+        <img
+          alt=""
+          className={cn(
+            "absolute bottom-0 left-1/2 h-auto w-[180%] max-w-none -translate-x-1/2 md:left-0 md:w-full md:max-w-full md:translate-x-0",
+            "opacity-100 transition-opacity duration-700 ease-fluid dark:opacity-0",
+            "[-webkit-mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
+            "[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]"
+          )}
+          fetchPriority="high"
+          height={1146}
+          src="/hero/hero-light.webp"
+          width={2880}
+        />
+        <img
+          alt=""
+          className={cn(
+            "absolute bottom-0 left-1/2 h-auto w-[180%] max-w-none -translate-x-1/2 md:left-0 md:w-full md:max-w-full md:translate-x-0",
+            "opacity-0 transition-opacity duration-700 ease-fluid dark:opacity-100",
+            "[-webkit-mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]",
+            "[mask-image:linear-gradient(to_top,transparent_0%,black_14%,black_40%,transparent_88%)]"
+          )}
+          height={1146}
+          src="/hero/hero-dark.webp"
+          width={2880}
+        />
+        <div className="absolute inset-0 bg-background/40 dark:bg-background/15" />
+        <div
+          className={cn(
+            "absolute -inset-x-20 inset-y-0 z-0 rounded-full",
+            "bg-[radial-gradient(ellipse_at_center,theme(--color-foreground/.05),transparent,transparent)]",
+            "blur-[50px]"
+          )}
+        />
+        <div className="absolute inset-y-0 left-4 w-px bg-linear-to-b from-transparent via-border to-border md:left-8" />
+        <div className="absolute inset-y-0 right-4 w-px bg-linear-to-b from-transparent via-border to-border md:right-8" />
+        <div className="absolute inset-y-0 left-8 w-px bg-linear-to-b from-transparent via-border/50 to-border/50 md:left-12" />
+        <div className="absolute inset-y-0 right-8 w-px bg-linear-to-b from-transparent via-border/50 to-border/50 md:right-12" />
+      </div>
 
-			<h1
-				className={cn(
-					"max-w-3xl text-balance text-center font-medium text-4xl text-foreground tracking-tight md:text-6xl lg:text-7xl",
-					"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-100 duration-500 ease-snappy",
-				)}
-			>
-				<span className="block">
-					Turn any{" "}
-					<span className="-mr-3 -ml-[0.25em] hero-word pr-3 font-pixel-grid italic uppercase">
-						question
-					</span>
-				</span>
-				<span className="block text-[0.9em]">
-					into an explainer{" "}
-					<span className="hero-word font-pixel-grid font-bold uppercase">
-						video
-					</span>
-				</span>
-			</h1>
+      <h1
+        className={cn(
+          "max-w-3xl text-balance text-center font-medium text-4xl text-foreground tracking-tight md:text-6xl lg:text-7xl",
+          "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-100 duration-500 ease-snappy"
+        )}
+      >
+        <span className="block">
+          Turn any{" "}
+          <span className="hero-word -mr-3 -ml-[0.25em] pr-3 font-pixel-grid uppercase italic">
+            question
+          </span>
+        </span>
+        <span className="block text-[0.9em]">
+          into an explainer{" "}
+          <span className="hero-word font-bold font-pixel-grid uppercase">
+            video
+          </span>
+        </span>
+      </h1>
 
-			<p
-				className={cn(
-					"mb-1 text-center text-muted-foreground sm:whitespace-nowrap md:text-lg",
-					"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-150 duration-500 ease-snappy",
-				)}
-			>
-				Narrated, animated explainers that make anything click.
-			</p>
+      <p
+        className={cn(
+          "mb-1 text-center text-muted-foreground sm:whitespace-nowrap md:text-lg",
+          "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-150 duration-500 ease-snappy"
+        )}
+      >
+        Narrated, animated explainers that make anything click.
+      </p>
 
-			<HeroPrompt className="fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-snappy" />
+      <HeroPrompt className="fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-snappy" />
 
-			<div className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center fill-mode-backwards delay-300 duration-500 ease-snappy">
-				<Button
-					asChild
-					className="border bg-card shadow-sm hover:bg-accent"
-					variant="secondary"
-				>
-					<a href="#video">
-						<PlayIcon data-icon="inline-start" /> Watch the video
-					</a>
-				</Button>
-			</div>
-		</section>
-	);
+      <div className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center fill-mode-backwards delay-300 duration-500 ease-snappy">
+        <Button
+          asChild
+          className="border bg-card shadow-sm hover:bg-accent"
+          variant="secondary"
+        >
+          <a href="#video">
+            <PlayIcon data-icon="inline-start" /> Watch the video
+          </a>
+        </Button>
+      </div>
+    </section>
+  );
 }

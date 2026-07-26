@@ -1,0 +1,15 @@
+# The SPA fallback serves index.html with a 200 for every path, so crawlers
+# must be told explicitly which ones are real. Everything below is either
+# authenticated, single-use, or an unlisted share link.
+
+User-agent: *
+Allow: /$
+Allow: /terms
+Allow: /privacy
+Disallow: /studio
+Disallow: /settings
+Disallow: /auth
+Disallow: /v/
+Disallow: /api/
+
+Sitemap: https://tryanimus.app/sitemap.xml

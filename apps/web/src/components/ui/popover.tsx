@@ -3,37 +3,37 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 function Popover({
-	...props
+  ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
-	return <PopoverPrimitive.Root data-slot="popover" {...props} />;
+  return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }
 
 function PopoverTrigger({
-	...props
+  ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
-	return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
+  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
 }
 
 function PopoverContent({
-	className,
-	align = "center",
-	sideOffset = 4,
-	...props
+  className,
+  align = "center",
+  sideOffset = 4,
+  ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
-	return (
-		<PopoverPrimitive.Portal>
-			<PopoverPrimitive.Content
-				align={align}
-				className={cn(
-					"z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-lg bg-popover p-4 text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-					className,
-				)}
-				data-slot="popover-content"
-				sideOffset={sideOffset}
-				{...props}
-			/>
-		</PopoverPrimitive.Portal>
-	);
+  return (
+    <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Content
+        align={align}
+        className={cn(
+          "z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-lg bg-popover p-4 text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          className
+        )}
+        data-slot="popover-content"
+        sideOffset={sideOffset}
+        {...props}
+      />
+    </PopoverPrimitive.Portal>
+  );
 }
 
 export { Popover, PopoverContent, PopoverTrigger };

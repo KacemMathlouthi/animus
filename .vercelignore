@@ -14,5 +14,5 @@ node_modules
 /assets
 /launch-video
 /docs
-*.md
+/*.md
 .env*
