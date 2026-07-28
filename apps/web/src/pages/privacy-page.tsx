@@ -121,9 +121,13 @@ export function PrivacyPage() {
       <h2>4. Cookies</h2>
       <p>
         A session cookie keeps you signed in; the Service cannot work without
-        it. Vercel Analytics and Speed Insights also run on every page. They are
-        used to count visits and measure page performance in aggregate, not to
-        build a profile of you or serve advertising.
+        it. A second cookie remembers which method you last signed in with, so
+        the sign-in page can highlight it — it stores only that one word (for
+        example &ldquo;google&rdquo;), it is not required, and clearing it
+        changes nothing except that hint. Vercel Analytics and Speed Insights
+        also run on every page. They are used to count visits and measure page
+        performance in aggregate, not to build a profile of you or serve
+        advertising.
       </p>
 
       <h2>5. Where it lives, and for how long</h2>

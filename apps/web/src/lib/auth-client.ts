@@ -3,12 +3,16 @@
  * are what the UI uses: useSession() for reactive auth state, signIn/signOut
  * for actions. */
 
-import { magicLinkClient } from "better-auth/client/plugins";
+import {
+  lastLoginMethodClient,
+  magicLinkClient,
+} from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8787",
-  plugins: [magicLinkClient()],
+  plugins: [magicLinkClient(), lastLoginMethodClient()],
 });
 
-export const { signIn, signOut, useSession } = authClient;
+export const { signIn, signOut, useSession, getLastUsedLoginMethod } =
+  authClient;
