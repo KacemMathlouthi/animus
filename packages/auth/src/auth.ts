@@ -9,7 +9,7 @@ import { db, schema } from "@animus/db";
 import { dash } from "@better-auth/infra";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { magicLink } from "better-auth/plugins";
+import { lastLoginMethod, magicLink } from "better-auth/plugins";
 import { deliverMagicLink, magicLinkPageUrl } from "./email.ts";
 
 const env = getServerEnv();
@@ -85,6 +85,7 @@ export const auth = betterAuth({
           }),
         }),
     }),
+    lastLoginMethod(),
     // Managed dashboard + analytics. No-op until BETTER_AUTH_API_KEY is set.
     ...(infraApiKey ? [dash({ apiKey: infraApiKey })] : []),
   ],
