@@ -34,17 +34,17 @@ npm-debug.log*
 # agent skills (local tooling); skills-lock.json stays tracked
 .agents/
 
-# personal scratch tracker
-todo.md
-
 # Assets Experimentation (root scratch dir only — not apps/*/assets)
 /assets
 
 # react-doctor installed skill files
 .claude/
 
-# local planning docs (not part of the repo)
-docs/cost-control.md
+# local planning + business docs (never published — budgets, grant
+# correspondence, freelancer terms, personal financial details).
+# Ignored as a whole directory on purpose: enumerating files means a doc
+# added later leaks by omission, and this repo is going public.
+docs/
 
 # launch-video brief for the motion designer (local only)
 launch-video/

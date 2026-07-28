@@ -1,5 +1,5 @@
 import { AtSignIcon, ChevronLeftIcon, MailCheckIcon } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Link, Navigate, useLocation, useSearchParams } from "react-router";
 import { Wordmark } from "@/components/brand/wordmark";
 import { GithubIcon } from "@/components/icons/github-icon";
@@ -11,9 +11,11 @@ import { AuthBackdrop } from "@/features/auth/components/auth-backdrop";
 import { AuthDivider } from "@/features/auth/components/auth-divider";
 import { useCountdown } from "@/hooks/use-countdown";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import { signIn, useSession } from "@/lib/auth-client";
+import { getLastUsedLoginMethod, signIn, useSession } from "@/lib/auth-client";
 
 const STUDIO_PATH = "/studio";
+/** Better Auth's own label for a sign-in that came from the emailed link. */
+const MAGIC_LINK_METHOD = "magic-link";
 const DEFAULT_ERROR = "Something went wrong. Please try again.";
 /** Must match the magic-link `expiresIn` in packages/auth (60 * 5 seconds). */
 const MAGIC_LINK_TTL_MS = 5 * 60 * 1000;
@@ -41,6 +43,58 @@ function safeRedirect(from: unknown): string {
 type SocialProvider = "github" | "google";
 type Pending = SocialProvider | "email" | null;
 
+/** How each recorded method reads in the "you last signed in with …" line.
+ * A method that isn't in here (removed provider, cookie from an older build)
+ * simply gets no line, rather than a half-written sentence. */
+const LAST_USED_LABELS: Record<string, string | undefined> = {
+  github: "GitHub",
+  google: "Google",
+  [MAGIC_LINK_METHOD]: "an email link",
+};
+
+/** Names the method you signed in with last time. Deliberately sits outside
+ * the buttons: a badge inside one shifted its centred label out of line with
+ * the others, and carried a fill that fought the primary button's. */
+function LastUsedHint({ label }: { label: string | undefined }) {
+  if (!label) {
+    return null;
+  }
+  return (
+    <p className="text-muted-foreground text-sm">
+      You last signed in with{" "}
+      <span className="font-medium text-foreground">{label}</span>.
+    </p>
+  );
+}
+
+/** One OAuth provider button: its icon, or a spinner while we hand off to the
+ * provider. */
+function SocialButton({
+  disabled,
+  icon,
+  label,
+  loading,
+  onSelect,
+}: {
+  disabled: boolean;
+  icon: ReactNode;
+  label: string;
+  loading: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <Button
+      className="w-full"
+      disabled={disabled}
+      onClick={onSelect}
+      variant="outline"
+    >
+      {loading ? <Spinner data-icon="inline-start" /> : icon}
+      {label}
+    </Button>
+  );
+}
+
 export function AuthPage() {
   const { data: session, isPending } = useSession();
   const location = useLocation();
@@ -57,6 +111,11 @@ export function AuthPage() {
   const [error, setError] = useState<string | null>(() =>
     searchParams.get("error") ? DEFAULT_ERROR : null
   );
+  // Read once on mount: the cookie can't change while this page is open, and a
+  // lazy initializer keeps the value stable across re-renders (the countdown
+  // below re-renders this component every second).
+  const [lastMethod] = useState(() => getLastUsedLoginMethod());
+  const lastUsedLabel = lastMethod ? LAST_USED_LABELS[lastMethod] : undefined;
 
   // Live time left on the emailed link; 0 (idle) until a link is actually sent.
   const secondsLeft = useCountdown(
@@ -208,6 +267,7 @@ export function AuthPage() {
                 <p className="text-base text-muted-foreground">
                   Start turning topics into explainers in minutes.
                 </p>
+                <LastUsedHint label={lastUsedLabel} />
               </div>
 
               {error ? (
@@ -220,32 +280,20 @@ export function AuthPage() {
               ) : null}
 
               <div className="space-y-2">
-                <Button
-                  className="w-full"
+                <SocialButton
                   disabled={pending !== null}
-                  onClick={() => handleSocial("google")}
-                  variant="outline"
-                >
-                  {pending === "google" ? (
-                    <Spinner data-icon="inline-start" />
-                  ) : (
-                    <GoogleIcon data-icon="inline-start" />
-                  )}
-                  Continue with Google
-                </Button>
-                <Button
-                  className="w-full"
+                  icon={<GoogleIcon data-icon="inline-start" />}
+                  label="Continue with Google"
+                  loading={pending === "google"}
+                  onSelect={() => handleSocial("google")}
+                />
+                <SocialButton
                   disabled={pending !== null}
-                  onClick={() => handleSocial("github")}
-                  variant="outline"
-                >
-                  {pending === "github" ? (
-                    <Spinner data-icon="inline-start" />
-                  ) : (
-                    <GithubIcon data-icon="inline-start" />
-                  )}
-                  Continue with GitHub
-                </Button>
+                  icon={<GithubIcon data-icon="inline-start" />}
+                  label="Continue with GitHub"
+                  loading={pending === "github"}
+                  onSelect={() => handleSocial("github")}
+                />
               </div>
 
               <AuthDivider>OR</AuthDivider>
