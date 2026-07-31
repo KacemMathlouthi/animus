@@ -3,24 +3,33 @@ import { Button } from "@/components/ui/button";
 import { HeroPrompt } from "@/features/landing/components/hero-prompt";
 import { cn } from "@/lib/utils";
 
-/** Intrinsic size of the hero paintings, declared so the browser reserves the
+/** Intrinsic size of the hero engravings, declared so the browser reserves the
  * right box before the files land. The launch video's poster reuses the same
- * pair and carries its own copy of these numbers. */
+ * pair and carries its own copy of these numbers.
+ *
+ * The two heights differ on purpose: the dark plate is cropped at the top to
+ * settle it against the light one, which the pair being two separate
+ * generations of one composition had left drifting during the cross-fade. Both
+ * plates are bottom-anchored, so the shorter one simply starts lower and the
+ * artwork lands in register — no transform involved. */
 const PLATE_WIDTH = 3344;
-const PLATE_HEIGHT = 1882;
+const PLATE_HEIGHT_LIGHT = 1881;
+const PLATE_HEIGHT_DARK = 1833;
 
 /** Shared by both plates so the cross-fading pair can never fall out of
  * register.
  *
- * Mobile fills: `object-cover` anchored to the bottom crops the sky and keeps the
- * flower foreground, so a narrow viewport is covered edge to edge instead of the
- * painting sitting as a short band. Desktop releases `top` so `h-auto` can take
- * the artwork's natural proportions at full width, bottom-anchored as before.
+ * Mobile fills: `object-cover` anchored to the bottom crops the empty upper field
+ * and keeps the engraved ground line, so a narrow viewport is covered edge to
+ * edge instead of the plate sitting as a short band. Desktop releases `top` so
+ * `h-auto` can take the artwork's natural 16:9 at full width, bottom-anchored.
  *
- * Both edges fade into the page. The six stops are the smoothing: a two-stop ramp
- * puts a visible knee where it leaves black, so each end carries a mid-alpha stop
- * that bends the ramp into something closer to an ease. The top end reaching 95%
- * is what keeps the fixed header off the painting.
+ * Both edges fade into the page, but by very different amounts. The bottom ramp
+ * is short on purpose — it used to run to 22%, which bleached the whole engraved
+ * ground line into the page and read as a band of tint. At 6% it is just enough
+ * to take the hard cut off the edge. The top still fades long, from 52% up, to
+ * keep the fixed header off the artwork. Each end carries a mid-alpha stop so the
+ * ramp bends like an ease instead of showing a knee where it leaves black.
  *
  * Every class here must stay a literal string: Tailwind scans source text, so an
  * interpolated arbitrary property generates no CSS and the mask would silently
@@ -28,8 +37,8 @@ const PLATE_HEIGHT = 1882;
 const PLATE_CLASSES = [
   "absolute inset-0 h-full w-full object-cover object-bottom md:top-auto md:h-auto",
   "transition-opacity duration-700 ease-fluid",
-  "[-webkit-mask-image:linear-gradient(to_top,transparent_0%,rgba(0,0,0,0.35)_8%,black_22%,black_52%,rgba(0,0,0,0.4)_76%,transparent_95%)]",
-  "[mask-image:linear-gradient(to_top,transparent_0%,rgba(0,0,0,0.35)_8%,black_22%,black_52%,rgba(0,0,0,0.4)_76%,transparent_95%)]",
+  "[-webkit-mask-image:linear-gradient(to_top,transparent_0%,rgba(0,0,0,0.55)_2%,black_6%,black_52%,rgba(0,0,0,0.4)_76%,transparent_95%)]",
+  "[mask-image:linear-gradient(to_top,transparent_0%,rgba(0,0,0,0.55)_2%,black_6%,black_52%,rgba(0,0,0,0.4)_76%,transparent_95%)]",
 ].join(" ");
 
 export function HeroSection() {
@@ -46,21 +55,23 @@ export function HeroSection() {
           alt=""
           className={cn(PLATE_CLASSES, "opacity-100 dark:opacity-0")}
           fetchPriority="high"
-          height={PLATE_HEIGHT}
+          height={PLATE_HEIGHT_LIGHT}
           src="/hero/hero-light.avif"
           width={PLATE_WIDTH}
         />
         <img
           alt=""
           className={cn(PLATE_CLASSES, "opacity-0 dark:opacity-100")}
-          height={PLATE_HEIGHT}
+          height={PLATE_HEIGHT_DARK}
           src="/hero/hero-dark.avif"
           width={PLATE_WIDTH}
         />
-        {/* Legibility veil. Light needs more than dark: its plate is a bright
-         * high-key sky, so the same 15% that settles the night painting leaves
-         * the day one hot. */}
-        <div className="absolute inset-0 bg-background/25 dark:bg-background/15" />
+        {/* Legibility veil, now a light touch in both themes. The engravings
+         * hold their own empty centre, so the copy already clears AA without
+         * help (18.7:1 headline, 4.7:1 tagline on the bare light plate) and the
+         * veil's only remaining effect is washing the ink out — 25% white took
+         * the loam ink from #48290d to a muddy #765f4a. */}
+        <div className="absolute inset-0 bg-background/10" />
         <div
           className={cn(
             "absolute -inset-x-20 inset-y-0 z-0 rounded-full",

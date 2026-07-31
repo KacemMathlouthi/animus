@@ -38,15 +38,29 @@ describe("HeroSection", () => {
     expect(container.querySelector("source")).toBeNull();
   });
 
-  it("declares the artwork's real intrinsic size so the box is reserved correctly", () => {
-    const { plates } = renderHero();
+  it("declares each plate's real intrinsic size so the box is reserved correctly", () => {
+    const { dark, light, plates } = renderHero();
 
     for (const plate of plates) {
       // A wrong ratio makes the browser reserve the wrong box before the file
       // lands, which is what a stale 2880x1146 was doing.
       expect(plate.getAttribute("width")).toBe("3344");
-      expect(plate.getAttribute("height")).toBe("1882");
     }
+    // The heights differ on purpose. The dark plate is cropped at the top so
+    // that, bottom-anchored, its artwork lands in register with the light one --
+    // the pair are two separate generations and drifted during the cross-fade.
+    // Copying the light height onto both would silently squash it back.
+    expect(light.getAttribute("height")).toBe("1881");
+    expect(dark.getAttribute("height")).toBe("1833");
+  });
+
+  it("registers the plates by crop rather than by transform", () => {
+    const { dark, light } = renderHero();
+
+    // A translate would have to be re-tuned per viewport and fights object-cover
+    // on mobile; the crop is carried by the file itself.
+    expect(light.className).not.toContain("translate-y");
+    expect(dark.className).not.toContain("translate-y");
   });
 
   it("keeps both plates decorative, so screen readers skip them", () => {
@@ -77,7 +91,8 @@ describe("HeroSection", () => {
     const { plates } = renderHero();
 
     for (const plate of plates) {
-      // Cover anchored to the bottom crops sky, not the flower foreground.
+      // Cover anchored to the bottom crops the empty upper field, keeping the
+      // engraved ground line.
       expect(plate.className).toContain("object-cover");
       expect(plate.className).toContain("object-bottom");
       // Releasing `top` is what lets h-auto win on desktop; without it the box
@@ -116,10 +131,10 @@ describe("HeroSection", () => {
       // nothing at all for an interpolated arbitrary property — both failures
       // are silent, so assert the literal pair is present.
       expect(plate.className).toContain(
-        "[mask-image:linear-gradient(to_top,transparent_0%,rgba(0,0,0,0.35)_8%,black_22%,black_52%,rgba(0,0,0,0.4)_76%,transparent_95%)]"
+        "[mask-image:linear-gradient(to_top,transparent_0%,rgba(0,0,0,0.55)_2%,black_6%,black_52%,rgba(0,0,0,0.4)_76%,transparent_95%)]"
       );
       expect(plate.className).toContain(
-        "[-webkit-mask-image:linear-gradient(to_top,transparent_0%,rgba(0,0,0,0.35)_8%,black_22%,black_52%,rgba(0,0,0,0.4)_76%,transparent_95%)]"
+        "[-webkit-mask-image:linear-gradient(to_top,transparent_0%,rgba(0,0,0,0.55)_2%,black_6%,black_52%,rgba(0,0,0,0.4)_76%,transparent_95%)]"
       );
     }
   });
