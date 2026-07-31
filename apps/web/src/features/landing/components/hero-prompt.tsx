@@ -84,7 +84,7 @@ export function HeroPrompt({ className }: { className?: string }) {
 
   return (
     <div className={cn("w-full max-w-2xl", className)}>
-      <div className="cta-surface flex flex-col gap-2 rounded-xl p-2.5">
+      <div className="cta-surface hero-raised flex flex-col gap-2 rounded-xl p-2.5">
         <div className="flex items-center gap-1.5 px-1.5 pt-0.5 font-medium text-muted-foreground text-xs">
           <GiftIcon aria-hidden="true" className="size-3.5 text-primary" />
           <span>
