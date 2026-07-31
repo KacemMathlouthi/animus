@@ -384,6 +384,68 @@
   border: 1px solid var(--border);
 }
 
+/* Hero foreground legibility ------------------------------------------------
+   The hero copy and controls sit directly on the painting, so each has to
+   separate from it in both themes. */
+
+/* Text halo in the page's own background colour, not a dark drop shadow:
+   --background is by construction the maximum-contrast partner of --foreground,
+   so a single rule sharpens dark text on the bright day plate and light text on
+   the night one, with no per-theme values to keep in sync. Zero offset on
+   purpose — the painting has no consistent light direction to cast against, and
+   a directional shadow would read as a printing error at these sizes. */
+.hero-copy {
+  text-shadow:
+    0 0 10px color-mix(in srgb, var(--background) 72%, transparent),
+    0 0 30px color-mix(in srgb, var(--background) 48%, transparent);
+}
+
+/* The pixel-grid words fill their glyphs with a gradient clipped to the text,
+   which is an element background — and text-shadow paints above a background, so
+   inheriting the halo would lay a blurred background-coloured silhouette over
+   the gradient and wash the words out. drop-shadow filters the already-rendered
+   result instead, so the halo lands outside the glyphs where it belongs. */
+.hero-copy .hero-word {
+  text-shadow: none;
+  filter: drop-shadow(
+      0 0 6px color-mix(in srgb, var(--background) 70%, transparent)
+    )
+    drop-shadow(0 0 18px color-mix(in srgb, var(--background) 45%, transparent));
+}
+
+/* Controls resting on the painting. Dark mode carries a faint light rim as well
+   as the drop: a black shadow over a near-black night sky is invisible, so
+   without the rim the edge dissolves into the plate. */
+.hero-raised {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.07),
+    0 10px 28px -8px rgba(0, 0, 0, 0.22);
+}
+.dark .hero-raised {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 12px 32px -8px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+
+/* The prompt shell is a .cta-surface, and box-shadow does not accumulate across
+   rules — a second declaration replaces the first outright. So these variants
+   restate the surface's inset highlight alongside the deeper drop instead of
+   layering on top of it, and sit after .cta-surface so they win the tie. */
+.cta-surface.hero-raised {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(0, 0, 0, 0.07),
+    0 12px 32px -8px rgba(0, 0, 0, 0.24);
+}
+.dark .cta-surface.hero-raised {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 14px 36px -8px rgba(0, 0, 0, 0.72),
+    0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+
 /* CTA button (components/ui/cta-button.tsx) — the dotted chevrons shimmer
    slowly at rest and march faster on hover/focus. Static dots when reduced
    motion is preferred. */

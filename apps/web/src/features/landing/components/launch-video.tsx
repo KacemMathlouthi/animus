@@ -3,6 +3,14 @@ import { DecorIcon } from "@/components/decor-icon";
 import { FullWidthDivider } from "@/features/landing/components/full-width-divider";
 import { cn } from "@/lib/utils";
 
+/** Intrinsic size of the hero engravings reused as the poster. The hero declares
+ * the same pair; keep the two in step if the artwork is re-exported. The dark
+ * plate is the shorter of the two — it is cropped at the top to sit in register
+ * with the light one. */
+const PLATE_WIDTH = 3344;
+const PLATE_HEIGHT_LIGHT = 1881;
+const PLATE_HEIGHT_DARK = 1833;
+
 const posterClasses = cn(
   "pointer-events-none absolute inset-0 h-full w-full object-cover",
   "transition-opacity duration-700 ease-fluid"
@@ -65,16 +73,16 @@ export function LaunchVideo() {
               <img
                 alt=""
                 className={cn(posterClasses, "opacity-100 dark:opacity-0")}
-                height={1146}
-                src="/hero/hero-light.webp"
-                width={2880}
+                height={PLATE_HEIGHT_LIGHT}
+                src="/hero/hero-light.avif"
+                width={PLATE_WIDTH}
               />
               <img
                 alt=""
                 className={cn(posterClasses, "opacity-0 dark:opacity-100")}
-                height={1146}
-                src="/hero/hero-dark.webp"
-                width={2880}
+                height={PLATE_HEIGHT_DARK}
+                src="/hero/hero-dark.avif"
+                width={PLATE_WIDTH}
               />
             </>
           )}

@@ -7,7 +7,9 @@ import { useSession } from "@/lib/auth-client";
 import { stashPendingPrompt } from "@/lib/pending-prompt";
 import { cn } from "@/lib/utils";
 
-const MAX_TEXTAREA_HEIGHT = 168;
+/** Cap on the auto-grow, scaled with the rest of the card so a long prompt
+ * stops at the same proportion of it as before. */
+const MAX_TEXTAREA_HEIGHT = 151;
 
 /** Ready-made questions the "Prompts" button cycles into the input, a nudge
  * for visitors who don't know what to ask yet. */
@@ -83,9 +85,13 @@ export function HeroPrompt({ className }: { className?: string }) {
   const canSubmit = text.trim().length > 0 && !creating;
 
   return (
-    <div className={cn("w-full max-w-2xl", className)}>
-      <div className="cta-surface flex flex-col gap-2 rounded-xl p-2.5">
-        <div className="flex items-center gap-1.5 px-1.5 pt-0.5 font-medium text-muted-foreground text-xs">
+    // ~10% off the prompt's overall footprint: 37.8rem is max-w-2xl (42rem)
+    // scaled down, and the paddings, type, and control sizes below come down
+    // with it so it reads as the same card at a smaller size rather than a
+    // narrower one with the old chrome.
+    <div className={cn("w-full max-w-[37.8rem]", className)}>
+      <div className="cta-surface hero-raised flex flex-col gap-1.5 rounded-xl p-2">
+        <div className="flex items-center gap-1.5 px-1.5 font-medium text-muted-foreground text-xs">
           <GiftIcon aria-hidden="true" className="size-3.5 text-primary" />
           <span>
             <span className="text-foreground">$5.00 in free credits.</span> No
@@ -95,7 +101,7 @@ export function HeroPrompt({ className }: { className?: string }) {
 
         <form
           className={cn(
-            "prompt-well flex flex-col gap-2.5 rounded-lg border p-3",
+            "prompt-well flex flex-col gap-2 rounded-lg border p-2.5",
             "transition-[border-color] duration-200 ease-snappy focus-within:border-primary/45"
           )}
           onSubmit={(event) => {
@@ -105,7 +111,7 @@ export function HeroPrompt({ className }: { className?: string }) {
         >
           <textarea
             aria-label="Describe what you want explained"
-            className="min-h-20 w-full resize-none bg-transparent px-1.5 py-2 text-base outline-none placeholder:text-muted-foreground"
+            className="min-h-[4.5rem] w-full resize-none bg-transparent px-1.5 py-1.5 text-[0.9rem] outline-none placeholder:text-muted-foreground"
             onChange={onChange}
             onKeyDown={onKeyDown}
             placeholder="Explain how…"
@@ -116,7 +122,7 @@ export function HeroPrompt({ className }: { className?: string }) {
 
           <div className="flex items-center justify-between">
             <button
-              className="prompt-chip flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-medium text-muted-foreground text-xs outline-none transition-[filter,color] duration-200 ease-snappy hover:text-foreground hover:brightness-105 focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="prompt-chip flex items-center gap-1.5 rounded-md px-2 py-1 font-medium text-muted-foreground text-xs outline-none transition-[filter,color] duration-200 ease-snappy hover:text-foreground hover:brightness-105 focus-visible:ring-3 focus-visible:ring-ring/50"
               onClick={cyclePrompt}
               type="button"
             >
@@ -125,7 +131,7 @@ export function HeroPrompt({ className }: { className?: string }) {
             </button>
             <button
               aria-label="Create video"
-              className="prompt-send grid size-9 shrink-0 place-items-center rounded-md text-primary-foreground outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+              className="prompt-send grid size-8 shrink-0 place-items-center rounded-md text-primary-foreground outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
               disabled={!canSubmit}
               type="submit"
             >
