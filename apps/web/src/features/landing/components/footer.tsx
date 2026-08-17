@@ -117,7 +117,7 @@ const socialLinks = [
   },
   {
     icon: <XIcon />,
-    link: "https://x.com/KacemMathl44045",
+    link: "https://x.com/KacemMathlouthi",
     label: "X",
   },
 ];
