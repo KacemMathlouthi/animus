@@ -1,17 +1,31 @@
-<p align="center">
-  <img alt="animus" src=".github/social-preview.jpg" width="100%">
-</p>
-
-<h3 align="center">Turn any question into a narrated explainer video.</h3>
+<h1 align="center">
+  <img align="middle" alt="" height="34" src=".github/logo.png">
+  animus
+</h1>
 
 <p align="center">
   <a href="https://tryanimus.app"><strong>tryanimus.app</strong></a>
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1f6feb.svg"></a>
-  <img alt="Bun" src="https://img.shields.io/badge/runtime-Bun-e7b277.svg">
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178c6.svg">
+  Turn any question into a narrated explainer video.
+</p>
+
+<p align="center">
+  <img alt="Bun" src="https://img.shields.io/badge/Bun-runtime-e7b277?logo=bun&logoColor=white">
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1f6feb"></a>
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white">
+  <img alt="Hono" src="https://img.shields.io/badge/Hono-API-e36002?logo=hono&logoColor=white">
+  <img alt="Claude via Bedrock" src="https://img.shields.io/badge/Claude-Bedrock-7a4717?logo=anthropic&logoColor=white">
+  <img alt="Manim" src="https://img.shields.io/badge/Manim-Community-2b8a78">
+  <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-2ea043"></a>
+</p>
+
+---
+
+<p align="center">
+  <img alt="animus" src=".github/social-preview.jpg" width="100%">
 </p>
 
 animus is an interactive coding agent for [Manim](https://www.manim.community)
