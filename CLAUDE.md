@@ -293,7 +293,7 @@ bun run build          # turbo build (web app)
 bun run typecheck      # tsc across every workspace — the cross-package compile check
 bunx ultracite check   # lint (no writes); `bunx ultracite fix` to auto-fix
 bun run knip           # unused files / deps / exports
-bunx vitest run        # run tests (NOT `bun test`)
+bun run test           # run tests (NOT `bun test`; see note below)
 ```
 
 Database (`packages/db`):
@@ -311,7 +311,7 @@ bun run snapshot:build # build/refresh the prebaked Manim+LaTeX Daytona snapshot
 ```
 
 **Before committing, the change must pass:** `bun run typecheck`,
-`bunx ultracite check`, `bun run knip`, and `bunx vitest run`.
+`bunx ultracite check`, `bun run knip`, and `bun run test`.
 
 ---
 
@@ -350,7 +350,10 @@ Better Auth wiring) and presentational-only components are intentionally not
 unit-tested.
 
 ### Test runner
-- Use `vitest` (not `bun test`). Run: `bunx vitest run`.
+- Use `vitest` (not `bun test`). Run: `bun run test` (turbo, per workspace).
+  A bare `bunx vitest run` at the repo ROOT silently fails: there is no root
+  `vitest.config.ts` by design, so the 24 `apps/web` files run without jsdom or
+  the `@` alias. It is only correct inside a single workspace.
 - Keep tests close to source in `__tests__/` folders.
 - Shared helpers in `src/__tests__/helpers/` (mock-logger, mock-fetch, fixtures).
 - **`apps/web`** runs under React Testing Library + jsdom via its own
@@ -370,7 +373,7 @@ unit-tested.
 - **Every new feature must include tests** covering its public API, error paths,
   and edge cases.
 - **Every refactor that changes behavior must update affected tests.**
-- **No PR is complete without passing tests** — run `bunx vitest run` before committing.
+- **No PR is complete without passing tests** — run `bun run test` before committing.
 - When modifying an existing module, review its `__tests__/` folder and update
   affected tests.
 
