@@ -19,14 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-
----
-
-Third-party components distributed with this repository remain under their own
-licenses:
-
-- Geist font files — SIL Open Font License 1.1
-  (apps/api/assets/fonts/OFL.txt, apps/web/public/fonts/OFL.txt)
-- Bundled background music — public domain
-  (apps/api/assets/MUSIC_LICENSES.md)
