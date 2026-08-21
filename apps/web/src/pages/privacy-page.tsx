@@ -1,16 +1,18 @@
 import { LegalLayout } from "@/features/legal/components/legal-layout";
 
 const PRIVACY_EMAIL = "privacy@tryanimus.app";
+const REPO_URL = "https://github.com/KacemMathlouthi/animus";
 
 export function PrivacyPage() {
   return (
-    <LegalLayout lastUpdated="July 26, 2026" title="Privacy Policy">
+    <LegalLayout lastUpdated="August 22, 2026" title="Privacy Policy">
       <p>
         This page explains, in plain terms, what data animus holds when you use
         it, who else it passes through, and how to get it deleted. The short
         version: it collects what it needs to sign you in, generate your videos,
         and meter what that costs. It is not sold, and it is not used for
-        advertising.
+        advertising. It covers the hosted service at tryanimus.app; see section
+        9 if you are using an instance someone else runs.
       </p>
 
       <h2>1. What it collects</h2>
@@ -170,13 +172,31 @@ export function PrivacyPage() {
         created for them.
       </p>
 
-      <h2>9. Changes</h2>
+      <h2>9. Open source and self-hosting</h2>
+      <p>
+        animus is open source under the MIT license, and the{" "}
+        <a href={REPO_URL} rel="noreferrer" target="_blank">
+          source code
+        </a>{" "}
+        is public. Reading it gives nobody access to your data: the accounts,
+        conversations and videos described here live in the hosted service's own
+        database and storage, not in the repository.
+      </p>
+      <p>
+        Anyone can run their own instance from that source. If you are using
+        one, it is operated by whoever deployed it, on their infrastructure and
+        their provider accounts. We hold none of its data and this policy does
+        not apply to it, so ask that operator what they collect and how to reach
+        them. This policy applies only to tryanimus.app.
+      </p>
+
+      <h2>10. Changes</h2>
       <p>
         This policy will change as the product does. When it does, the "Last
         updated" date above changes with it.
       </p>
 
-      <h2>10. Contact</h2>
+      <h2>11. Contact</h2>
       <p>
         Questions about privacy, or anything on this page:{" "}
         <a href={`mailto:${PRIVACY_EMAIL}`}>{PRIVACY_EMAIL}</a>.
