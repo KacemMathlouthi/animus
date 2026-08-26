@@ -21,6 +21,7 @@ import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { logger } from "../lib/logger.ts";
 import { backgroundMusicUrl, saveVideo } from "../lib/media.ts";
+import { withSseHeartbeat } from "../lib/sse-heartbeat.ts";
 import { userId } from "../lib/user.ts";
 import { requireAuth } from "../middleware/auth.ts";
 import { aiTelemetry } from "../observability/telemetry.ts";
@@ -254,52 +255,57 @@ chatRoute.post("/", async (c) => {
       prompt: await convertToModelMessages(messages),
     });
 
-    return result.toUIMessageStreamResponse({
-      generateMessageId: createIdGenerator({ prefix: "msg", size: 16 }),
-      originalMessages: messages,
-      // Keep consuming the stream server-side so a client disconnect (closed
-      // tab, dropped network) doesn't halt persistence and settlement mid-turn.
-      // Also the turn's backstop: when the SSE stream ends — however it ends —
-      // settle and release the slot even if onFinish never fired.
-      consumeSseStream: ({ stream }) => {
-        consumeStream({ stream }).finally(() => {
-          settleTurn().finally(releaseTurn);
-        });
-      },
-      // Surfaced to the client as the error part's text; the raw error stays
-      // in the logs. Settlement still runs — steps completed before the error
-      // were real spend.
-      onError: (error) => {
-        logger.error(
-          { conversationId, turnId, error: describeError(error) },
-          "chat stream errored mid-turn"
-        );
-        settleTurn().catch(() => {
-          // settleTurn logs its own failures.
-        });
-        return "Something went wrong while generating. Try sending your message again.";
-      },
-      onFinish: async ({ messages: completedMessages, isAborted }) => {
-        try {
-          // Persist whatever the turn produced — a stopped or cut turn keeps
-          // the user's message and any partial assistant work (including a
-          // rendered video's key, which would otherwise orphan in R2).
-          await saveConversationMessages({
-            conversationId,
-            messages: completedMessages,
+    // Heartbeats wrap the response so a long tool call (renderScene runs for
+    // up to 600s in silence) can't be read as a dead connection by a proxy
+    // between here and the browser.
+    return withSseHeartbeat(
+      result.toUIMessageStreamResponse({
+        generateMessageId: createIdGenerator({ prefix: "msg", size: 16 }),
+        originalMessages: messages,
+        // Keep consuming the stream server-side so a client disconnect (closed
+        // tab, dropped network) doesn't halt persistence and settlement mid-turn.
+        // Also the turn's backstop: when the SSE stream ends — however it ends —
+        // settle and release the slot even if onFinish never fired.
+        consumeSseStream: ({ stream }) => {
+          consumeStream({ stream }).finally(() => {
+            settleTurn().finally(releaseTurn);
           });
-          if (!isAborted) {
-            maybeGenerateConversationTitle({
+        },
+        // Surfaced to the client as the error part's text; the raw error stays
+        // in the logs. Settlement still runs — steps completed before the error
+        // were real spend.
+        onError: (error) => {
+          logger.error(
+            { conversationId, turnId, error: describeError(error) },
+            "chat stream errored mid-turn"
+          );
+          settleTurn().catch(() => {
+            // settleTurn logs its own failures.
+          });
+          return "Something went wrong while generating. Try sending your message again.";
+        },
+        onFinish: async ({ messages: completedMessages, isAborted }) => {
+          try {
+            // Persist whatever the turn produced — a stopped or cut turn keeps
+            // the user's message and any partial assistant work (including a
+            // rendered video's key, which would otherwise orphan in R2).
+            await saveConversationMessages({
               conversationId,
               messages: completedMessages,
             });
+            if (!isAborted) {
+              maybeGenerateConversationTitle({
+                conversationId,
+                messages: completedMessages,
+              });
+            }
+          } finally {
+            await settleTurn();
+            releaseTurn();
           }
-        } finally {
-          await settleTurn();
-          releaseTurn();
-        }
-      },
-    });
+        },
+      })
+    );
   } catch (error) {
     // The turn never produced a stream; without this the slot would leak.
     releaseTurn();
