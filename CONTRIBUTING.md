@@ -50,6 +50,12 @@ you exactly which one broke. Run them locally first.
 
 `bunx ultracite fix` applies formatting and safe fixes. Note that Biome also
 lints embedded CSS and HTML, so a `.html` file in `scripts/` is checked too.
+Those files are linted but not formatted: the formatter is not idempotent on
+their embedded CSS comments and re-indents them on every run, so `biome.jsonc`
+turns it off for that path.
+
+Scope `fix` to what you changed. Run repo-wide it will happily reformat files
+you never touched, and they end up in your commit.
 
 ## Tests are part of the change
 
