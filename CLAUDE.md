@@ -107,7 +107,12 @@ Cross-package "does it compile" = `bun run typecheck`.
   before they're stored. Quota tiers / paid billing remain future work.
 - **Runtime:** `apps/api` (Hono/Bun) hosts the loop as a **long-running
   container** (streaming + live sandbox handles need a persistent process — not
-  serverless). No separate worker/queue in v1.
+  serverless). No separate worker/queue in v1. Two properties the container
+  host depends on: the chat response is wrapped by `withSseHeartbeat`
+  (`lib/sse-heartbeat.ts`) so a silent 600s `renderScene` isn't read as a dead
+  connection by a load balancer or CDN, and SIGTERM/SIGINT drain in-flight
+  requests and close the Postgres pool (`lib/shutdown.ts`) within a bounded
+  20s — every deploy stops the process this way.
 - **Hosting (deployed): Vercel, container image for the API.** The web
   (`animus-web` project, Vite static + SPA fallback rewrite) and the API
   (`animus-api` project) both deploy on Vercel. The API ships as an **OCI
@@ -433,7 +438,11 @@ assume — confirm.
   Server env is behind `@animus/core/env` — **never import it from the web**
   (enforced by a Biome `noRestrictedImports` rule in `apps/web`).
 - **Env:** loaded by the runtime (Bun `--env-file`, Vite for web), validated by
-  Zod in `@animus/core/env`. Never read `process.env` directly in **runtime
+  Zod in `@animus/core/env`. A `superRefine` gated on `NODE_ENV=production`
+  hard-fails the boot when a production-critical variable is missing — most
+  importantly the Bedrock credentials, whose absence otherwise falls through to
+  the AWS SDK's own chain and (on a container host) authenticates as the
+  *instance's* IAM role instead of failing. Never read `process.env` directly in **runtime
   app/server code** — import from `@animus/core/env`. Build-time tooling configs
   (e.g. `drizzle.config.ts`) are the exception: they run via `--env-file`, need
   only `DATABASE_URL`, and must not pull in the full server-env schema.
