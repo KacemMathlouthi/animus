@@ -58,7 +58,7 @@
     }
 
     /* The hero's accent face — the same one the landing page sets
-                       "QUESTION" and "VIDEO" in, so the card and the site read as one voice. */
+                               "QUESTION" and "VIDEO" in, so the card and the site read as one voice. */
     @font-face {
       font-family: "Geist Pixel Grid";
       src: url("../apps/web/public/fonts/GeistPixel-Grid.woff2") format("woff2");
@@ -83,14 +83,14 @@
     }
 
     /* The painting is the ground, not the message: it sits behind a scrim so
-                       the type stays the thing you read first.
+                               the type stays the thing you read first.
 
-                       Sized well below `cover` and anchored right. `cover` is the smallest scale
-                       that fills a 2:1 frame from a 4:3 plate, and it throws away a third of the
-                       painting's height — the sea, the valley and the flowers all fall outside
-                       the crop. Holding it at 1050px shows nearly all of the composition; the
-                       left edge then stops short of the frame, so it is masked out into the dark
-                       ground rather than cut, which is where the type sits anyway. */
+                               Sized well below `cover` and anchored right. `cover` is the smallest scale
+                               that fills a 2:1 frame from a 4:3 plate, and it throws away a third of the
+                               painting's height — the sea, the valley and the flowers all fall outside
+                               the crop. Holding it at 1050px shows nearly all of the composition; the
+                               left edge then stops short of the frame, so it is masked out into the dark
+                               ground rather than cut, which is where the type sits anyway. */
     .art {
       position: absolute;
       inset: 0;
@@ -105,8 +105,8 @@
     }
 
     /* Darkest at the left, where the words are; the figure on the right keeps
-                       its contrast. Warm-black rather than neutral, so the scrim sinks into
-                       the painting's own shadow tones instead of greying them. */
+                               its contrast. Warm-black rather than neutral, so the scrim sinks into
+                               the painting's own shadow tones instead of greying them. */
     .scrim {
       position: absolute;
       inset: 0;
@@ -154,16 +154,16 @@
     }
 
     /* Matches the landing hero: "question" set italic, "video" set bold, both
-                       uppercase in the pixel face. */
+                               uppercase in the pixel face. */
     h1 .accent {
       font-family: "Geist Pixel Grid", "Geist", sans-serif;
       text-transform: uppercase;
     }
 
     /* The landing page pulls this word left with a negative margin, tuned for
-                       its own measure. Here that closes the space against "any" entirely, so
-                       the accent keeps a normal word space and only the italic's trailing
-                       sidebearing is padded back. */
+                               its own measure. Here that closes the space against "any" entirely, so
+                               the accent keeps a normal word space and only the italic's trailing
+                               sidebearing is padded back. */
     h1 .accent-question {
       padding-right: 0.06em;
       font-style: italic;

@@ -96,6 +96,7 @@ export function StudioWorkspace({
     <VisualizationPanel
       playToken={playToken}
       seed={seed}
+      status={status}
       title={title}
       videoKey={pinnedVideoKey ?? videoKey}
     />
