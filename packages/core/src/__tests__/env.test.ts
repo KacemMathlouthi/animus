@@ -141,3 +141,95 @@ describe("parseServerEnv", () => {
     expect(() => parseServerEnv(withoutKey)).toThrow("ELEVENLABS_API_KEY");
   });
 });
+
+/** Everything the production gate demands, on top of MINIMAL. */
+const PROD = {
+  ...MINIMAL,
+  NODE_ENV: "production",
+  WEB_ORIGIN: "https://tryanimus.app",
+  BETTER_AUTH_URL: "https://tryanimus.app",
+  BEDROCK_ACCESS_KEY_ID: "bedrock-akid",
+  BEDROCK_SECRET_ACCESS_KEY: "bedrock-secret",
+  BEDROCK_REGION: "us-east-1",
+  ENCRYPTION_KEY: "base64-key",
+  DAYTONA_API_KEY: "dt-key",
+  EXA_API_KEY: "exa-key",
+  RESEND_API_KEY: "re-key",
+  RESEND_FROM: "animus <login@mail.tryanimus.app>",
+};
+
+describe("parseServerEnv in production", () => {
+  it("accepts a fully configured production environment", () => {
+    const env = parseServerEnv(PROD);
+    expect(env.nodeEnv).toBe("production");
+    expect(env.bedrockAccessKeyId).toBe("bedrock-akid");
+  });
+
+  it("leaves development untouched by the production gate", () => {
+    // The same sparse env that production rejects must still boot in dev.
+    expect(() => parseServerEnv(MINIMAL)).not.toThrow();
+  });
+
+  it.each([
+    ["BEDROCK_ACCESS_KEY_ID"],
+    ["BEDROCK_SECRET_ACCESS_KEY"],
+    ["BEDROCK_REGION"],
+    ["ENCRYPTION_KEY"],
+    ["DAYTONA_API_KEY"],
+    ["EXA_API_KEY"],
+    ["RESEND_API_KEY"],
+  ])("rejects production without %s", (key) => {
+    const { [key]: _dropped, ...rest } = PROD;
+    expect(() => parseServerEnv(rest)).toThrow(key);
+  });
+
+  it("accepts AWS_* as the fallback for the Bedrock credentials", () => {
+    const {
+      BEDROCK_ACCESS_KEY_ID: _id,
+      BEDROCK_SECRET_ACCESS_KEY: _secret,
+      BEDROCK_REGION: _region,
+      ...rest
+    } = PROD;
+    const env = parseServerEnv({
+      ...rest,
+      AWS_ACCESS_KEY_ID: "aws-akid",
+      AWS_SECRET_ACCESS_KEY: "aws-secret",
+      AWS_REGION: "eu-west-1",
+    });
+    expect(env.bedrockAccessKeyId).toBe("aws-akid");
+    expect(env.bedrockRegion).toBe("eu-west-1");
+  });
+
+  it("rejects the resend.dev sandbox sender in production", () => {
+    const { RESEND_FROM: _from, ...rest } = PROD;
+    // Omitted, so the schema default applies — which is the sandbox sender.
+    expect(() => parseServerEnv(rest)).toThrow("RESEND_FROM");
+  });
+
+  it.each([
+    ["WEB_ORIGIN"],
+    ["BETTER_AUTH_URL"],
+  ])("rejects a localhost %s in production", (key) => {
+    expect(() =>
+      parseServerEnv({ ...PROD, [key]: "http://localhost:5173" })
+    ).toThrow(key);
+  });
+
+  it("reports every missing variable at once, not just the first", () => {
+    const {
+      DAYTONA_API_KEY: _daytona,
+      EXA_API_KEY: _exa,
+      ENCRYPTION_KEY: _enc,
+      ...rest
+    } = PROD;
+    try {
+      parseServerEnv(rest);
+      expect.unreachable("should have thrown");
+    } catch (error) {
+      const message = (error as Error).message;
+      expect(message).toContain("DAYTONA_API_KEY");
+      expect(message).toContain("EXA_API_KEY");
+      expect(message).toContain("ENCRYPTION_KEY");
+    }
+  });
+});

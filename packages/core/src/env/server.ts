@@ -8,7 +8,11 @@
 
 import { z } from "zod";
 
-const ServerEnvSchema = z.object({
+/** Resend's shared sandbox sender. Works out of the box but only delivers to the
+ * Resend account owner, so it is a development-only default. */
+const RESEND_FROM_DEFAULT = "animus <onboarding@resend.dev>";
+
+const ServerEnvBaseSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
@@ -37,7 +41,7 @@ const ServerEnvSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   /** Optional — magic links log to the console when unset. */
   RESEND_API_KEY: z.string().optional(),
-  RESEND_FROM: z.string().default("animus <onboarding@resend.dev>"),
+  RESEND_FROM: z.string().default(RESEND_FROM_DEFAULT),
   /** Amazon Bedrock inference-profile id for the agent's Claude model. */
   BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-6-v1"),
   /** Bedrock credentials/region, passed to the provider EXPLICITLY. The BEDROCK_*
@@ -79,6 +83,110 @@ const ServerEnvSchema = z.object({
   R2_ACCESS_KEY_ID: z.string().min(1, "R2_ACCESS_KEY_ID is required"),
   R2_SECRET_ACCESS_KEY: z.string().min(1, "R2_SECRET_ACCESS_KEY is required"),
   R2_BUCKET: z.string().min(1, "R2_BUCKET is required"),
+});
+
+type RawServerEnv = z.infer<typeof ServerEnvBaseSchema>;
+
+/** True for a URL still pointing at a developer's machine. */
+function isLocalUrl(value: string): boolean {
+  try {
+    const { hostname } = new URL(value);
+    return (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "[::1]"
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** Variables that stay optional in development — so a contributor can run the
+ * app without holding every account — but whose absence in **production** fails
+ * silently and expensively instead of loudly.
+ *
+ * The Bedrock credentials are the sharpest case, and the reason this exists.
+ * `getModel` passes them explicitly and lets `undefined` fall through to the AWS
+ * SDK's own credential chain. On a container host (ECS, EC2) that chain resolves
+ * to the *instance's* IAM role, so a missing key does not fail at boot: it
+ * authenticates as the wrong AWS account and surfaces mid-turn as an
+ * AccessDenied that reads like a model-access problem. The region matters for
+ * the same reason — model access is granted per region.
+ *
+ * OAuth client ids stay optional on purpose: a self-hosted instance may
+ * legitimately run magic-link sign-in only. */
+function productionIssues(
+  e: RawServerEnv
+): { message: string; path: string }[] {
+  const issues: { message: string; path: string }[] = [];
+  const required = (path: string, value: string | undefined, why: string) => {
+    if (!value) {
+      issues.push({ message: `required in production (${why})`, path });
+    }
+  };
+
+  required(
+    "BEDROCK_ACCESS_KEY_ID",
+    e.BEDROCK_ACCESS_KEY_ID ?? e.AWS_ACCESS_KEY_ID,
+    "unset silently falls back to the host's own IAM role"
+  );
+  required(
+    "BEDROCK_SECRET_ACCESS_KEY",
+    e.BEDROCK_SECRET_ACCESS_KEY ?? e.AWS_SECRET_ACCESS_KEY,
+    "unset silently falls back to the host's own IAM role"
+  );
+  required(
+    "BEDROCK_REGION",
+    e.BEDROCK_REGION ?? e.AWS_REGION,
+    "model access is granted per region"
+  );
+  required(
+    "ENCRYPTION_KEY",
+    e.ENCRYPTION_KEY,
+    "storing a BYO provider key fails without it"
+  );
+  required(
+    "DAYTONA_API_KEY",
+    e.DAYTONA_API_KEY,
+    "every render turn needs the sandbox"
+  );
+  required(
+    "EXA_API_KEY",
+    e.EXA_API_KEY,
+    "the agent's research tools fail mid-turn without it"
+  );
+  required(
+    "RESEND_API_KEY",
+    e.RESEND_API_KEY,
+    "magic links are the primary sign-in path"
+  );
+
+  if (e.RESEND_FROM === RESEND_FROM_DEFAULT) {
+    issues.push({
+      message:
+        "the default resend.dev sender only delivers to the account owner, so every other user's sign-in email is dropped",
+      path: "RESEND_FROM",
+    });
+  }
+  for (const path of ["WEB_ORIGIN", "BETTER_AUTH_URL"] as const) {
+    if (isLocalUrl(e[path])) {
+      issues.push({
+        message: `still points at localhost (${e[path]})`,
+        path,
+      });
+    }
+  }
+
+  return issues;
+}
+
+const ServerEnvSchema = ServerEnvBaseSchema.superRefine((e, ctx) => {
+  if (e.NODE_ENV !== "production") {
+    return;
+  }
+  for (const { path, message } of productionIssues(e)) {
+    ctx.addIssue({ code: "custom", message, path: [path] });
+  }
 });
 
 export interface ServerEnv {
