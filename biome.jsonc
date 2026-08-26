@@ -3,5 +3,10 @@
   "extends": ["ultracite/biome/core"],
   "files": {
     "includes": ["!**/.turbo", "!**/dist", "!**/bun.lock", "!**/drizzle"]
+  },
+  // Bun is the runtime for apps/api and every package (@types/bun supplies the
+  // types); without this, using `Bun` as a value reads as an undeclared global.
+  "javascript": {
+    "globals": ["Bun"]
   }
 }

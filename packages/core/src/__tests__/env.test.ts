@@ -170,15 +170,17 @@ describe("parseServerEnv in production", () => {
     expect(() => parseServerEnv(MINIMAL)).not.toThrow();
   });
 
-  it.each([
-    ["BEDROCK_ACCESS_KEY_ID"],
-    ["BEDROCK_SECRET_ACCESS_KEY"],
-    ["BEDROCK_REGION"],
-    ["ENCRYPTION_KEY"],
-    ["DAYTONA_API_KEY"],
-    ["EXA_API_KEY"],
-    ["RESEND_API_KEY"],
-  ])("rejects production without %s", (key) => {
+  const REQUIRED_IN_PRODUCTION = [
+    "BEDROCK_ACCESS_KEY_ID",
+    "BEDROCK_SECRET_ACCESS_KEY",
+    "BEDROCK_REGION",
+    "ENCRYPTION_KEY",
+    "DAYTONA_API_KEY",
+    "EXA_API_KEY",
+    "RESEND_API_KEY",
+  ] as const satisfies readonly (keyof typeof PROD)[];
+
+  it.each(REQUIRED_IN_PRODUCTION)("rejects production without %s", (key) => {
     const { [key]: _dropped, ...rest } = PROD;
     expect(() => parseServerEnv(rest)).toThrow(key);
   });
