@@ -1,10 +1,5 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  // "stream", not "tui": the interactive TUI puts each task in its own pane,
-  // so a failing task's output is hidden behind whichever pane is focused, and
-  // it enables mouse tracking that it fails to restore on Ctrl-C (the terminal
-  // then echoes every mouse move as an escape sequence). Streaming interleaves
-  // every task with a "package:task" prefix and leaves the terminal alone.
   "ui": "stream",
   "globalDependencies": [
     "tsconfig.base.json",

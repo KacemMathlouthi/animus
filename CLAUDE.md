@@ -315,6 +315,16 @@ Sandbox snapshot (`packages/agent`):
 bun run snapshot:build # build/refresh the prebaked Manim+LaTeX Daytona snapshot
 ```
 
+Turbo runs with `"ui": "stream"` (set in `turbo.json`), **not** the
+interactive `"tui"`. The TUI gives each task its own pane, so a failing
+task's output hides behind whichever pane is focused — you cannot see the
+error you are looking for — and it enables terminal mouse tracking that it
+fails to restore on Ctrl-C, after which the shell echoes every mouse move as
+an escape sequence (reproduced on WSL2, turbo 2.10.2). Streaming interleaves
+every task behind a `package:task` prefix and leaves the terminal alone.
+Note `turbo.json` is strict JSON to the editor's language service, so that
+reasoning lives here rather than as a comment in the file.
+
 **Before committing, the change must pass:** `bun run typecheck`,
 `bunx ultracite check`, `bun run knip`, and `bun run test`.
 
