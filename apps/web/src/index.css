@@ -115,6 +115,9 @@
   --sidebar-accent-foreground: #1c1c1a;
   --sidebar-border: #e7e6e3;
   --sidebar-ring: #203b14;
+  /* Identicon blocks: `--primary` in oklch, hue supplied per user. */
+  --identicon-l: 0.38;
+  --identicon-c: 0.058;
   color-scheme: light;
 }
 
@@ -151,6 +154,8 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: #d8b98a;
+  --identicon-l: 0.8;
+  --identicon-c: 0.072;
   color-scheme: dark;
 }
 
