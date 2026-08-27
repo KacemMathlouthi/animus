@@ -22,27 +22,28 @@ function panel(overrides: { status: ChatStatus; videoKey?: string }) {
 }
 
 const CREATING = /Creating your explainer/i;
-const NO_VIDEO = /No video yet/i;
 const STOPPED_EARLY = /The turn stopped early/i;
 const STOPPED = /stopped early/i;
 
 describe("VisualizationPanel", () => {
-  it("promises a video only while a turn is actually running", () => {
+  it("keeps the rendering animation while a turn is in flight", () => {
     panel({ status: "streaming" });
     expect(screen.getByText(CREATING)).toBeInTheDocument();
   });
 
-  it("says nothing is running on an untouched conversation", () => {
-    // It used to claim "Creating your explainer" here too, before the user had
-    // asked for anything at all.
+  it("keeps the rendering animation between turns", () => {
+    // "ready" is the ordinary waiting-on-you state (an unanswered plan, a
+    // question) and this panel only mounts once a conversation has messages, so
+    // a video is still coming. Showing a static empty state here was wrong.
     panel({ status: "ready" });
 
-    expect(screen.queryByText(CREATING)).not.toBeInTheDocument();
-    expect(screen.getByText(NO_VIDEO)).toBeInTheDocument();
+    expect(screen.getByText(CREATING)).toBeInTheDocument();
+    expect(screen.queryByText(STOPPED)).not.toBeInTheDocument();
   });
 
-  it("says the turn stopped early when it ended in an error", () => {
-    // The regression: a cut-off turn left this panel promising a video forever.
+  it("stops promising a video once the turn has failed", () => {
+    // The regression this exists for: a cut-off turn left the panel animating
+    // forever, telling the user their explainer was on its way.
     panel({ status: "error" });
 
     expect(screen.queryByText(CREATING)).not.toBeInTheDocument();

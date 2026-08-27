@@ -1,5 +1,5 @@
 import type { ChatStatus } from "ai";
-import { BellIcon, TriangleAlertIcon, VideoOffIcon } from "lucide-react";
+import { BellIcon, TriangleAlertIcon } from "lucide-react";
 import { useState } from "react";
 import { ShareCard } from "@/components/share-card";
 import { Button } from "@/components/ui/button";
@@ -50,26 +50,20 @@ function RenderingStage() {
   );
 }
 
-/** Shown when there is no video and no turn running. Previously this panel
- * rendered "Creating your explainer" unconditionally, so it promised a video
- * that was never coming: after a turn was cut off, after a failed render, and
- * even on an empty conversation where nothing had been asked for yet. */
-function IdleStage({ failed }: { failed: boolean }) {
+/** Shown when the turn ended in an error. Everything else keeps the animated
+ * RenderingStage: this panel only mounts once a conversation has messages, and
+ * `ready` is the ordinary between-turns state (waiting on plan approval, the
+ * agent asking a question), where a video is still genuinely coming. Only a
+ * turn that actually failed should stop promising one. */
+function StoppedStage() {
   return (
     <div className="flex max-w-sm flex-col items-center gap-3 text-center">
-      {failed ? (
-        <TriangleAlertIcon className="size-8 text-destructive" />
-      ) : (
-        <VideoOffIcon className="size-8 text-muted-foreground" />
-      )}
+      <TriangleAlertIcon className="size-8 text-destructive" />
       <div className="space-y-1.5">
-        <p className="font-medium">
-          {failed ? "The turn stopped early" : "No video yet"}
-        </p>
+        <p className="font-medium">The turn stopped early</p>
         <p className="text-muted-foreground text-sm">
-          {failed
-            ? "It ended before a video was produced. The chat has the details, and sending a message picks up where it left off."
-            : "Ask for an explainer in the chat and the finished video lands here."}
+          It ended before a video was produced. The chat has the details, and
+          sending a message picks up where it left off.
         </p>
       </div>
     </div>
@@ -87,18 +81,12 @@ export function VisualizationPanel({
   title: string;
   /** Stable seed for the branded poster card (the conversation id). */
   seed: string;
-  /** Drives what an empty panel says: a turn in flight is genuinely rendering,
-   * anything else is not. */
+  /** Only "error" changes what an empty panel says; every other status keeps
+   * the rendering animation. */
   status: ChatStatus;
   playToken?: number;
 }) {
   const { url } = useSignedMediaUrl(videoKey);
-  const working = status === "submitted" || status === "streaming";
-
-  let stage = <IdleStage failed={status === "error"} />;
-  if (working) {
-    stage = <RenderingStage />;
-  }
 
   return (
     <div className="flex h-full flex-col bg-muted/30">
@@ -111,7 +99,7 @@ export function VisualizationPanel({
         />
       ) : (
         <div className="flex flex-1 items-center justify-center overflow-auto p-6">
-          {stage}
+          {status === "error" ? <StoppedStage /> : <RenderingStage />}
         </div>
       )}
     </div>
