@@ -1,5 +1,3 @@
-/** App-wide structured logger (pino) */
-
 import { getServerEnv } from "@animus/core/env";
 import pino from "pino";
 import pretty from "pino-pretty";

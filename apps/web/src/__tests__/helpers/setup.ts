@@ -1,8 +1,6 @@
-/** Global test setup for the web app: jest-dom matchers, RTL teardown, and
- * stubs for the browser APIs jsdom doesn't implement but our components call
- * unconditionally (IntersectionObserver, ResizeObserver, matchMedia,
- * scrollIntoView). Without these, rendering anything from the studio throws
- * before a single assertion runs. */
+/** jest-dom matchers, RTL teardown, and stubs for the browser APIs jsdom lacks
+ * but our components call unconditionally. Without them, rendering anything
+ * from the studio throws before a single assertion runs. */
 
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
@@ -10,7 +8,7 @@ import { afterEach, vi } from "vitest";
 
 class NoopObserver {
   observe(): void {
-    // no-op: tests that care drive the callback themselves
+    // Tests that care drive the callback themselves.
   }
   unobserve(): void {
     // no-op
@@ -30,8 +28,7 @@ if (!("ResizeObserver" in globalThis)) {
   vi.stubGlobal("ResizeObserver", NoopObserver);
 }
 
-// jsdom ships neither of these; shadcn's sidebar/tooltip and the chat
-// autoscroll call them during render.
+// jsdom ships neither; the sidebar, tooltip and chat autoscroll call them.
 if (!window.matchMedia) {
   window.matchMedia = (query: string) =>
     ({
@@ -57,15 +54,13 @@ Element.prototype.scrollIntoView ??= () => {
   // no-op
 };
 
-// jsdom's getContext throws "not implemented" rather than returning null, which
-// the video player's ambient-glow canvas already handles. Returning null takes
-// that supported path instead of filling the run with stderr noise.
+// jsdom's getContext throws instead of returning null, which the ambient-glow
+// canvas already handles. Null takes that path and spares the stderr noise.
 HTMLCanvasElement.prototype.getContext = () => null;
 
-/** Node exposes a `localStorage` global that is an empty object unless started
- * with `--localstorage-file`, and it shadows jsdom's. Every method the app calls
- * would throw, which `pending-prompt` swallows — so the feature would look fine
- * and test as a no-op. This is a real Storage backed by a Map. */
+/** Node's `localStorage` global is an empty object that shadows jsdom's, so
+ * every call throws and `pending-prompt` swallows it: the feature would test as
+ * a silent no-op. This is a real Storage backed by a Map. */
 function memoryStorage(): Storage {
   const store = new Map<string, string>();
   return {

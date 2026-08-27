@@ -1,10 +1,6 @@
-/** Email delivery (Resend). Outside production, a missing key or a failed send
- * falls back to printing the link so local dev is never blocked.
- *
- * In production it never prints and always throws. A magic link is a working,
- * single-use credential: echoing one into a log drain hands sign-in to anyone
- * who can read logs, and swallowing the failure leaves the UI claiming an email
- * was sent that never was. */
+/** Outside production a missing key or failed send prints the link so local dev
+ * is never blocked. In production it never prints and always throws: a magic
+ * link is a working credential, and a log drain would hand out sign-ins. */
 
 import { readFile } from "node:fs/promises";
 import { getServerEnv } from "@animus/core/env";
@@ -30,7 +26,6 @@ const CORNER_ROW = `<tr>
               </td>
             </tr>`;
 
-/** Read + cache the logo PNG (committed alongside this module). */
 let logoBytes: Buffer | null = null;
 async function logoContent(): Promise<Buffer> {
   if (!logoBytes) {
@@ -109,12 +104,9 @@ ${url}
 If you didn't request this, you can safely ignore this email.`;
 }
 
-/** Build the URL the magic-link EMAIL points at: an interstitial page in the
- * web app, not the API's verify endpoint. Mail security scanners (Outlook
- * SafeLinks & co.) prefetch every link in an arriving email; the verify
- * endpoint consumes the single-use token on GET, so a direct link arrives
- * already-invalid for the human. The page requires a button click to hit the
- * real endpoint — scanners follow links, they don't click buttons. */
+/** Points at a page in the web app, not the API's verify endpoint: mail
+ * scanners prefetch every link, and verify spends its single-use token on GET,
+ * so a direct link arrives already invalid. Scanners do not click buttons. */
 export function magicLinkPageUrl({
   webOrigin,
   token,
@@ -139,8 +131,7 @@ export async function deliverMagicLink({
 }): Promise<void> {
   if (!resend) {
     if (isProduction) {
-      // The env gate requires RESEND_API_KEY in production, so reaching this
-      // means the gate was bypassed. Fail loudly rather than print the link.
+      // The env gate requires the key in prod, so this means it was bypassed.
       throw new Error("RESEND_API_KEY is not set; cannot send the magic link");
     }
     console.log(`Magic link for ${email}: ${url}`);
@@ -165,12 +156,11 @@ export async function deliverMagicLink({
 
   if (error) {
     if (isProduction) {
-      // Throwing lets Better Auth surface a real failure instead of the UI
-      // saying "check your email" when nothing was sent. The caller logs it.
+      // Lets Better Auth surface a real failure rather than "check your email".
       throw new Error(`Failed to send the magic link: ${error.message}`);
     }
     console.error("Failed to send magic link via Resend:", error);
-    // Don't block local dev — surface the link so it's still usable.
+    // Keep local dev unblocked.
     console.log(`Magic link for ${email}: ${url}`);
   }
 }

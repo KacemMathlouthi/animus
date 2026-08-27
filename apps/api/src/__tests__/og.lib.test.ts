@@ -41,10 +41,9 @@ describe("shareCardAssetsPresent", () => {
 });
 
 describe("asset loading resilience", () => {
-  // Regression for the deploy incident where a .vercelignore pattern stripped
-  // apps/api/assets from the image: og.ts then crashed the whole API at boot.
-  // Assets must load lazily — importing the module with unreadable assets must
-  // succeed, and only rendering may fail, with an error naming the file.
+  // Regression: a .vercelignore pattern once stripped apps/api/assets and og.ts
+  // crashed the whole API at boot. Only rendering may fail, and it must name
+  // the missing file.
   it("survives module import without assets; rendering fails descriptively", async () => {
     vi.resetModules();
     vi.doMock("node:fs", () => ({

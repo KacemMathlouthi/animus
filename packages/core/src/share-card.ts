@@ -1,9 +1,6 @@
-/** The animus share card — a deterministic, brand-only preview card derived
- * purely from a video's title and a seed. One design, three surfaces: the
- * studio player poster, the public share page, and the Open Graph link-preview.
- */
+/** A deterministic preview card derived only from a title and a seed. One
+ * design, three surfaces: the studio poster, the share page, the OG image. */
 
-/** Brand palette. */
 const BASE = "#0b0a0a";
 const BORDER = "#2a2118";
 const AMBER_LIGHT = "#e7b277";
@@ -11,12 +8,10 @@ const AMBER_DARK = "#7a4717";
 const TEXT = "#f5efe6";
 const MUTED = "#9a8f80";
 
-/** Canonical Open Graph dimensions. */
 export const OG_WIDTH = 1200;
 export const OG_HEIGHT = 630;
 
-/** Curated painting set for the card's right half (basenames). The web serves
- * `/features/<name>.webp`; the API embeds `assets/share-images/<name>.jpg`. */
+/** The web serves `/features/<name>.webp`, the API embeds the jpg. */
 export const SHARE_IMAGES = [
   "research-grounded",
   "narration",
@@ -27,7 +22,7 @@ export const SHARE_IMAGES = [
 const WHITESPACE_RUN = /\s+/;
 const TRAILING_WHITESPACE = /\s+$/;
 
-/** FNV-1a, a small deterministic string hash. Returns a non-negative integer. */
+/** FNV-1a. Non-negative. */
 export function hashSeed(seed: string): number {
   let hash = 0x81_1c_9d_c5;
   for (let i = 0; i < seed.length; i++) {
@@ -39,12 +34,10 @@ export function hashSeed(seed: string): number {
   return hash >>> 0;
 }
 
-/** Which curated painting a seed maps to (0-based). */
 export function shareImageIndex(seed: string): number {
   return hashSeed(seed) % SHARE_IMAGES.length;
 }
 
-/** The curated painting basename a seed maps to. */
 export function shareImageName(seed: string): string {
   return SHARE_IMAGES[shareImageIndex(seed)] ?? SHARE_IMAGES[0];
 }
@@ -62,9 +55,7 @@ function escapeXml(value: string): string {
   return value.replace(XML_UNSAFE, (char) => XML_ESCAPES[char] ?? char);
 }
 
-/** Greedy word-wrap by estimated glyph width. Geist SemiBold averages ~0.55em
- * per glyph; we wrap to at most `maxLines`, ellipsizing the final line when the
- * title overflows so a very long title never blows past its column. */
+/** Greedy wrap by estimated width; Geist SemiBold averages ~0.55em a glyph. */
 function wrapTitle(
   title: string,
   columnWidth: number,
@@ -92,11 +83,8 @@ function wrapTitle(
     lines.push(current);
   }
 
-  // Ellipsize the last line when content was dropped (more words remain) OR when
-  // the final line is itself wider than the column — the latter catches a single
-  // overlong word, which is accepted unconditionally above and would otherwise
-  // overflow. `fitTitle` sees the "…" and keeps shrinking, so only a word too
-  // long even at the smallest size ends up clamped.
+  // Also ellipsize an over-wide final line, which catches the single overlong
+  // word accepted unconditionally above. fitTitle sees the "…" and shrinks.
   const consumed = lines.join(" ").split(WHITESPACE_RUN).filter(Boolean).length;
   const lastIdx = lines.length - 1;
   const last = lastIdx >= 0 ? (lines[lastIdx] ?? "") : "";
@@ -110,8 +98,7 @@ function wrapTitle(
   return lines;
 }
 
-/** Pick a title font size (as a fraction of height) that keeps the title within
- * three lines where possible — shorter titles get to be bigger. */
+/** Largest size that still fits three lines, so short titles read bigger. */
 function fitTitle(
   title: string,
   columnWidth: number,
@@ -130,8 +117,7 @@ function fitTitle(
   return { fontSize, lines: wrapTitle(title, columnWidth, fontSize, 3) };
 }
 
-/** The animus logo mark as a `<g>`, scaled to `size` and translated to (x, y).
- * Paths lifted from public/logo.svg (native viewBox is "25 19 70 93"). */
+/** Paths lifted from public/logo.svg, whose native viewBox is "25 19 70 93". */
 function logoMark(x: number, y: number, size: number, idp: string): string {
   const scale = size / 93;
   return `<g transform="translate(${x} ${y}) scale(${scale}) translate(-25 -19)">
@@ -145,18 +131,15 @@ function logoMark(x: number, y: number, size: number, idp: string): string {
 
 export interface ShareCardInput {
   height?: number;
-  /** Resolved right-half image: a `/features/<name>.webp` URL (web, inline SVG) or
-   * a `data:image/jpeg;base64,…` URI (API, rasterized). Pick via `shareImageName`. */
+  /** A `/features/<name>.webp` URL (web) or a data: URI (API). Pick with
+   * `shareImageName`. */
   imageHref: string;
-  /** Stable string that salts the gradient ids (e.g. the token or conversation id). */
+  /** Salts the gradient ids; use the token or conversation id. */
   seed: string;
-  /** The video title, shown large on the left. */
   title: string;
-  /** Output canvas size. Defaults to the Open Graph ratio. */
   width?: number;
 }
 
-/** Build the share card as a standalone SVG string. */
 export function buildShareCardSvg(input: ShareCardInput): string {
   const width = input.width ?? OG_WIDTH;
   const height = input.height ?? OG_HEIGHT;
@@ -168,8 +151,7 @@ export function buildShareCardSvg(input: ShareCardInput): string {
   const { fontSize, lines } = fitTitle(input.title, leftColWidth, height);
   const lineHeight = fontSize * 1.14;
   const titleBlockH = lineHeight * lines.length;
-  // Sit the title a little above the vertical centre of the left half; the brand
-  // line pins to the bottom.
+  // Slightly above centre; the brand line pins to the bottom.
   const titleTop = Math.max(pad, (height - titleBlockH) * 0.42);
   const titleTspans = lines
     .map(

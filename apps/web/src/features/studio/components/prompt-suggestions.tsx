@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Suggestion } from "@/components/ai-elements/suggestion";
 
-/** Starter prompts shown on the empty state. */
 const SUGGESTIONS = [
   "Explain how neural networks learn",
   "Visualize the Fourier transform",

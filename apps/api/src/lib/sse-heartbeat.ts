@@ -1,33 +1,15 @@
-/** Keeps a streaming chat response alive through idle periods.
- *
- * The agent loop goes silent for as long as a tool takes. `renderScene` is
- * allowed 600 seconds, and it emits nothing while it runs, so the SSE connection
- * can sit with zero traffic for ten minutes. Every proxy between the container
- * and the browser reads that as a dead connection and closes it: a load
- * balancer's idle timeout (60s by default on an AWS ALB), a CDN's
- * between-packet timeout, and most corporate proxies. The user is then watching
- * a stream that no longer exists, and the studio has no failure to render.
- *
- * The fix is the standard one: emit an SSE comment while idle. A line starting
- * with `:` is a comment in the SSE grammar — the spec requires clients to
- * discard it, and the AI SDK's parser (eventsource-parser) does, reading it as
- * an empty field name and dropping the line. So this is invisible to the client
- * while still being traffic on the wire.
- *
- * Only the chat route needs this. Every other endpoint answers in milliseconds. */
+/** A silent `renderScene` can leave the SSE connection with zero traffic for
+ * ten minutes, which every proxy in between reads as dead and closes. Emitting
+ * an SSE comment keeps the wire busy; the spec has clients discard it, so it is
+ * invisible to the browser. Only the chat route is slow enough to need this. */
 
-/** An SSE comment carrying no data. The trailing blank line ends the "event". */
 const SSE_HEARTBEAT = ": keep-alive\n\n";
 
-/** Idle time before a heartbeat goes out. Comfortably under the tightest
- * intermediary timeout we expect (CloudFront's 30s origin read timeout; an ALB
- * defaults to 60s), and cheap enough at 14 bytes that being early costs
- * nothing. The timer restarts on every real chunk, so a busy stream never
- * emits one. */
+/** Under the tightest intermediary timeout (CloudFront reads at 30s, an ALB at
+ * 60s). The timer restarts on every real chunk, so a busy stream emits none. */
 export const HEARTBEAT_INTERVAL_MS = 15_000;
 
-/** Wrap a streaming response so idle gaps carry heartbeats. Status and headers
- * are preserved. A response with no body is returned untouched. */
+/** Status and headers are preserved; a bodiless response passes through. */
 export function withSseHeartbeat(
   response: Response,
   intervalMs: number = HEARTBEAT_INTERVAL_MS
@@ -51,8 +33,7 @@ export function withSseHeartbeat(
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
-      // Rescheduled on every real chunk, so the gap between any two writes is
-      // never more than intervalMs.
+      // Rescheduled per chunk, so no gap between writes exceeds intervalMs.
       const schedule = () => {
         timer = setTimeout(() => {
           if (finished) {
@@ -89,10 +70,8 @@ export function withSseHeartbeat(
     },
 
     cancel(reason) {
-      // The client went away (closed tab, dropped network). Stop the timer and
-      // propagate so the upstream stream can tear down. Note this does NOT stop
-      // the turn: the route consumes its own tee'd copy so settlement and
-      // persistence still complete.
+      // The client went away. This does NOT stop the turn: the route consumes
+      // its own tee'd copy, so settlement and persistence still complete.
       finished = true;
       clear();
       return reader.cancel(reason);

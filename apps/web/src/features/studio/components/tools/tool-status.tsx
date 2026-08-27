@@ -1,32 +1,15 @@
-/** Shared display state for the agent's server-executed tools.
- *
- * Three ways a tool step can end without a result, and until now the UI showed
- * the same pulsing shimmer for all of them — forever, including on every later
- * page load:
- *
- * - it threw (`output-error`), which carries a reason worth showing;
- * - the turn was stopped by the user mid-step;
- * - the turn was cut off (the platform's request cap kills a long render), so
- *   the part is frozen in a pending state and no further event is ever coming.
- *
- * The last one is why "is the turn still live?" has to be an input here. A cut
- * stream leaves the part exactly as it looked while running, so the state alone
- * cannot tell the difference — only the fact that nothing is streaming any more.
- *
- * Human-in-the-loop tools (askUserQuestion, finalizeVideoPlan) deliberately do
- * NOT use this: their pending state means "waiting for you", which stays valid
- * after the turn ends and is answerable at any time. */
+/** Display state for a tool step that produced no result: it threw, the user
+ * stopped it, or the turn was cut off. A cut stream leaves the part looking
+ * exactly as it did while running, which is why liveness is an input here.
+ * HITL tools skip this: their pending state means "waiting for you". */
 
 import { CircleSlashIcon, TriangleAlertIcon } from "lucide-react";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 
-/** How a tool step that has not produced a result should read. */
 export type ToolPhase = "failed" | "running" | "unfinished";
 
-/** Every tool-part state the AI SDK can report, minus the one that means the
- * step succeeded. Callers narrow `output-available` themselves (it is the only
- * state where `input` and `output` are fully typed), so excluding it here lets
- * `toolPhase` promise it never returns a "done" phase. */
+/** Every SDK tool-part state except `output-available`, which callers narrow
+ * themselves since it is the only one where `input` and `output` are typed. */
 type PendingToolState =
   | "approval-requested"
   | "approval-responded"
@@ -35,21 +18,18 @@ type PendingToolState =
   | "output-denied"
   | "output-error";
 
-/** Map a tool part's raw state to what the user should see. `isLive` is whether
- * this message is still streaming: without it, a killed turn is indistinguishable
- * from a running one. */
+/** `isLive` is whether the message is still streaming: without it, a killed
+ * turn is indistinguishable from a running one. */
 export function toolPhase(state: PendingToolState, isLive: boolean): ToolPhase {
-  // output-denied is the approval flow rejecting a call. No tool here requests
-  // approval, so it is unreachable today, but it is a refusal either way.
+  // output-denied is unreachable today (no tool requests approval) but is a
+  // refusal either way.
   if (state === "output-error" || state === "output-denied") {
     return "failed";
   }
   return isLive ? "running" : "unfinished";
 }
 
-/** Render a tool step that has not produced a result. `running` and `stopped`
- * are the labels for the two non-error phases, so each caller supplies wording
- * that fits its own step. */
+/** `running` and `stopped` are per-caller wording for the non-error phases. */
 export function ToolActivity({
   phase,
   running,

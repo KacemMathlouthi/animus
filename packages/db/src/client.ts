@@ -1,7 +1,5 @@
-/** The Drizzle database client. Takes DATABASE_URL from the validated server
- * env (@animus/core/env — the single sanctioned source; runtime code never
- * reads process.env directly) and binds the full schema so queries are fully
- * typed (db.query.user, etc.). */
+/** The Drizzle client, bound to the full schema so queries are typed. Its URL
+ * comes from `@animus/core/env`, never `process.env` directly. */
 
 import { getServerEnv } from "@animus/core/env";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -25,8 +23,7 @@ import {
 import { usageEvent, userCredits } from "./schema/credits.ts";
 import { providerKey, userSettings } from "./schema/settings.ts";
 
-/** Every table + relation, in one object — passed to Drizzle (for `db.query.*`)
- * and to the Better Auth adapter (so it can map its models onto our columns). */
+/** Passed to Drizzle for `db.query.*` and to the Better Auth adapter. */
 export const schema = {
   account,
   session,
@@ -46,16 +43,10 @@ export const schema = {
   conversationMessageRelations,
 };
 
-/** The underlying postgres.js connection. Exposed for graceful shutdown.
- *
- * postgres.js defaults to `max: 10`, and this single pool is shared by every DB
- * consumer in the API — Better Auth session lookups (one per request, refreshed
- * every 60s past the cookie cache), the sidebar, the credit gauge, and the
- * chat-turn transactions that hold a connection for their whole duration. Ten
- * connections starve under real concurrency, so we size the pool explicitly. In
- * prod the app connects through Neon's `-pooler` (PgBouncer) endpoint, so `max`
- * is the client-side pool against the pooler — keep `max` × container-count
- * under Neon's server-side ceiling. */
+/** Exposed for graceful shutdown. The default `max: 10` starves under real
+ * concurrency, since one pool serves every session lookup alongside chat turns
+ * that hold a connection for minutes. In prod this sits in front of Neon's
+ * pooler, so keep `max` × container count under Neon's own ceiling. */
 export const sql = postgres(getServerEnv().databaseUrl, {
   max: 20,
   idle_timeout: 20,

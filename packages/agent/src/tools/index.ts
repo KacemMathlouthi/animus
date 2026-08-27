@@ -1,9 +1,6 @@
-/** The agent's tool registry.
- *
- * Interactive (HITL) tools have NO `execute`: the loop pauses and the call is
- * streamed to the web, which renders UI and sends the user's answer back as the
- * tool output. Web research tools execute server-side through Exa. Manim tools
- * act on the conversation's sandbox, and are present only when one is provided. */
+/** HITL tools have NO `execute`: the loop pauses and the web sends the user's
+ * answer back as the tool output. Research runs through Exa; the Manim tools
+ * are present only when a sandbox is provided. */
 
 import {
   AskUserQuestionInputSchema,

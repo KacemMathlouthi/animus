@@ -1,35 +1,19 @@
-/** Strips known secrets out of anything the sandbox echoes back.
- *
- * Read this before relying on it: redaction is a speed bump, not a boundary.
- * The user writes the prompt, so there is no malicious-instruction to detect —
- * they can simply ask. And a secret can leave the sandbox without ever passing
- * through here: `curl` to their own server, an outbound DNS lookup, writing it
- * into the rendered video. The real fix is for the sandbox never to hold the
- * key (a credential-injecting egress proxy); this only raises the cost of the
- * laziest attempt.
- *
- * What it does do is defeat fragmenting, which is the obvious first bypass:
- * `echo ${KEY:0:10}` and `echo ${KEY:10}` both leak runs that are still long
- * enough to be uniquely the key. So instead of matching the secret whole, this
- * matches any run of MIN_FRAGMENT or more of its characters, and collapses
- * adjacent runs into a single marker. */
+/** Strips known secrets from anything the sandbox echoes back. A speed bump,
+ * not a boundary: the user writes the prompt and can still `curl` the key out.
+ * Matching runs rather than whole strings is what defeats the obvious bypass of
+ * echoing the key in pieces. The real fix is the sandbox never holding it. */
 
 const MARKER = "[redacted]";
 
-/** Shortest run of a secret that gets redacted. Eight characters of a random
- * key is ~48 bits — it cannot collide with ordinary log text by accident, and
- * it is short enough that reassembling the key from what survives is not
- * meaningfully easier than guessing it. */
+/** Eight characters of a random key is ~48 bits: too long to collide with log
+ * text, short enough that what survives is no easier to guess from. */
 const MIN_FRAGMENT = 8;
 
-/** Below this a "secret" is either a placeholder or short enough that its
- * fragments would match real words. Redacting it would corrupt logs to no end. */
+/** Below this a "secret" is a placeholder whose fragments match real words. */
 const MIN_SECRET_LENGTH = 16;
 
-/** Scan for the first MIN_FRAGMENT characters that belong to a secret, then
- * extend the match for as long as the run is still a contiguous piece of that
- * secret. Extending matters: a fixed-width match consumes in multiples of
- * MIN_FRAGMENT and leaves the key's last few characters sitting in the output. */
+/** Extending matters: a fixed-width match consumes in multiples of
+ * MIN_FRAGMENT and leaves the key's last few characters in the output. */
 function redactWith(
   text: string,
   secrets: string[],
@@ -57,8 +41,7 @@ function redactWith(
   return out;
 }
 
-/** Every MIN_FRAGMENT-long window of every usable secret — the seeds the scan
- * looks for. */
+/** The seeds the scan looks for. */
 function buildFragments(secrets: string[]): Set<string> {
   const fragments = new Set<string>();
   for (const secret of secrets) {
@@ -71,8 +54,8 @@ function buildFragments(secrets: string[]): Set<string> {
 
 export type Redactor = (text: string) => string;
 
-/** A redactor bound to this turn's secrets. Returns the identity function when
- * there is nothing worth redacting, so callers need no special case. */
+/** Returns the identity function when there is nothing worth redacting, so
+ * callers need no special case. */
 export function createRedactor(secrets: (string | undefined)[]): Redactor {
   const usable = secrets.filter(
     (secret): secret is string =>

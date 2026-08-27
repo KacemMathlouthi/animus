@@ -181,7 +181,6 @@ function lastSnapshot(): { conversationId: string; messages: UIMessage[] } {
   return call[0] as { conversationId: string; messages: UIMessage[] };
 }
 
-/** Text of the assistant message in a persisted snapshot. */
 function assistantText(messages: UIMessage[]): string {
   const assistant = messages.filter((m) => m.role === "assistant").at(-1);
   return (assistant?.parts ?? [])
@@ -520,10 +519,9 @@ describe("POST /chat — happy path (metered)", () => {
 
 describe("POST /chat — resuming an interrupted turn", () => {
   it("does not send an unfinished tool call to the model", async () => {
-    // Per-step persistence means a turn cut off mid-render is stored with its
-    // renderScene still `input-available`. Handing that to the provider is a
-    // tool_use with no tool_result, which is a hard error — it would reject
-    // every later message in the conversation, not just this one.
+    // A turn cut mid-render persists with renderScene still `input-available`.
+    // That is a tool_use with no tool_result, which rejects every later message
+    // in the conversation, not just this one.
     loadOwnedConversation.mockResolvedValue({
       conversation: { id: "conv1", sandboxId: "sandbox-1" },
       messages: [

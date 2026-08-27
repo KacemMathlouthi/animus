@@ -23,7 +23,6 @@ function manualStream() {
   };
 }
 
-/** Read everything the wrapped response emits until it closes. */
 async function drain(response: Response): Promise<string> {
   const decoder = new TextDecoder();
   const reader = response.body?.getReader();

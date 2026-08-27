@@ -1,13 +1,7 @@
-/** Storytelling, structure, rigor and concrete technique lessons distilled from
- * reading the source of the best open-source explainer videos (3Blue1Brown,
- * Reducible, vcubingx, Theorem of Beethoven and others). Two layers: (1) the
- * topic-agnostic craft (pedagogy / story / design / rigor) that applies to any
- * subject — the sample skewed math/CS because that's what gets open-sourced, so
- * only patterns that generalize to physics, biology, finance, general topics are
- * kept; (2) concrete ManimCE code patterns worth reaching for. Snippets are
- * ManimCE (what we render), not 3b1b's ManimGL. This lives in the system prompt
- * (runtime-editable, no snapshot rebuild) as the interim home; the long-tail,
- * technique-by-technique detail still lives in the bundled manim-video skill. */
+/** Craft distilled from the source of the best open-source explainer videos.
+ * The sample skewed math/CS, so only patterns that generalize are kept, and
+ * snippets are ManimCE rather than 3b1b's ManimGL. Lives in the system prompt
+ * so it is editable without a snapshot rebuild; detail is in the skill. */
 
 export const CRAFT_LESSONS = `## Craft lessons from the best explainer videos (apply to any topic)
 

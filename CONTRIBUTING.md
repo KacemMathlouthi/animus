@@ -101,6 +101,11 @@ tested. Everything that carries logic is.
 - Use structured logs: `logger.info({ ...ctx }, "message")`.
 - No dead code, no commented out blocks, no unreferenced wiring. If you add a
   feature, wire it fully in the same change.
+- Comments are terse. Inline comments are 1 to 2 lines, doc comments 3 at most.
+  Write one only when the code cannot say it itself: a non obvious why, a
+  constraint, a gotcha, a workaround and its reason. Do not restate what a line
+  does or narrate a function step by step. Delete a stale comment rather than
+  patching around it. Longer explanations belong in `CLAUDE.md` or `docs/`.
 - Do not blindly retry aborts or timeouts. If you add a retry to an external
   call, add the dependency in the same change rather than assuming one exists.
 

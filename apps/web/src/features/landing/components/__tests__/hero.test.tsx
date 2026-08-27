@@ -46,10 +46,8 @@ describe("HeroSection", () => {
       // lands, which is what a stale 2880x1146 was doing.
       expect(plate.getAttribute("width")).toBe("3344");
     }
-    // The heights differ on purpose. The dark plate is cropped at the top so
-    // that, bottom-anchored, its artwork lands in register with the light one --
-    // the pair are two separate generations and drifted during the cross-fade.
-    // Copying the light height onto both would silently squash it back.
+    // The dark plate is cropped at the top so that, bottom-anchored, it lands
+    // in register. Copying the light height onto both squashes it back.
     expect(light.getAttribute("height")).toBe("1881");
     expect(dark.getAttribute("height")).toBe("1833");
   });

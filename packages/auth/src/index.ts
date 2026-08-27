@@ -1,5 +1,3 @@
-/** Public entry for @animus/auth. */
-
 // biome-ignore lint/performance/noBarrelFile: this is the package's public entry, not an internal re-export
 export { auth } from "./auth.ts";
 

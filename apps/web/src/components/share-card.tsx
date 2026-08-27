@@ -1,9 +1,6 @@
-/** The deterministic animus preview card as inline SVG, derived purely from a
- * video's title + seed via the shared `buildShareCardSvg` (@animus/core) — the
- * same design the API rasterizes for link previews.
- *
- * Rendered inline (not `<img src=data:svg>`) so the external `/features/*.webp`
- * painting actually loads; letterboxed to its container as the resting poster. */
+/** `buildShareCardSvg` as inline SVG, the same card the API rasterizes for
+ * link previews. Inline rather than `<img src=data:svg>` so the external
+ * `/features/*.webp` painting actually loads. */
 
 import { buildShareCardSvg, shareImageName } from "@animus/core";
 import { useMemo } from "react";

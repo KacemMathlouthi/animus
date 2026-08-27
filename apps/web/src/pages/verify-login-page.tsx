@@ -7,8 +7,7 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
-/** Only honor an internal, single-leading-slash path so the post-login redirect
- * can't be pointed at an external origin. */
+/** Internal single-slash paths only, so the redirect cannot leave the app. */
 function safeCallback(value: string | null): string {
   if (value?.startsWith("/") && !value.startsWith("//")) {
     return value;
@@ -16,13 +15,10 @@ function safeCallback(value: string | null): string {
   return "/studio";
 }
 
-/** Magic-link landing page. The email links HERE instead of the API's verify
- * endpoint: inbox security scanners open every link in an email, and the
- * verify endpoint consumes its single-use token on GET — so a direct link
- * arrives already-invalid. An auto-redirect variant was tried and defeated in
- * production: the scanner executed the page's JavaScript (paired verify hits
- * 134ms apart in the logs). Only a real click may spend the token — scanners
- * render pages, but they don't press buttons. */
+/** The email links here, not to the API's verify endpoint, because scanners
+ * open every link and verify spends its token on GET. An auto-redirect was
+ * defeated in prod (the scanner ran the page's JS), so only a real click may
+ * spend the token: scanners render pages but do not press buttons. */
 export function VerifyLoginPage() {
   useDocumentTitle("Sign in");
   const [searchParams] = useSearchParams();

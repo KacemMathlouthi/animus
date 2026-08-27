@@ -19,13 +19,9 @@ interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-/** Catches render/lifecycle errors anywhere in the tree below it and shows a
- * branded recovery panel instead of React's default blank white screen. A
- * crashed tree is in an unknown state, so recovery is a hard navigation
- * (reload / home) rather than an in-place reset.
- *
- * Reporting currently goes to the console; wire it to a real error tracker
- * (Sentry-class) when that lands — see todo #40. */
+/** Shows a branded panel instead of React's blank screen. A crashed tree is in
+ * an unknown state, so recovery is a hard navigation rather than a reset.
+ * Reporting goes to the console until a real error tracker lands. */
 export class ErrorBoundary extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
@@ -37,7 +33,7 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // No error tracker wired yet (todo #40); the console is the only sink.
+    // No error tracker wired yet; the console is the only sink.
     console.error("[animus] uncaught render error", error, info.componentStack);
   }
 

@@ -35,10 +35,9 @@ import {
 import type { AnimusUIMessage, RespondToTool } from "@/features/studio/types";
 import { useSession } from "@/lib/auth-client";
 
-/** Words fade in as they stream. stagger:0 is load-bearing: a nonzero stagger
- * delays each word by index*stagger, letting a later chunk overtake an earlier
- * one's tail (out-of-order pop); at 0 each chunk fades together and appends in
- * order. Requires `streamdown/styles.css` (imported in index.css) for the keyframes. */
+/** stagger:0 is load-bearing: a nonzero stagger delays each word by its index,
+ * letting a later chunk overtake an earlier one's tail. Needs the keyframes in
+ * `streamdown/styles.css`, imported from index.css. */
 const STREAM_ANIMATION = {
   animation: "blurIn",
   duration: 200,
@@ -65,7 +64,6 @@ function MessageUserAvatar() {
   );
 }
 
-/** Concatenate all text parts (used for the plain user bubble). */
 function textOf(message: AnimusUIMessage): string {
   let out = "";
   for (const part of message.parts) {
@@ -100,21 +98,16 @@ export function ChatMessage({
     );
   }
 
-  // Render parts in their original order so text and interactive tools stay
-  // interleaved exactly as the agent produced them.
-  //
-  // `isStreaming` is load-bearing for every server-executed tool: a turn cut off
-  // mid-step (the platform's request cap kills a long render) leaves its part
-  // frozen in a pending state with no further event coming, which is byte-for-byte
-  // what a running step looks like. Only "is this message still streaming" tells
-  // the two apart — see toolPhase.
+  // Every tool branch below checks `output-available` first (the only state
+  // where input and output are typed) and passes `isStreaming`, which is what
+  // tells a cut-off step from a running one. See toolPhase.
   return (
     <div className="flex items-start gap-3">
       <AgentAvatar />
       <Message className="max-w-full flex-1 sm:max-w-[80%]" from="assistant">
         {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one branch per tool part type; the shape is a flat dispatch table, and splitting it hides that */}
         {message.parts.map((part, index) => {
-          // Append-only parts: index keys are stable here (parts never reorder).
+          // Parts are append-only, so index keys are stable.
           const key = `${message.id}-${index}`;
 
           if (part.type === "reasoning") {
@@ -139,9 +132,8 @@ export function ChatMessage({
             ) : null;
           }
 
-          // Human-in-the-loop tools keep their own pending handling: "waiting for
-          // an answer" stays valid after the turn ends and is answerable at any
-          // time, so it must never render as unfinished. Only a thrown call does.
+          // HITL tools handle their own pending state: "waiting for an answer"
+          // stays valid after the turn ends, so it is never unfinished.
           if (part.type === "tool-askUserQuestion") {
             if (part.state === "output-error") {
               return (
@@ -203,8 +195,6 @@ export function ChatMessage({
           }
 
           if (part.type === "tool-webSearch") {
-            // output-available first: it is the only state where `input` and
-            // `output` are fully typed rather than partial.
             if (part.state === "output-available") {
               return (
                 <WebSearchTool
@@ -229,8 +219,6 @@ export function ChatMessage({
           }
 
           if (part.type === "tool-webFetch") {
-            // output-available first: it is the only state where `input` and
-            // `output` are fully typed rather than partial.
             if (part.state === "output-available") {
               return (
                 <WebFetchTool
@@ -255,8 +243,6 @@ export function ChatMessage({
           }
 
           if (part.type === "tool-writeFile") {
-            // output-available first: it is the only state where `input` and
-            // `output` are fully typed rather than partial.
             if (part.state === "output-available") {
               return (
                 <ManimStep
@@ -282,8 +268,6 @@ export function ChatMessage({
           }
 
           if (part.type === "tool-editFile") {
-            // output-available first: it is the only state where `input` and
-            // `output` are fully typed rather than partial.
             if (part.state === "output-available") {
               return (
                 <ManimStep
@@ -309,8 +293,6 @@ export function ChatMessage({
           }
 
           if (part.type === "tool-readFile") {
-            // output-available first: it is the only state where `input` and
-            // `output` are fully typed rather than partial.
             if (part.state === "output-available") {
               return (
                 <ManimStep
@@ -336,8 +318,6 @@ export function ChatMessage({
           }
 
           if (part.type === "tool-listFiles") {
-            // output-available first: it is the only state where `input` and
-            // `output` are fully typed rather than partial.
             if (part.state === "output-available") {
               return (
                 <ManimStep
@@ -363,8 +343,6 @@ export function ChatMessage({
           }
 
           if (part.type === "tool-runCommand") {
-            // output-available first: it is the only state where `input` and
-            // `output` are fully typed rather than partial.
             if (part.state === "output-available") {
               return (
                 <RunCommandTool
@@ -389,8 +367,6 @@ export function ChatMessage({
           }
 
           if (part.type === "tool-renderScene") {
-            // output-available first: it is the only state where `input` and
-            // `output` are fully typed rather than partial.
             if (part.state === "output-available") {
               return (
                 <RenderSceneTool

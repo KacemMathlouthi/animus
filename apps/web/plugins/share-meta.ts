@@ -1,14 +1,6 @@
-/** Dev-server plugin that gives a shared video's `/v/:token` URL a real
- * link-preview. A static SPA serves one index.html for every route, so a crawler
- * (X, Discord, Slack, iMessage…) only ever sees the default tags. This middleware
- * intercepts `/v/:token`, looks the share up via the API, and injects per-share
- * Open Graph / Twitter meta (branded card image + inline video) into index.html
- * before serving it — humans still boot the SPA as normal.
- *
- * This is the dev equivalent of what a production edge function (or a
- * meta-injecting reverse proxy) must do at the real host. The `/api` proxy in
- * vite.config routes the card/video/embed URLs through this same origin, so a
- * single public origin is enough. */
+/** Injects per-share link-preview meta into index.html for `/v/:token` in dev,
+ * because a static SPA serves the same default tags to every crawler. The prod
+ * counterpart is the API's `GET /api/share/:token/page`. */
 
 import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -26,8 +18,7 @@ function describe(error: unknown): string {
 
 const V_ROUTE = /^\/v\/([\w-]+)\/?$/;
 
-/** Public origin the crawler reached us on, honoring forwarded headers (behind a
- * proxy) so injected URLs are absolute and externally fetchable. */
+/** Honors forwarded headers so injected URLs are externally fetchable. */
 function requestOrigin(req: IncomingMessage): string {
   const proto = String(req.headers["x-forwarded-proto"] ?? "http")
     .split(",")[0]
@@ -55,8 +46,7 @@ async function fetchShareTitle(
     const data = (await res.json()) as { title?: string };
     return typeof data.title === "string" ? data.title : null;
   } catch (error) {
-    // A network/parse failure (e.g. the API is down) — surface it so a broken
-    // preview isn't a silent mystery, then fall back to the default meta.
+    // Surfaced so a broken preview is not a silent mystery, then fall back.
     logger.warn(
       `[animus-share-meta] share lookup failed for "${token}": ${describe(error)}`
     );
@@ -75,9 +65,8 @@ async function serveInjected(
   const url = req.url ?? "";
   const pathname = url.split("?")[0] ?? "";
   const match = pathname.match(V_ROUTE);
-  // Match GET /v/:token for any client. We must NOT gate on `Accept: text/html`
-  // — crawlers like Twitterbot/Discordbot send `*/*` and would otherwise fall
-  // through to the default page. Assets never match V_ROUTE, so this is safe.
+  // Do NOT gate on `Accept: text/html`: Twitterbot and Discordbot send `*/*`
+  // and would fall through. Assets never match V_ROUTE, so this is safe.
   if (!match || (req.method && req.method !== "GET")) {
     next();
     return;
@@ -113,7 +102,6 @@ async function serveInjected(
   }
 }
 
-/** Vite plugin: inject per-share link-preview meta for `/v/:token` in dev. */
 export function shareMetaPlugin(options: { apiTarget: string }): Plugin {
   return {
     name: "animus-share-meta",

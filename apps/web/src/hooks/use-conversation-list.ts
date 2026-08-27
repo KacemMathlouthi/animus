@@ -30,10 +30,8 @@ export function useConversationList(search: string): ConversationListState {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
-  // Mirrors `loadingMore` for the re-entrancy guard below. It has to be a ref:
-  // reading the state value would put it in the effect's dependency list, and
-  // the effect's own cleanup would then cancel the request its state update
-  // just started.
+  // A ref, not the state value: reading state would put it in the effect's
+  // deps, whose cleanup would cancel the request its own update started.
   const loadingMoreRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const hasMore = items.length < total;

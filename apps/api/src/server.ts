@@ -1,10 +1,6 @@
-/** Bun server entry: runs the Hono app as a long-lived process for local dev and
- * container hosts. Disables the idle timeout on the streaming chat route so a turn
- * can hold its SSE connection open — a Bun-native capability serverless lacks.
- *
- * Uses `Bun.serve` rather than a default export so the server handle is available
- * to the shutdown drain (see lib/shutdown.ts); a container host stops this
- * process with SIGTERM on every deploy. */
+/** Runs the Hono app as a long-lived process, with the idle timeout disabled on
+ * the chat route so a turn can hold its SSE connection open. `Bun.serve` rather
+ * than a default export, so the drain in lib/shutdown.ts gets the handle. */
 
 import { getServerEnv } from "@animus/core/env";
 import { sql } from "@animus/db";

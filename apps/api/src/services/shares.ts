@@ -42,7 +42,6 @@ export async function createShare(input: {
   return { token: row.token };
 }
 
-/** Resolve a public share token to its row, or null if unknown. */
 export function getShareByToken(token: string): Promise<VideoShareRow | null> {
   return db.query.videoShare
     .findFirst({ where: eq(videoShare.token, token) })

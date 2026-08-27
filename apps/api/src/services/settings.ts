@@ -20,9 +20,8 @@ import { and, db, eq, providerKey, userSettings } from "@animus/db";
 import { decryptSecret, encryptSecret } from "../lib/crypto.ts";
 import { logger } from "../lib/logger.ts";
 
-/** Decrypt a stored key, treating an undecryptable row (rotated
- * ENCRYPTION_KEY, corrupted ciphertext) as "no key" so the turn falls back to
- * the metered platform path instead of failing every request with a 500. */
+/** An undecryptable row (rotated key, corrupt ciphertext) reads as no key, so
+ * the turn falls back to the metered path instead of 500ing. */
 function tryDecrypt(
   userId: string,
   kind: KeyKind,
@@ -53,10 +52,8 @@ export async function getGenerationSettings(
     return null;
   }
 
-  // Coalesce pre-backfill NULLs (rows written before the not-null migration,
-  // or read during a deploy-before-migrate window), then validate, so a
-  // drifted row can never leak an invalid shape to the client — that used to
-  // make every settings save 400.
+  // Coalesce pre-backfill NULLs before validating: a drifted row leaking an
+  // invalid shape used to make every settings save 400.
   const parsed = GenerationSettingsSchema.safeParse({
     videoTheme: row.videoTheme,
     backgroundMusic: row.backgroundMusic,
@@ -93,10 +90,6 @@ export async function saveGenerationSettings({
   return settings;
 }
 
-// ---------------------------------------------------------------------------
-// Provider keys (at most one LLM key and one TTS key per user, by `kind`)
-// ---------------------------------------------------------------------------
-
 type ProviderKeyRow = typeof providerKey.$inferSelect;
 
 function toLlmPreview(row: ProviderKeyRow): LlmKeyPreview {
@@ -112,7 +105,6 @@ function toTtsPreview(row: ProviderKeyRow): TtsKeyPreview {
   return { kind: "tts", provider: TTS_KEY_PROVIDER, last4: row.keyLast4 };
 }
 
-/** Both masked key previews for a user, either possibly null. */
 export async function getProviderKeys(userId: string): Promise<ProviderKeys> {
   const rows = await db.query.providerKey.findMany({
     where: eq(providerKey.userId, userId),
@@ -125,7 +117,6 @@ export async function getProviderKeys(userId: string): Promise<ProviderKeys> {
   };
 }
 
-/** Encrypt and upsert a key for its `kind`, returning the masked preview. */
 export async function saveProviderKey({
   userId,
   input,
@@ -169,7 +160,6 @@ export async function saveProviderKey({
     : { kind: "tts", provider: TTS_KEY_PROVIDER, last4: keyLast4 };
 }
 
-/** Remove the user's key of the given kind. */
 export async function deleteProviderKey(
   userId: string,
   kind: KeyKind
@@ -179,8 +169,7 @@ export async function deleteProviderKey(
     .where(and(eq(providerKey.userId, userId), eq(providerKey.kind, kind)));
 }
 
-/** The user's decrypted LLM key for the agent, or undefined when they run on
- * our Bedrock model. */
+/** Undefined when the user runs on our Bedrock model. */
 export async function getDecryptedLlmKey(
   userId: string
 ): Promise<LlmKey | undefined> {
@@ -201,8 +190,7 @@ export async function getDecryptedLlmKey(
   };
 }
 
-/** The user's decrypted ElevenLabs key, or undefined when narration runs on our
- * key. */
+/** Undefined when narration runs on our key. */
 export async function getDecryptedTtsKey(
   userId: string
 ): Promise<string | undefined> {

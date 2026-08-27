@@ -1,12 +1,6 @@
-/** Renders the animus share card to a PNG for Open Graph link previews. The card
- * SVG comes from the pure `buildShareCardSvg` in `@animus/core`; here we resolve
- * the seed's painting to a base64 jpg data-URI (resvg can't fetch or decode webp,
- * hence the pre-converted jpg) and rasterize with the bundled Geist fonts.
- * Generated per request, never stored — a pure function of title + seed.
- *
- * Assets load lazily on first render and are memoized: a build that ships
- * without the apps/api/assets tree must break only this surface (with an error
- * naming the missing file), never the whole API at boot. */
+/** Rasterizes `buildShareCardSvg` to a PNG for link previews. Paintings become
+ * base64 jpg data-URIs because resvg can neither fetch nor decode webp. Assets
+ * load lazily so a build missing apps/api/assets breaks only this surface. */
 
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -19,8 +13,7 @@ import {
 } from "@animus/core";
 import { Resvg } from "@resvg/resvg-js";
 
-/** Absolute path of a bundled asset, resolved relative to this module so it
- * works whether the API runs from source (Bun) or a built bundle. */
+/** Relative to this module, so source and bundle both resolve. */
 function assetPath(relative: string): string {
   return fileURLToPath(new URL(`../../assets/${relative}`, import.meta.url));
 }
@@ -43,9 +36,8 @@ function loadPaintingDataUri(name: string): string {
   return `data:image/jpeg;base64,${bytes.toString("base64")}`;
 }
 
-/** Cheap existence probe over every bundled asset the renderer needs. Surfaced
- * by /health so a build shipped without apps/api/assets is visible immediately
- * on the health page, not on the first OG request. */
+/** Surfaced by /health so a build missing the assets shows up there rather
+ * than on the first OG request. */
 export function shareCardAssetsPresent(): boolean {
   const paths = [
     ...FONT_FILES,
@@ -54,8 +46,7 @@ export function shareCardAssetsPresent(): boolean {
   return paths.every((path) => existsSync(path));
 }
 
-/** Painting data-URIs, loaded on first use (small, fixed set) and memoized so
- * later renders never touch disk. Deliberately NOT loaded at module init. */
+/** Memoized on first use. Deliberately not loaded at module init. */
 let paintingDataUris: Map<string, string> | null = null;
 
 function paintingDataUri(seed: string): string {
@@ -66,7 +57,6 @@ function paintingDataUri(seed: string): string {
   return paintingDataUris.get(name) ?? loadPaintingDataUri(name);
 }
 
-/** Render the share card for a title + seed to PNG bytes at Open Graph size. */
 export function renderShareCardPng(input: {
   title: string;
   seed: string;

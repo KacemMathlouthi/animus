@@ -155,8 +155,10 @@ Cross-package "does it compile" = `bun run typecheck`.
   Resend↔Vercel integration (DKIM + SPF + return-path MX on `send.mail.…`,
   auto-written into Vercel DNS, plus a monitor-mode DMARC record);
   `RESEND_FROM=animus <login@mail.tryanimus.app>`, so magic links deliver to
-  any address. The **root** domain's MX slot is deliberately free for a future
-  receiving mailbox (Zoho/ImprovMX).
+  any address. Inbound mail on the **root** domain is forwarded by **ImprovMX**
+  (MX + its own SPF on the apex). The two SPF records sit on different
+  hostnames and are evaluated independently — never merge them, and never put
+  two SPF TXT records on one host.
 - **Magic-link auth vs inbox scanners.** The verify endpoint consumes its
   single-use token on GET, and mail security scanners open every link in an
   arriving email — some executing JavaScript (proven in prod: an auto-redirect
@@ -182,7 +184,13 @@ Cross-package "does it compile" = `bun run typecheck`.
   that synthesizes speech in-scene during render, so animation timing auto-syncs to
   the narration (`tracker.duration`, bookmarks). The ElevenLabs key is injected into
   the render sandbox via `envVars`. Background music is mixed under the narration in
-  the post-render ffmpeg step.
+  the post-render ffmpeg step. Everything the sandbox echoes back (`runCommand`
+  output, `renderScene` logs, `readFile` content) passes through
+  `createRedactor` (`packages/agent/src/utils/redact.ts`), which matches runs of
+  8+ characters of a known secret so splitting the key across `echo` calls does
+  not defeat it. **This is a speed bump, not a boundary** — the user writes the
+  prompt and can still `curl` the key out. The fix is the sandbox never holding
+  it (a credential-injecting egress proxy).
 - **Link previews & the SPA meta-injection seam (resolved).** A static SPA
   serves one `index.html` for every route, so per-share Open Graph / Twitter meta
   must be written **server-side at the real `/v/:token` URL** — crawlers don't run
@@ -248,7 +256,7 @@ found and fixed so far: Vercel shadowing `AWS_*`, Bedrock throttling →
 retries, wrong voice guidance; still required: a paid ElevenLabs tier, an AWS
 Bedrock quota increase) → playback polish → generalize the render/repair loop
 → later: paid quota tiers / billing, autonomous mode.
-(Parked, deliberately: redacting sandbox secrets from tool output; surfacing
+(Parked, deliberately: surfacing
 stream errors in the studio UI (a stream that dies after the 200 is committed
 is invisible to status monitoring and silent in the UI); email OTP codes as
 the magic-link endgame; the settings `music_track`/`voice_id`
@@ -342,6 +350,13 @@ reasoning lives here rather than as a comment in the file.
 - Use structured logs: `logger.info({ ...ctx }, "message")`.
 - **No dead code**, no commented-out blocks, no unreferenced wiring. If a feature
   is added, wire it fully and test it in the same change.
+- **Comments are terse.** Inline comments are **1-2 lines max**; doc comments are
+  **3 lines max**. Write one only when the code cannot say it itself: a
+  non-obvious *why*, a constraint, a gotcha, a workaround with its reason. Never
+  restate what the line does, never narrate a function step by step, never leave
+  a header banner or a section divider. Delete a comment that has gone stale
+  rather than updating it around the edges. If an explanation genuinely needs
+  more room, it belongs in `CLAUDE.md` or `docs/`, not in the source.
 - **Every change (feature, fix, refactor) includes corresponding test additions
   or updates** — untested code is incomplete code.
 - Use `bun` commands only.

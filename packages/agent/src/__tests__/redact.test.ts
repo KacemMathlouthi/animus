@@ -48,10 +48,8 @@ describe("createRedactor", () => {
   });
 
   it("cannot catch a fragment shorter than the threshold, by design", () => {
-    // Documented limit, pinned so nobody mistakes this for a boundary: a
-    // 7-character run is below MIN_FRAGMENT and survives. Matching runs that
-    // short would shred ordinary logs. Only the sandbox not holding the key
-    // closes this.
+    // Pinned so nobody mistakes this for a boundary. Matching runs this short
+    // would shred ordinary logs; only the sandbox not holding the key fixes it.
     const redact = createRedactor([KEY]);
     const tiny = KEY.slice(0, 7);
     expect(redact(tiny)).toBe(tiny);

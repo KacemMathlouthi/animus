@@ -1,18 +1,13 @@
 import type { RefObject } from "react";
 import { useEffect, useRef } from "react";
 
-/** Tiny backing store for the glow canvas — the heavy blur it renders under
- * erases any detail beyond rough color regions, so 64×36 is plenty. */
+/** The heavy blur erases everything but rough color regions. */
 export const AMBIENT_WIDTH = 64;
 export const AMBIENT_HEIGHT = 36;
 
-/** YouTube-style ambient glow. Mirrors the video onto a tiny canvas every
- * animation frame; the caller renders that canvas blurred, scaled, and dimmed
- * behind the video so the letterbox picks up the scene's colors and follows
- * them live. Presigned R2 sources are cross-origin and taint the canvas, but
- * tainting only blocks pixel readback — drawing and displaying stay allowed
- * (the try/catch guards the odd engine that throws instead).
- */
+/** Mirrors the video to a tiny canvas each frame; the caller blurs it behind
+ * the letterbox. Presigned R2 sources taint the canvas, but tainting only
+ * blocks readback, and the try/catch covers engines that throw instead. */
 export function useAmbientGlow(
   videoRef: RefObject<HTMLVideoElement | null>
 ): RefObject<HTMLCanvasElement | null> {
@@ -31,12 +26,12 @@ export function useAmbientGlow(
 
     let frame = 0;
     const draw = () => {
-      // HAVE_CURRENT_DATA — there is a frame to copy.
+      // HAVE_CURRENT_DATA: there is a frame to copy.
       if (video.readyState >= 2) {
         try {
           ctx.drawImage(video, 0, 0, AMBIENT_WIDTH, AMBIENT_HEIGHT);
         } catch {
-          // Cross-origin restriction quirk; playback itself is unaffected.
+          // Cross-origin quirk; playback is unaffected.
         }
       }
       frame = requestAnimationFrame(draw);
