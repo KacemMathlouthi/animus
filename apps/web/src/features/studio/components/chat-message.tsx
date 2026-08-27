@@ -15,7 +15,7 @@ import {
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
 import { Shimmer } from "@/components/ai-elements/shimmer";
-import { LogoMark } from "@/components/brand/logo-mark";
+import { AgentMark } from "@/components/brand/agent-mark";
 import { UserAvatar } from "@/components/user-avatar";
 import { AskUserQuestionTool } from "@/features/studio/components/tools/ask-user-question";
 import { FinalizeVideoPlanTool } from "@/features/studio/components/tools/finalize-video-plan";
@@ -48,11 +48,7 @@ const STREAM_ANIMATION = {
 } as const;
 
 function AgentAvatar() {
-  return (
-    <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-sm border bg-card">
-      <LogoMark className="h-5 w-auto" />
-    </div>
-  );
+  return <AgentMark className="size-8 shrink-0 rounded-sm" />;
 }
 
 function MessageUserAvatar() {
