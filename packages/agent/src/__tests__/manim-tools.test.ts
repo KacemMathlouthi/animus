@@ -1,3 +1,4 @@
+import type { RunCommandOutput } from "@animus/core/tools";
 import type { Sandbox } from "@daytonaio/sdk";
 import { describe, expect, it, vi } from "vitest";
 import { createManimTools } from "../tools/manim.ts";
@@ -72,7 +73,7 @@ function editTool(initial: Record<string, string>) {
   return { execute: edit.execute, state };
 }
 
-function runTool(commandOut: string) {
+function runTool(commandOut: string, elevenLabsApiKey = "el-test-key") {
   const state = createFakeSandbox({}, commandOut);
   const tools = createManimTools({
     sandbox: state.sandbox,
@@ -81,7 +82,7 @@ function runTool(commandOut: string) {
     backgroundMusicUrl: vi.fn(() => Promise.resolve("https://music.test")),
     backgroundMusic: true,
     musicTrackId: "ambient",
-    elevenLabsApiKey: "el-test-key",
+    elevenLabsApiKey,
     meter: { ttsChars: 0 },
   });
   const run = tools.runCommand;
@@ -407,5 +408,48 @@ describe("renderScene TTS metering", () => {
     await execute(RENDER_INPUT, EXEC_CTX);
 
     expect(meter.ttsChars).toBe(0);
+  });
+});
+
+describe("runCommand secret redaction", () => {
+  const KEY = "sk_2f8c1a4b9e7d0c3a6f5b8e2d1c4a7b0e9f6d3c8a";
+  // Shell parameter expansion, not a JS template — the bypass being tested.
+  // Built by concatenation so the literal never contains a `${` sequence.
+  const D = "$";
+  const SPLIT_ECHO = `echo ${D}{ELEVEN_API_KEY:0:20}; echo ${D}{ELEVEN_API_KEY:20}`;
+
+  it("strips the narration key from command output", async () => {
+    // `printenv` is the whole attack, and it needs no cleverness.
+    const execute = runTool(`ELEVEN_API_KEY=${KEY}\n`, KEY);
+    const out = (await execute(
+      { command: "printenv" },
+      EXEC_CTX
+    )) as RunCommandOutput;
+
+    expect(out.output).not.toContain(KEY);
+    expect(out.output).toContain("[redacted]");
+  });
+
+  it("strips it when echoed in halves", async () => {
+    const execute = runTool(`${KEY.slice(0, 20)}\n${KEY.slice(20)}\n`, KEY);
+    const out = (await execute(
+      { command: SPLIT_ECHO },
+      EXEC_CTX
+    )) as RunCommandOutput;
+
+    expect(out.output).not.toContain(KEY.slice(0, 20));
+    expect(out.output).not.toContain(KEY.slice(20));
+  });
+
+  it("leaves ordinary render output alone", async () => {
+    const log = "Rendered NineRepeating. Played 88 animations\n";
+    const execute = runTool(log, KEY);
+    const out = (await execute(
+      { command: "python3 -m manim render -ql scene.py NineRepeating" },
+      EXEC_CTX
+    )) as RunCommandOutput;
+
+    expect(out.output).toContain("Played 88 animations");
+    expect(out.output).not.toContain("[redacted]");
   });
 });

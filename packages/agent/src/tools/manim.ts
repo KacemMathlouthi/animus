@@ -16,6 +16,7 @@ import type { Sandbox } from "@daytonaio/sdk";
 import { type ToolSet, tool } from "ai";
 import { extractNarrationChars } from "../metering/narration.ts";
 import { commandOutput, PROJECT_DIR } from "../sandbox/index.ts";
+import { createRedactor } from "../utils/redact.ts";
 
 const MAX_LOG_CHARS = 16_000;
 const RENDER_TIMEOUT_SEC = 600;
@@ -158,6 +159,10 @@ export function createManimTools(deps: {
     meter,
   } = deps;
 
+  // Everything the sandbox echoes back passes through here. See utils/redact.ts
+  // for what this does and does not protect against.
+  const redact = createRedactor([elevenLabsApiKey]);
+
   return {
     writeFile: tool({
       description:
@@ -213,7 +218,7 @@ export function createManimTools(deps: {
       inputSchema: ReadFileInputSchema,
       execute: async ({ path }): Promise<ReadFileOutput> => {
         const buffer = await sandbox.fs.downloadFile(resolvePath(path));
-        return { path, content: buffer.toString("utf8") };
+        return { path, content: redact(buffer.toString("utf8")) };
       },
     }),
     listFiles: tool({
@@ -238,7 +243,7 @@ export function createManimTools(deps: {
         return {
           command,
           exitCode: res.exitCode,
-          output: tailLog(commandOutput(res)),
+          output: redact(tailLog(commandOutput(res))),
         };
       },
     }),
@@ -265,7 +270,7 @@ export function createManimTools(deps: {
           RENDER_TIMEOUT_SEC
         );
         const output = commandOutput(res);
-        const logs = tailLog(output);
+        const logs = redact(tailLog(output));
 
         if (res.exitCode !== 0) {
           return { ok: false, file, scene, exitCode: res.exitCode, logs };
