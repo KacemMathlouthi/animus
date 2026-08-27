@@ -1,11 +1,17 @@
-/** Email delivery (Resend). Falls back to logging the link to the console when
- * RESEND_API_KEY is unset or a send fails, so local dev is never blocked. */
+/** Email delivery (Resend). Outside production, a missing key or a failed send
+ * falls back to printing the link so local dev is never blocked.
+ *
+ * In production it never prints and always throws. A magic link is a working,
+ * single-use credential: echoing one into a log drain hands sign-in to anyone
+ * who can read logs, and swallowing the failure leaves the UI claiming an email
+ * was sent that never was. */
 
 import { readFile } from "node:fs/promises";
 import { getServerEnv } from "@animus/core/env";
 import { Resend } from "resend";
 
 const env = getServerEnv();
+const isProduction = env.nodeEnv === "production";
 const from = env.resendFrom;
 const resend = env.resendApiKey ? new Resend(env.resendApiKey) : null;
 
@@ -132,6 +138,11 @@ export async function deliverMagicLink({
   url: string;
 }): Promise<void> {
   if (!resend) {
+    if (isProduction) {
+      // The env gate requires RESEND_API_KEY in production, so reaching this
+      // means the gate was bypassed. Fail loudly rather than print the link.
+      throw new Error("RESEND_API_KEY is not set; cannot send the magic link");
+    }
     console.log(`Magic link for ${email}: ${url}`);
     return;
   }
@@ -153,6 +164,11 @@ export async function deliverMagicLink({
   });
 
   if (error) {
+    if (isProduction) {
+      // Throwing lets Better Auth surface a real failure instead of the UI
+      // saying "check your email" when nothing was sent. The caller logs it.
+      throw new Error(`Failed to send the magic link: ${error.message}`);
+    }
     console.error("Failed to send magic link via Resend:", error);
     // Don't block local dev — surface the link so it's still usable.
     console.log(`Magic link for ${email}: ${url}`);

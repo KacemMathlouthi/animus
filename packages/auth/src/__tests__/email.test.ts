@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Mutable env state so individual tests can toggle the Resend API key, which is
 // read once at module load to decide whether to construct the Resend client.
 const state = vi.hoisted(() => ({
+  nodeEnv: "development" as "development" | "production" | "test",
   resendApiKey: "re_test_key" as string | undefined,
   resendFrom: "animus <no-reply@animus.dev>",
 }));
@@ -14,6 +15,7 @@ const { send, readFile } = vi.hoisted(() => ({
 
 vi.mock("@animus/core/env", () => ({
   getServerEnv: () => ({
+    nodeEnv: state.nodeEnv,
     resendApiKey: state.resendApiKey,
     resendFrom: state.resendFrom,
   }),
@@ -32,12 +34,15 @@ vi.mock("resend", () => ({
 const EMAIL = "person@example.com";
 const URL_TOKEN = "abc123token";
 const URL = `https://animus.dev/api/auth/magic-link/verify?token=${URL_TOKEN}`;
+const SEND_FAILED = /Failed to send the magic link/;
+const MISSING_KEY = /RESEND_API_KEY/;
 
 async function importModule(): Promise<typeof import("../email.ts")> {
   return await import("../email.ts");
 }
 
 beforeEach(() => {
+  state.nodeEnv = "development";
   state.resendApiKey = "re_test_key";
   state.resendFrom = "animus <no-reply@animus.dev>";
   send.mockReset();
@@ -164,5 +169,57 @@ describe("magicLinkPageUrl", () => {
 
     expect(url.searchParams.get("token")).toBe("t/+=&?");
     expect(url.searchParams.get("callbackURL")).toBe("/studio/c/abc?x=1");
+  });
+});
+
+describe("deliverMagicLink in production", () => {
+  it("never prints the link when a send fails", async () => {
+    // The link is a working single-use credential. Echoing it into a log drain
+    // hands sign-in to anyone who can read logs.
+    state.nodeEnv = "production";
+    send.mockResolvedValue({ error: { message: "domain not verified" } });
+    const { deliverMagicLink } = await importModule();
+
+    await expect(deliverMagicLink({ email: EMAIL, url: URL })).rejects.toThrow(
+      "domain not verified"
+    );
+
+    expect(console.log).not.toHaveBeenCalled();
+    for (const call of vi.mocked(console.error).mock.calls) {
+      expect(JSON.stringify(call)).not.toContain(URL_TOKEN);
+    }
+  });
+
+  it("throws instead of swallowing the failure", async () => {
+    // Swallowing left the UI saying "check your email" when nothing was sent.
+    state.nodeEnv = "production";
+    send.mockResolvedValue({ error: { message: "rate limited" } });
+    const { deliverMagicLink } = await importModule();
+
+    await expect(deliverMagicLink({ email: EMAIL, url: URL })).rejects.toThrow(
+      SEND_FAILED
+    );
+  });
+
+  it("throws rather than printing the link when the key is missing", async () => {
+    state.nodeEnv = "production";
+    state.resendApiKey = undefined;
+    const { deliverMagicLink } = await importModule();
+
+    await expect(deliverMagicLink({ email: EMAIL, url: URL })).rejects.toThrow(
+      MISSING_KEY
+    );
+    expect(console.log).not.toHaveBeenCalled();
+  });
+
+  it("still resolves quietly when the send succeeds", async () => {
+    state.nodeEnv = "production";
+    send.mockResolvedValue({ error: null });
+    const { deliverMagicLink } = await importModule();
+
+    await expect(
+      deliverMagicLink({ email: EMAIL, url: URL })
+    ).resolves.toBeUndefined();
+    expect(console.log).not.toHaveBeenCalled();
   });
 });
