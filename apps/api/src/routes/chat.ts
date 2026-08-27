@@ -259,7 +259,14 @@ chatRoute.post("/", async (c) => {
     });
     const result = await agent.stream({
       abortSignal: c.req.raw.signal,
-      prompt: await convertToModelMessages(messages),
+      // Snapshots are persisted per step, so a turn cut off mid-tool leaves a
+      // call with no result. Sending that to the model is a hard provider
+      // error (a tool_use with no tool_result), which would reject every
+      // later message in the conversation. Dropping it lets the agent pick the
+      // step up again; the UI still shows it as unfinished.
+      prompt: await convertToModelMessages(messages, {
+        ignoreIncompleteToolCalls: true,
+      }),
     });
 
     // Persist per step, not just on finish: a tool throwing, the host's request

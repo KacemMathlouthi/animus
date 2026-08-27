@@ -518,6 +518,52 @@ describe("POST /chat — happy path (metered)", () => {
   });
 });
 
+describe("POST /chat — resuming an interrupted turn", () => {
+  it("does not send an unfinished tool call to the model", async () => {
+    // Per-step persistence means a turn cut off mid-render is stored with its
+    // renderScene still `input-available`. Handing that to the provider is a
+    // tool_use with no tool_result, which is a hard error — it would reject
+    // every later message in the conversation, not just this one.
+    loadOwnedConversation.mockResolvedValue({
+      conversation: { id: "conv1", sandboxId: "sandbox-1" },
+      messages: [
+        userMessage("m1", "make a video"),
+        {
+          id: "a1",
+          role: "assistant",
+          parts: [
+            { type: "text", text: "Rendering now.", state: "done" },
+            {
+              type: "tool-renderScene",
+              toolCallId: "call-stuck",
+              state: "input-available",
+              input: {
+                file: "scene.py",
+                scene: "NineRepeating",
+                quality: "high",
+              },
+            },
+          ],
+        } as unknown as UIMessage,
+      ],
+    });
+    const { stream } = stubAgentStream();
+
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m2", "continue") }
+    );
+
+    expect(res.status).toBe(200);
+    const prompt = stream.mock.calls.at(-1)?.[0]?.prompt as Array<{
+      content: unknown;
+    }>;
+    const serialized = JSON.stringify(prompt);
+    expect(serialized).not.toContain("call-stuck");
+    expect(serialized).toContain("continue");
+  });
+});
+
 describe("POST /chat — turn lifecycle (abort/error)", () => {
   it("persists messages and settles an ABORTED turn, without titling it", async () => {
     stubAgentStream(
