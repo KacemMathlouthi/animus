@@ -1,9 +1,9 @@
 /** The streaming chat endpoint. Each request runs one turn of the agent's
  * tool-loop and streams the result back as a UI-message stream the web's
  * useChat consumes. The database is authoritative: the client sends only the
- * newest changed UI message, and the stream snapshot is persisted when the
- * turn finishes — including aborted and errored turns, so a stopped stream
- * never loses the user's message or an already-rendered video.
+ * newest changed UI message, and the snapshot is persisted after every agent
+ * step rather than only on finish — a turn that dies mid-flight would otherwise
+ * write nothing and revert the conversation to its pre-turn state.
  *
  * Cost control: a turn is metered per-component — the LLM unless the user
  * brought their own key, and TTS unless they brought an ElevenLabs key. A
@@ -15,7 +15,14 @@ import { randomUUID } from "node:crypto";
 import { createManimAgent, ensureSandbox } from "@animus/agent";
 import { GENERATION_DEFAULTS, OUT_OF_CREDITS } from "@animus/core";
 import { getServerEnv } from "@animus/core/env";
-import { consumeStream, convertToModelMessages, createIdGenerator } from "ai";
+import {
+  consumeStream,
+  convertToModelMessages,
+  createIdGenerator,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  type UIMessage,
+} from "ai";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
@@ -255,55 +262,76 @@ chatRoute.post("/", async (c) => {
       prompt: await convertToModelMessages(messages),
     });
 
-    // Heartbeats wrap the response so a long tool call (renderScene runs for
-    // up to 600s in silence) can't be read as a dead connection by a proxy
-    // between here and the browser.
-    return withSseHeartbeat(
-      result.toUIMessageStreamResponse({
-        generateMessageId: createIdGenerator({ prefix: "msg", size: 16 }),
-        originalMessages: messages,
-        // Keep consuming the stream server-side so a client disconnect (closed
-        // tab, dropped network) doesn't halt persistence and settlement mid-turn.
-        // Also the turn's backstop: when the SSE stream ends — however it ends —
-        // settle and release the slot even if onFinish never fired.
-        consumeSseStream: ({ stream }) => {
-          consumeStream({ stream }).finally(() => {
-            settleTurn().finally(releaseTurn);
-          });
-        },
-        // Surfaced to the client as the error part's text; the raw error stays
-        // in the logs. Settlement still runs — steps completed before the error
-        // were real spend.
-        onError: (error) => {
+    // Persist per step, not just on finish: a tool throwing, the host's request
+    // cap or a dropped sandbox all end a turn in ways onFinish never sees.
+    // createUIMessageStream's onStepFinish hands back the same UIMessage[] that
+    // onFinish does, so both share one writer.
+    //
+    // Serialized through one chain: saveConversationMessages deletes every row
+    // and re-inserts, so overlapping calls would interleave.
+    let persisting: Promise<void> = Promise.resolve();
+    const persist = (snapshot: UIMessage[]): Promise<void> => {
+      persisting = persisting
+        .then(() =>
+          saveConversationMessages({ conversationId, messages: snapshot })
+        )
+        .then(() => undefined)
+        .catch((error: unknown) => {
+          // A lost write self-heals: the next step rewrites the whole history.
           logger.error(
             { conversationId, turnId, error: describeError(error) },
-            "chat stream errored mid-turn"
+            "failed to persist a turn snapshot"
           );
-          settleTurn().catch(() => {
-            // settleTurn logs its own failures.
-          });
-          return "Something went wrong while generating. Try sending your message again.";
-        },
-        onFinish: async ({ messages: completedMessages, isAborted }) => {
-          try {
-            // Persist whatever the turn produced — a stopped or cut turn keeps
-            // the user's message and any partial assistant work (including a
-            // rendered video's key, which would otherwise orphan in R2).
-            await saveConversationMessages({
+        });
+      return persisting;
+    };
+
+    const stream = createUIMessageStream({
+      execute: ({ writer }) => {
+        writer.merge(result.toUIMessageStream());
+      },
+      generateId: createIdGenerator({ prefix: "msg", size: 16 }),
+      onError: (error) => {
+        logger.error(
+          { conversationId, turnId, error: describeError(error) },
+          "chat stream errored mid-turn"
+        );
+        // Steps completed before the error were real spend.
+        settleTurn().catch(() => {
+          // settleTurn logs its own failures.
+        });
+        return "Something went wrong while generating. Try sending your message again.";
+      },
+      onFinish: async ({ messages: completedMessages, isAborted }) => {
+        try {
+          await persist(completedMessages);
+          if (!isAborted) {
+            maybeGenerateConversationTitle({
               conversationId,
               messages: completedMessages,
             });
-            if (!isAborted) {
-              maybeGenerateConversationTitle({
-                conversationId,
-                messages: completedMessages,
-              });
-            }
-          } finally {
-            await settleTurn();
-            releaseTurn();
           }
+        } finally {
+          await settleTurn();
+          releaseTurn();
+        }
+      },
+      onStepFinish: ({ messages: snapshot }) => persist(snapshot),
+      originalMessages: messages,
+    });
+
+    // Heartbeats keep a long silent tool call (renderScene gets 600s) from
+    // reading as a dead connection to any proxy in between.
+    return withSseHeartbeat(
+      createUIMessageStreamResponse({
+        // Keep consuming server-side so a client disconnect doesn't halt the
+        // turn, and settle/release however the stream ends.
+        consumeSseStream: ({ stream: sse }) => {
+          consumeStream({ stream: sse }).finally(() => {
+            settleTurn().finally(releaseTurn);
+          });
         },
+        stream,
       })
     );
   } catch (error) {
