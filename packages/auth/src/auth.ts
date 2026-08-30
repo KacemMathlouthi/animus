@@ -37,12 +37,10 @@ export const auth = betterAuth({
   },
 
   // One person, many logins: the same email on Google and GitHub links to one
-  // user instead of erroring.
+  // user instead of erroring. No trustedProviders — that would link even when
+  // the provider reports the email unverified, which is an account-takeover path.
   account: {
-    accountLinking: {
-      enabled: true,
-      trustedProviders: ["github", "google"],
-    },
+    accountLinking: { enabled: true },
   },
 
   advanced: {
