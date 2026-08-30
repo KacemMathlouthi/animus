@@ -45,6 +45,12 @@ export const auth = betterAuth({
     },
   },
 
+  advanced: {
+    // Without this the rate limiter resolves no IP and falls back to a single
+    // bucket shared by every user, so one client can lock out sign-in for all.
+    ipAddress: { ipAddressHeaders: env.clientIpHeaders },
+  },
+
   socialProviders: {
     ...(githubId && githubSecret
       ? { github: { clientId: githubId, clientSecret: githubSecret } }

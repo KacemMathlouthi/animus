@@ -7,6 +7,10 @@ import { z } from "zod";
 /** Resend's shared sender: only delivers to the account owner, so dev-only. */
 const RESEND_FROM_DEFAULT = "animus <onboarding@resend.dev>";
 
+/** Only correct when a single proxy sits in front of the API. Behind a CDN the
+ * chain has several hops and Better Auth resolves no IP at all. */
+const CLIENT_IP_HEADERS_DEFAULT = "x-forwarded-for";
+
 const ServerEnvBaseSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -14,6 +18,10 @@ const ServerEnvBaseSchema = z.object({
   PORT: z.coerce.number().int().positive().default(8787),
   /** Origin allowed to call the API with credentials (CORS + cookies). */
   WEB_ORIGIN: z.url().default("http://localhost:5173"),
+  /** Comma-separated headers carrying the client IP, most trusted first. Must
+   * name what the edge in front of the API actually writes: a header that never
+   * resolves leaves auth rate limiting on one bucket shared by every user. */
+  CLIENT_IP_HEADERS: z.string().default(CLIENT_IP_HEADERS_DEFAULT),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   /** Base64 32-byte AES-256-GCM key. Needed only once a key is stored. */
   ENCRYPTION_KEY: z.string().optional(),
@@ -78,6 +86,16 @@ function isLocalUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+/** Lowercased and non-empty, falling back to the default rather than returning
+ * an empty list, which Better Auth would treat as "look at no headers". */
+function parseHeaderList(value: string): string[] {
+  const names = value
+    .split(",")
+    .map((name) => name.trim().toLowerCase())
+    .filter(Boolean);
+  return names.length > 0 ? names : [CLIENT_IP_HEADERS_DEFAULT];
 }
 
 /** Vars kept optional in dev so a contributor can run without every account,
@@ -169,6 +187,8 @@ export interface ServerEnv {
   betterAuthUrl: string;
   braintrustApiKey?: string;
   braintrustProject: string;
+  /** Headers to read the client IP from, most trusted first. */
+  clientIpHeaders: string[];
   /** Whole-USD global free-spend cap; 0 means no cap. */
   creditsGlobalCapUsd: number;
   databaseUrl: string;
@@ -213,6 +233,7 @@ export function parseServerEnv(
     nodeEnv: e.NODE_ENV,
     port: e.PORT,
     webOrigin: e.WEB_ORIGIN,
+    clientIpHeaders: parseHeaderList(e.CLIENT_IP_HEADERS),
     databaseUrl: e.DATABASE_URL,
     encryptionKey: e.ENCRYPTION_KEY,
     exaApiKey: e.EXA_API_KEY,
