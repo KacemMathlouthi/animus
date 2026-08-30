@@ -1,89 +1,165 @@
-/** Server-only environment: the single validated source of truth for every
- * secret and runtime setting the backend reads. Consumed by `apps/api`,
- * `packages/auth`, and the agent.
- *
- * NEVER import this from the web — it reads `process.env` and carries secrets.
- * The boundary is enforced by the package's `exports` map (this is the `/env`
- * subpath, unreachable from the pure root) and a lint rule in the web app. */
+/** The validated source of truth for every backend secret and runtime setting.
+ * NEVER import from the web: the `exports` map keeps this off the pure root and
+ * a lint rule in the web app backs that up. */
 
 import { z } from "zod";
 
-const ServerEnvSchema = z.object({
+/** Resend's shared sender: only delivers to the account owner, so dev-only. */
+const RESEND_FROM_DEFAULT = "animus <onboarding@resend.dev>";
+
+const ServerEnvBaseSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
-  /** Port the API listens on. */
   PORT: z.coerce.number().int().positive().default(8787),
-  /** Web app origin allowed to call the API with credentials (CORS + cookies). */
+  /** Origin allowed to call the API with credentials (CORS + cookies). */
   WEB_ORIGIN: z.url().default("http://localhost:5173"),
-  /** Postgres connection string. */
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
-  /** Base64 32-byte key for encrypting BYO provider keys (AES-256-GCM).
-   * Optional at boot; required only when a provider key is actually stored. */
+  /** Base64 32-byte AES-256-GCM key. Needed only once a key is stored. */
   ENCRYPTION_KEY: z.string().optional(),
-  /** Optional override for the log verbosity. */
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace"])
     .optional(),
-  /** Secret that signs Better Auth session cookies/tokens. */
   BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
-  /** Public URL where Better Auth lives (used to build OAuth callbacks). */
+  /** Public Better Auth URL; OAuth callbacks are built from it. */
   BETTER_AUTH_URL: z.url().default("http://localhost:8787"),
-  /** Optional — enables the Better Auth Infrastructure dashboard when set. */
+  /** Enables the Better Auth Infrastructure dashboard when set. */
   BETTER_AUTH_API_KEY: z.string().optional(),
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
-  /** Optional — magic links log to the console when unset. */
+  /** Magic links log to the console when unset. */
   RESEND_API_KEY: z.string().optional(),
-  RESEND_FROM: z.string().default("animus <onboarding@resend.dev>"),
-  /** Amazon Bedrock inference-profile id for the agent's Claude model. */
+  RESEND_FROM: z.string().default(RESEND_FROM_DEFAULT),
+  /** Bedrock inference-profile id for the agent's Claude model. */
   BEDROCK_MODEL: z.string().default("us.anthropic.claude-opus-4-6-v1"),
-  /** Bedrock credentials/region, passed to the provider EXPLICITLY. The BEDROCK_*
-   * names exist because AWS_* is a special namespace on Vercel: the platform
-   * (which itself runs on AWS) shadows user-supplied AWS_* values at runtime, so
-   * they silently never reach the process. Locally the AWS_* fallbacks keep the
-   * usual .env working. */
+  /** Passed to the provider explicitly. The BEDROCK_* names exist because
+   * Vercel shadows user-supplied AWS_* values at runtime; the AWS_* fallbacks
+   * are only so a local .env keeps working. */
   BEDROCK_ACCESS_KEY_ID: z.string().optional(),
   BEDROCK_SECRET_ACCESS_KEY: z.string().optional(),
   BEDROCK_REGION: z.string().optional(),
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   AWS_REGION: z.string().optional(),
-  /** Exa API key used by the agent's web search and fetch tools. */
+  /** Powers the agent's web search and fetch tools. */
   EXA_API_KEY: z.string().optional(),
-  /** Braintrust API key for LLM observability. When set, the agent's AI SDK
-   * calls emit OpenTelemetry traces exported to Braintrust. */
+  /** When set, the agent's AI SDK calls emit OTel traces to Braintrust. */
   BRAINTRUST_API_KEY: z.string().optional(),
-  /** Braintrust project the LLM traces land in (the `x-bt-parent`). */
   BRAINTRUST_PROJECT: z.string().default("animus"),
-  /** ElevenLabs API key for narration. Injected into the render sandbox so
-   * manim-voiceover can synthesize speech during render. */
+  /** Injected into the render sandbox for manim-voiceover. */
   ELEVENLABS_API_KEY: z.string().min(1, "ELEVENLABS_API_KEY is required"),
-  /** Optional safety cap (whole USD) on total free-credit spend across all
-   * users. When set and exceeded, brand-new accounts are seeded with a $0
-   * balance instead of the free grant (existing balances are untouched). Zero
-   * (the default, also what unset or empty coerces to) means unlimited free
-   * grants. */
+  /** Whole-USD cap on total free-credit spend. Past it, new accounts start at
+   * $0 instead of the grant; existing balances are untouched. 0 means no cap,
+   * which is also what unset or empty coerces to. */
   CREDITS_GLOBAL_CAP_USD: z.coerce.number().nonnegative().default(0),
-  /** Daytona API key for the sandbox the agent renders Manim in. Optional at
-   * boot; required only when a turn actually needs the sandbox. */
+  /** Resolved lazily: only a turn that needs the sandbox requires it. */
   DAYTONA_API_KEY: z.string().optional(),
-  /** Optional Daytona region/target (e.g. "us", "eu"). */
   DAYTONA_TARGET: z.string().optional(),
-  /** Cloudflare R2 (S3-compatible) storage for rendered videos. The endpoint is
-   * derived from the account id; the browser streams videos from R2 via
-   * short-lived presigned URLs minted by the media route. */
+  /** R2 video storage. The endpoint is derived from the account id. */
   R2_ACCOUNT_ID: z.string().min(1, "R2_ACCOUNT_ID is required"),
   R2_ACCESS_KEY_ID: z.string().min(1, "R2_ACCESS_KEY_ID is required"),
   R2_SECRET_ACCESS_KEY: z.string().min(1, "R2_SECRET_ACCESS_KEY is required"),
   R2_BUCKET: z.string().min(1, "R2_BUCKET is required"),
 });
 
+type RawServerEnv = z.infer<typeof ServerEnvBaseSchema>;
+
+/** True for a URL still pointing at a developer's machine. */
+function isLocalUrl(value: string): boolean {
+  try {
+    const { hostname } = new URL(value);
+    return (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "[::1]"
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** Vars kept optional in dev so a contributor can run without every account,
+ * but whose absence in production fails silently rather than loudly — a missing
+ * Bedrock key resolves to the host's own IAM role instead of erroring at boot.
+ * OAuth ids stay optional: a self-host may run magic-link sign-in only. */
+function productionIssues(
+  e: RawServerEnv
+): { message: string; path: string }[] {
+  const issues: { message: string; path: string }[] = [];
+  const required = (path: string, value: string | undefined, why: string) => {
+    if (!value) {
+      issues.push({ message: `required in production (${why})`, path });
+    }
+  };
+
+  required(
+    "BEDROCK_ACCESS_KEY_ID",
+    e.BEDROCK_ACCESS_KEY_ID ?? e.AWS_ACCESS_KEY_ID,
+    "unset silently falls back to the host's own IAM role"
+  );
+  required(
+    "BEDROCK_SECRET_ACCESS_KEY",
+    e.BEDROCK_SECRET_ACCESS_KEY ?? e.AWS_SECRET_ACCESS_KEY,
+    "unset silently falls back to the host's own IAM role"
+  );
+  required(
+    "BEDROCK_REGION",
+    e.BEDROCK_REGION ?? e.AWS_REGION,
+    "model access is granted per region"
+  );
+  required(
+    "ENCRYPTION_KEY",
+    e.ENCRYPTION_KEY,
+    "storing a BYO provider key fails without it"
+  );
+  required(
+    "DAYTONA_API_KEY",
+    e.DAYTONA_API_KEY,
+    "every render turn needs the sandbox"
+  );
+  required(
+    "EXA_API_KEY",
+    e.EXA_API_KEY,
+    "the agent's research tools fail mid-turn without it"
+  );
+  required(
+    "RESEND_API_KEY",
+    e.RESEND_API_KEY,
+    "magic links are the primary sign-in path"
+  );
+
+  if (e.RESEND_FROM === RESEND_FROM_DEFAULT) {
+    issues.push({
+      message:
+        "the default resend.dev sender only delivers to the account owner, so every other user's sign-in email is dropped",
+      path: "RESEND_FROM",
+    });
+  }
+  for (const path of ["WEB_ORIGIN", "BETTER_AUTH_URL"] as const) {
+    if (isLocalUrl(e[path])) {
+      issues.push({
+        message: `still points at localhost (${e[path]})`,
+        path,
+      });
+    }
+  }
+
+  return issues;
+}
+
+const ServerEnvSchema = ServerEnvBaseSchema.superRefine((e, ctx) => {
+  if (e.NODE_ENV !== "production") {
+    return;
+  }
+  for (const { path, message } of productionIssues(e)) {
+    ctx.addIssue({ code: "custom", message, path: [path] });
+  }
+});
+
 export interface ServerEnv {
-  /** Explicit Bedrock credentials (BEDROCK_* with AWS_* fallback for local dev);
-   * undefined lets the SDK's own credential chain apply. */
+  /** Undefined lets the SDK's own credential chain apply. */
   bedrockAccessKeyId?: string;
   bedrockModel: string;
   bedrockRegion?: string;
@@ -117,9 +193,8 @@ export interface ServerEnv {
   webOrigin: string;
 }
 
-/** Pure validation + mapping of a raw environment. Throws a readable error
- * listing every invalid/missing variable. Separated from the memoized singleton
- * below so it is testable without touching the real process.env. */
+/** Pure so it is testable without the real process.env. Throws listing every
+ * invalid or missing variable. */
 export function parseServerEnv(
   source: Record<string, string | undefined>
 ): ServerEnv {
@@ -171,7 +246,6 @@ export function parseServerEnv(
 
 let cached: ServerEnv | null = null;
 
-/** Parse and validate the real process environment once, then memoize. */
 export function getServerEnv(): ServerEnv {
   if (!cached) {
     cached = parseServerEnv(process.env);

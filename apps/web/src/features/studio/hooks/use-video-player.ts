@@ -11,9 +11,8 @@ const SEEK_STEP_SEC = 5;
 const VOLUME_STEP = 0.1;
 const CONTROLS_HIDE_MS = 2500;
 
-// The media controller for VideoPlayer: bridges the uncontrolled <video> element
-// into React state and exposes the imperative play/seek/volume/fullscreen
-// handlers. Kept out of the component so the component stays presentational.
+// Bridges the uncontrolled <video> element into React state, so VideoPlayer
+// itself stays presentational.
 export function useVideoPlayer({
   src,
   playToken,
@@ -26,9 +25,7 @@ export function useVideoPlayer({
   const hideTimerRef = useRef<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
-  // A new source (or none) is back at its resting state — show the poster again.
-  // Render-phase reset (not an effect) so it lands before paint, matching the
-  // pin-reset pattern in StudioWorkspace.
+  // Reset in render, not an effect, so it lands before paint.
   const [lastSrc, setLastSrc] = useState(src);
   if (src !== lastSrc) {
     setLastSrc(src);
@@ -39,11 +36,9 @@ export function useVideoPlayer({
   const [muted, setMuted] = useState(false);
   const [rate, setRate] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  // Whether there's been recent activity; combined with isPlaying it decides
-  // whether the overlay shows (always shown while paused).
+  // With isPlaying, decides the overlay; always shown while paused.
   const [active, setActive] = useState(true);
 
-  // Reflect the media element's own state back into React.
   useEffect(() => {
     const video = videoRef.current;
     if (!video) {
@@ -75,17 +70,17 @@ export function useVideoPlayer({
     };
   }, []);
 
-  // Autoplay when opened from a chat card (playToken bumps per click); skip the
-  // initial mount so the panel doesn't autoplay on load.
+  // playToken bumps per chat-card click. Skip mount so the panel does not
+  // autoplay on load.
   useEffect(() => {
     if (playToken > 0) {
       videoRef.current?.play().catch(() => {
-        // Autoplay can be blocked; the controls remain available.
+        // Autoplay can be blocked; the controls stay available.
       });
     }
   }, [playToken]);
 
-  // Fullscreen can change outside our button (Esc, F11) — keep the icon honest.
+  // Esc and F11 change fullscreen outside our button.
   useEffect(() => {
     const onChange = () =>
       setIsFullscreen(document.fullscreenElement === containerRef.current);
@@ -93,7 +88,6 @@ export function useVideoPlayer({
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
-  // Mark activity and schedule the overlay to hide after a quiet moment.
   const registerActivity = useCallback(() => {
     setActive(true);
     if (hideTimerRef.current) {
@@ -105,8 +99,7 @@ export function useVideoPlayer({
     );
   }, []);
 
-  // Start the hide countdown when playback begins; keep the overlay pinned on
-  // while paused.
+  // Countdown starts with playback; the overlay stays pinned while paused.
   useEffect(() => {
     if (isPlaying) {
       registerActivity();
@@ -134,7 +127,7 @@ export function useVideoPlayer({
     }
     if (video.paused) {
       video.play().catch(() => {
-        // Ignore — a blocked play leaves the controls in place.
+        // A blocked play leaves the controls in place.
       });
     } else {
       video.pause();
@@ -188,17 +181,16 @@ export function useVideoPlayer({
   const toggleFullscreen = useCallback(() => {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {
-        // Ignore — exiting fullscreen is best-effort.
+        // Best-effort.
       });
     } else {
       containerRef.current?.requestFullscreen().catch(() => {
-        // Ignore — fullscreen may be blocked by the browser.
+        // The browser may block fullscreen.
       });
     }
   }, []);
 
-  // Click the frame (video or letterbox) to toggle playback; clicks on the
-  // controls have their own targets and fall through.
+  // Clicking the frame toggles playback; the controls have their own targets.
   const handleClick = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
       if (
@@ -213,7 +205,6 @@ export function useVideoPlayer({
 
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
-      // Let a focused control handle space/enter itself.
       const onContainer = event.target === event.currentTarget;
       switch (event.key) {
         case " ":

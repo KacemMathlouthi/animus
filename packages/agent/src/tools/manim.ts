@@ -16,6 +16,7 @@ import type { Sandbox } from "@daytonaio/sdk";
 import { type ToolSet, tool } from "ai";
 import { extractNarrationChars } from "../metering/narration.ts";
 import { commandOutput, PROJECT_DIR } from "../sandbox/index.ts";
+import { createRedactor } from "../utils/redact.ts";
 
 const MAX_LOG_CHARS = 16_000;
 const RENDER_TIMEOUT_SEC = 600;
@@ -32,22 +33,18 @@ const MUSIC_TRACK = `${PROJECT_DIR}/.background-music.mp3`;
 const MUSIC_VOLUME = 0.08;
 const MUSIC_FADE_IN_SEC = 2;
 
-/** Persist a rendered video and return its storage key (an R2 object key the
- * web resolves to a presigned URL). Implemented by the API. */
+/** Returns an R2 object key the web resolves to a presigned URL. */
 export type SaveVideo = (input: {
   bytes: Uint8Array;
   conversationId: string;
   scene: string;
 }) => Promise<string>;
 
-/** A presigned URL the sandbox downloads the background track from (straight
- * from R2, no byte round-trip through the API). Implemented by the API so the
- * track can change without a sandbox rebuild. */
-/** Presigns the R2 track for the user's chosen music track id. */
+/** Presigns the R2 track so the sandbox downloads it without a round-trip
+ * through the API, and the catalog can change without a sandbox rebuild. */
 export type BackgroundMusicUrl = (trackId: string) => Promise<string>;
 
-/** A mutable per-turn accumulator the API owns. `renderScene` adds the narration
- * characters it synthesizes so the API can meter TTS cost after the turn. */
+/** Per-turn accumulator the API owns, for metering TTS after the turn. */
 export interface TurnMeter {
   ttsChars: number;
 }
@@ -56,7 +53,6 @@ function resolvePath(path: string): string {
   return path.startsWith("/") ? path : `${PROJECT_DIR}/${path}`;
 }
 
-/** Count non-overlapping literal occurrences of `needle` in `haystack`. */
 function countOccurrences(haystack: string, needle: string): number {
   let count = 0;
   let from = 0;
@@ -70,9 +66,8 @@ function countOccurrences(haystack: string, needle: string): number {
   }
 }
 
-/** Keep the tail — manim's error and the "File ready" line are both at the end.
- * Prefix a marker when truncated so the model knows earlier output was dropped
- * rather than treating the log as complete. */
+/** Keep the tail: manim's error and its "File ready" line are both at the end.
+ * The marker stops the model reading a truncated log as complete. */
 function tailLog(output: string): string {
   if (output.length <= MAX_LOG_CHARS) {
     return output;
@@ -91,15 +86,13 @@ function outputPath(
   if (match?.[1]) {
     return match[1];
   }
-  // Fallback to manim's deterministic layout: media/videos/<stem>/<qual>/<scene>.mp4
+  // Fall back to manim's deterministic media/videos/<stem>/<qual>/ layout.
   const stem = file.replace(DIR_PREFIX, "").replace(PY_SUFFIX, "");
   return `${PROJECT_DIR}/media/videos/${stem}/${QUALITY_DIR[quality]}/${scene}.mp4`;
 }
 
-/** Download the background track from R2 into the sandbox and mix it UNDER the
- * narration with ffmpeg (looped, ducked, faded in, amix'd). Returns the mixed
- * file on success, or the untouched master (which already carries the narration)
- * if the track is missing or the step fails — music never blocks delivery. */
+/** Mixes the track under the narration. Falls back to the untouched master,
+ * which already carries the narration: music never blocks delivery. */
 async function muxBackgroundMusic(
   sandbox: Sandbox,
   masterPath: string,
@@ -107,10 +100,8 @@ async function muxBackgroundMusic(
 ): Promise<{ deliverPath: string; note?: string }> {
   const url = await getMusicUrl();
   const finalPath = masterPath.replace(MP4_SUFFIX, ".music.mp4");
-  // Download then mix in one shell step; the URL rides in the env (not the
-  // command string) so its signature query params can't break quoting. A missing
-  // object 404s the download, short-circuiting before ffmpeg. normalize=0 keeps
-  // the voice full in the amix.
+  // The URL rides in the env, not the command string, so its signature query
+  // params cannot break quoting. normalize=0 keeps the voice full in the amix.
   const command =
     `python3 -c "import os,urllib.request; urllib.request.urlretrieve(os.environ['MUSIC_URL'], '${MUSIC_TRACK}')" && ` +
     `ffmpeg -y -i ${masterPath} -stream_loop -1 -i ${MUSIC_TRACK} ` +
@@ -136,15 +127,10 @@ export function createManimTools(deps: {
   conversationId: string;
   saveVideo: SaveVideo;
   backgroundMusicUrl: BackgroundMusicUrl;
-  /** The user's generation settings: whether to mix a music bed at all, and
-   * which catalog track to use when so. */
   backgroundMusic: boolean;
   musicTrackId: string;
-  /** The effective ElevenLabs key for this turn (the user's own when they've
-   * brought one, otherwise ours). Injected into the render command so narration
-   * synthesizes against the right account. */
+  /** This turn's effective key: the user's own if they brought one, else ours. */
   elevenLabsApiKey: string;
-  /** Accumulates synthesized narration characters for post-turn TTS metering. */
   meter: TurnMeter;
 }): ToolSet {
   const {
@@ -157,6 +143,9 @@ export function createManimTools(deps: {
     elevenLabsApiKey,
     meter,
   } = deps;
+
+  // See utils/redact.ts for what this does and does not protect against.
+  const redact = createRedactor([elevenLabsApiKey]);
 
   return {
     writeFile: tool({
@@ -201,8 +190,7 @@ export function createManimTools(deps: {
             `oldString matches ${count} times in ${path}. Add surrounding context to make it unique, or pass replaceAll: true to change every occurrence.`
           );
         }
-        // Daytona applies the replacement in-sandbox (no download/upload of the
-        // edited content); the read above is only to validate the match.
+        // Daytona replaces in-sandbox; the read above only validates the match.
         await sandbox.fs.replaceInFiles([resolved], oldString, newString);
         return { path, replacements: count };
       },
@@ -213,7 +201,7 @@ export function createManimTools(deps: {
       inputSchema: ReadFileInputSchema,
       execute: async ({ path }): Promise<ReadFileOutput> => {
         const buffer = await sandbox.fs.downloadFile(resolvePath(path));
-        return { path, content: buffer.toString("utf8") };
+        return { path, content: redact(buffer.toString("utf8")) };
       },
     }),
     listFiles: tool({
@@ -238,7 +226,7 @@ export function createManimTools(deps: {
         return {
           command,
           exitCode: res.exitCode,
-          output: tailLog(commandOutput(res)),
+          output: redact(tailLog(commandOutput(res))),
         };
       },
     }),
@@ -247,14 +235,11 @@ export function createManimTools(deps: {
         "Render a Manim Scene to an mp4. Provide the Python file and the Scene subclass name. On failure, read the returned logs and fix the code, then render again.",
       inputSchema: RenderSceneInputSchema,
       execute: async ({ file, scene, quality }): Promise<RenderSceneOutput> => {
-        // Invoke via `python3 -m manim` so it works regardless of whether the
-        // manim console script is on PATH (pip --user installs land in
-        // ~/.local/bin, which non-login shells often don't include).
+        // Via `python3 -m` because pip --user puts the console script in
+        // ~/.local/bin, which non-login shells often leave off PATH.
         const command = `python3 -m manim render ${QUALITY_FLAG[quality]} --format=mp4 --media_dir ${PROJECT_DIR}/media ${file} ${scene} 2>&1`;
-        // Inject the effective ElevenLabs key on the render command itself so it
-        // is authoritative even if the sandbox was created on a different key
-        // (e.g. the user added their own key mid-conversation). Both names are
-        // set because the ElevenLabs SDK and manim-voiceover have each used one.
+        // On the command itself, so it wins even if the sandbox was created on
+        // another key. Both names: the SDK and manim-voiceover each use one.
         const res = await sandbox.process.executeCommand(
           command,
           PROJECT_DIR,
@@ -265,25 +250,21 @@ export function createManimTools(deps: {
           RENDER_TIMEOUT_SEC
         );
         const output = commandOutput(res);
-        const logs = tailLog(output);
+        const logs = redact(tailLog(output));
 
         if (res.exitCode !== 0) {
           return { ok: false, file, scene, exitCode: res.exitCode, logs };
         }
 
-        // Count narration characters synthesized this render for TTS metering.
-        // Failure to read the source must never fail the render, so it is
-        // best-effort: on any error we simply meter nothing for this render.
+        // Best-effort: failing to read the source must never fail the render.
         try {
           const sceneSource = await sandbox.fs.downloadFile(resolvePath(file));
           meter.ttsChars += extractNarrationChars(sceneSource.toString("utf8"));
         } catch {
-          // Leave the meter unchanged — under-charging is safer than failing.
+          // Under-charging is safer than failing the render.
         }
 
         const masterPath = outputPath(output, file, scene, quality);
-        // The music bed honors the user's settings: skipped entirely when
-        // background music is off, otherwise mixed from their chosen track.
         const { deliverPath, note } = backgroundMusic
           ? await muxBackgroundMusic(sandbox, masterPath, () =>
               backgroundMusicUrl(musicTrackId)

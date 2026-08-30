@@ -34,10 +34,8 @@ describe("HeroPrompt", () => {
   it("raises its shell off the hero painting without losing the CTA surface", () => {
     const { shell } = renderPrompt();
 
-    // Both classes have to be present together: box-shadow does not accumulate
-    // across rules, so .cta-surface.hero-raised is what restates the surface's
-    // inset highlight alongside the deeper drop. Dropping either one silently
-    // loses the highlight or the lift.
+    // box-shadow does not accumulate across rules, so the paired selector is
+    // what keeps the inset highlight alongside the deeper drop.
     expect(shell.className).toContain("cta-surface");
     expect(shell.className).toContain("hero-raised");
   });

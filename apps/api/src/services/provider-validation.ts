@@ -23,10 +23,8 @@ async function isOk(
     });
     return res.ok;
   } catch (error) {
-    // Deliberately log neither the URL nor the raw error: Google's validation
-    // endpoint carries the plaintext key in its query string, and runtime
-    // fetch errors can echo the full URL back. Origin+path plus the error name
-    // (TimeoutError vs TypeError) is enough to diagnose.
+    // Neither the URL nor the raw error: Google's endpoint carries the key in
+    // its query string and fetch errors echo the full URL back.
     const { origin, pathname } = new URL(url);
     logger.warn(
       {

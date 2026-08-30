@@ -28,9 +28,8 @@ export function serializeConversation(row: ConversationRow) {
   };
 }
 
-/** The plain visible text of a message — its text parts joined. Used both for
- * the persisted `text_content` search column and for title generation, so the
- * two always agree on what "the message said". */
+/** Backs both the `text_content` search column and title generation, so the
+ * two always agree on what the message said. */
 export function textOf(message: UIMessage): string {
   return message.parts
     .map((part) => (part.type === "text" ? part.text : ""))
@@ -56,21 +55,14 @@ function listOffset(offset?: number) {
 const LIKE_WILDCARD = /[\\%_]/g;
 const WHITESPACE = /\s+/;
 
-/** Escape LIKE wildcards so a literal `%` or `_` in the query is matched
- * verbatim (Postgres ILIKE treats backslash as the escape character). */
+/** So a literal `%` or `_` in the query matches verbatim. */
 function likePattern(token: string) {
   return `%${token.replace(LIKE_WILDCARD, "\\$&")}%`;
 }
 
-/** Match the search query against the conversation title or any of its messages'
- * persisted text, pushed into SQL so Postgres uses the `text_content` index
- * instead of us scanning rows in memory.
- *
- * Each whitespace-separated term is matched independently (all must hit, in the
- * title or some message). Per-term matching — rather than one contiguous
- * substring — keeps search resilient to the markdown markers and punctuation in
- * the stored text: "mechanics of learning" still matches text persisted as
- * "the *mechanics* of learning". */
+/** Pushed into SQL so Postgres uses the `text_content` index. Terms match
+ * independently rather than as one substring, which keeps search resilient to
+ * the markdown and punctuation in the stored text. */
 function searchFilter(query?: string) {
   const tokens = (query ?? "").trim().split(WHITESPACE).filter(Boolean);
   if (tokens.length === 0) {
@@ -167,7 +159,7 @@ export async function listConversations({
   return { conversations: rows.map(serializeConversation), total };
 }
 
-/** Cheap ownership check — no message load — for gating per-object access. */
+/** Ownership check with no message load. */
 export async function userOwnsConversation({
   conversationId,
   userId,
@@ -185,8 +177,7 @@ export async function userOwnsConversation({
   return Boolean(row);
 }
 
-/** The title of a conversation the user owns, or null if not found/owned. Cheap
- * (no message load) — used to snapshot the title onto a share. */
+/** Null when not found or not owned. No message load; used by shares. */
 export async function ownedConversationTitle({
   conversationId,
   userId,
@@ -300,8 +291,8 @@ export async function setConversationSandboxId(
     .where(eq(conversation.id, conversationId));
 }
 
-/** Deletes the conversation (messages cascade) and returns its sandbox id so the
- * caller can tear the sandbox down. Null when no row was deleted. */
+/** Messages cascade. Returns the sandbox id so the caller can tear it down,
+ * or null when no row was deleted. */
 export async function deleteConversation({
   conversationId,
   userId,

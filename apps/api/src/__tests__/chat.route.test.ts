@@ -1,5 +1,9 @@
 import { FREE_GRANT_MICROS, OUT_OF_CREDITS } from "@animus/core";
-import type { UIMessage } from "ai";
+import {
+  simulateReadableStream,
+  type UIMessage,
+  type UIMessageChunk,
+} from "ai";
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -101,7 +105,9 @@ function userMessage(id: string, text: string): UIMessage {
   return { id, role: "user", parts: [{ type: "text", text }] };
 }
 
-function post(user: TestUser, body: unknown) {
+/** Leaves the turn (and its concurrency slot) in flight. Only the cap tests
+ * want this. */
+function postRaw(user: TestUser, body: unknown) {
   return appWith(user).request("/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -109,17 +115,32 @@ function post(user: TestUser, body: unknown) {
   });
 }
 
-const COMPLETED: UIMessage[] = [
-  userMessage("m1", "hi"),
-  { id: "a1", role: "assistant", parts: [{ type: "text", text: "hello" }] },
-];
+/** Drains the stream so callbacks have run and the slot is released before
+ * asserting. `inFlightTurns` is module state that survives clearAllMocks, so a
+ * test leaving a turn open makes the next one 429. */
+async function post(user: TestUser, body: unknown): Promise<Response> {
+  const response = await postRaw(user, body);
+  await response.clone().text();
+  return response;
+}
 
-interface StreamResponseOptions {
-  onError: (error: unknown) => string;
-  onFinish: (arg: {
-    messages: UIMessage[];
-    isAborted: boolean;
-  }) => Promise<void> | void;
+/** Chunks fed to the route's stream. The real createUIMessageStream turns these
+ * into UI messages and fires its callbacks, so the tests exercise the actual
+ * persistence wiring rather than a stand-in. */
+function textStepChunks(text: string): UIMessageChunk[] {
+  return [
+    { type: "start" },
+    { type: "start-step" },
+    { type: "text-start", id: "t1" },
+    { type: "text-delta", delta: text, id: "t1" },
+    { type: "text-end", id: "t1" },
+    { type: "finish-step" },
+    { type: "finish" },
+  ];
+}
+
+function chunkStream(chunks: UIMessageChunk[]): ReadableStream<UIMessageChunk> {
+  return simulateReadableStream({ chunks, initialDelayInMs: 0 });
 }
 
 /** Fires the onStepFinish the route registered on the agent — usage is
@@ -137,16 +158,34 @@ function stubAgentStream(
   usage = { inputTokens: 100, outputTokens: 50 },
   { isAborted = false } = {}
 ) {
-  const toUIMessageStreamResponse = vi.fn(
-    async (opts: StreamResponseOptions) => {
-      emitStep(usage);
-      await opts.onFinish({ messages: COMPLETED, isAborted });
-      return new Response("ok");
-    }
-  );
-  const stream = vi.fn().mockResolvedValue({ toUIMessageStreamResponse });
+  const chunks = textStepChunks("hello");
+  if (isAborted) {
+    // An aborted turn stops after its step rather than reaching `finish`.
+    chunks.splice(-1, 1, { type: "abort" });
+  }
+  const toUIMessageStream = vi.fn(() => {
+    emitStep(usage);
+    return chunkStream(chunks);
+  });
+  const stream = vi.fn().mockResolvedValue({ toUIMessageStream });
   createManimAgent.mockReturnValue({ stream });
-  return { stream, toUIMessageStreamResponse };
+  return { stream, toUIMessageStream };
+}
+
+/** The most recent snapshot the route persisted. */
+function lastSnapshot(): { conversationId: string; messages: UIMessage[] } {
+  const call = saveConversationMessages.mock.calls.at(-1);
+  if (!call) {
+    throw new Error("expected saveConversationMessages to have been called");
+  }
+  return call[0] as { conversationId: string; messages: UIMessage[] };
+}
+
+function assistantText(messages: UIMessage[]): string {
+  const assistant = messages.filter((m) => m.role === "assistant").at(-1);
+  return (assistant?.parts ?? [])
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .join("");
 }
 
 beforeEach(() => {
@@ -343,7 +382,7 @@ describe("POST /chat — happy path (metered)", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(await res.text()).toBe("ok");
+    expect(res.headers.get("content-type")).toContain("text/event-stream");
 
     expect(ensureSandbox).toHaveBeenCalledWith({
       conversationId: "conv1",
@@ -368,10 +407,10 @@ describe("POST /chat — happy path (metered)", () => {
       })
     );
 
-    expect(saveConversationMessages).toHaveBeenCalledWith({
-      conversationId: "conv1",
-      messages: COMPLETED,
-    });
+    const snapshot = lastSnapshot();
+    expect(snapshot.conversationId).toBe("conv1");
+    expect(snapshot.messages.at(0)).toMatchObject({ id: "m1", role: "user" });
+    expect(assistantText(snapshot.messages)).toBe("hello");
     // Metered turn settles against a per-request turn id.
     expect(settleUsage).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -414,16 +453,26 @@ describe("POST /chat — happy path (metered)", () => {
   });
 
   it("sums usage across multiple completed steps", async () => {
-    const toUIMessageStreamResponse = vi.fn(
-      async (opts: StreamResponseOptions) => {
-        emitStep({ inputTokens: 1000, outputTokens: 20 });
-        emitStep({ inputTokens: 2500, outputTokens: 80 });
-        await opts.onFinish({ messages: COMPLETED, isAborted: false });
-        return new Response("ok");
-      }
-    );
+    const toUIMessageStream = vi.fn(() => {
+      emitStep({ inputTokens: 1000, outputTokens: 20 });
+      emitStep({ inputTokens: 2500, outputTokens: 80 });
+      return chunkStream([
+        { type: "start" },
+        { type: "start-step" },
+        { type: "text-start", id: "t1" },
+        { type: "text-delta", delta: "one", id: "t1" },
+        { type: "text-end", id: "t1" },
+        { type: "finish-step" },
+        { type: "start-step" },
+        { type: "text-start", id: "t2" },
+        { type: "text-delta", delta: " two", id: "t2" },
+        { type: "text-end", id: "t2" },
+        { type: "finish-step" },
+        { type: "finish" },
+      ]);
+    });
     createManimAgent.mockReturnValue({
-      stream: vi.fn().mockResolvedValue({ toUIMessageStreamResponse }),
+      stream: vi.fn().mockResolvedValue({ toUIMessageStream }),
     });
 
     await post({ id: "u1" }, { id: "conv1", message: userMessage("m1", "hi") });
@@ -431,6 +480,85 @@ describe("POST /chat — happy path (metered)", () => {
     expect(settleUsage).toHaveBeenCalledWith(
       expect.objectContaining({ inputTokens: 3500, outputTokens: 100 })
     );
+  });
+
+  it("persists a snapshot after every step, not just at the end", async () => {
+    const toUIMessageStream = vi.fn(() =>
+      chunkStream([
+        { type: "start" },
+        { type: "start-step" },
+        { type: "text-start", id: "t1" },
+        { type: "text-delta", delta: "step one", id: "t1" },
+        { type: "text-end", id: "t1" },
+        { type: "finish-step" },
+        { type: "start-step" },
+        { type: "text-start", id: "t2" },
+        { type: "text-delta", delta: " step two", id: "t2" },
+        { type: "text-end", id: "t2" },
+        { type: "finish-step" },
+        { type: "finish" },
+      ])
+    );
+    createManimAgent.mockReturnValue({
+      stream: vi.fn().mockResolvedValue({ toUIMessageStream }),
+    });
+
+    await post({ id: "u1" }, { id: "conv1", message: userMessage("m1", "hi") });
+
+    // Two steps plus the final write.
+    expect(saveConversationMessages.mock.calls.length).toBeGreaterThanOrEqual(
+      2
+    );
+    const texts = saveConversationMessages.mock.calls.map(([arg]) =>
+      assistantText((arg as { messages: UIMessage[] }).messages)
+    );
+    expect(texts).toContain("step one");
+    expect(texts.at(-1)).toBe("step one step two");
+  });
+});
+
+describe("POST /chat — resuming an interrupted turn", () => {
+  it("does not send an unfinished tool call to the model", async () => {
+    // A turn cut mid-render persists with renderScene still `input-available`.
+    // That is a tool_use with no tool_result, which rejects every later message
+    // in the conversation, not just this one.
+    loadOwnedConversation.mockResolvedValue({
+      conversation: { id: "conv1", sandboxId: "sandbox-1" },
+      messages: [
+        userMessage("m1", "make a video"),
+        {
+          id: "a1",
+          role: "assistant",
+          parts: [
+            { type: "text", text: "Rendering now.", state: "done" },
+            {
+              type: "tool-renderScene",
+              toolCallId: "call-stuck",
+              state: "input-available",
+              input: {
+                file: "scene.py",
+                scene: "NineRepeating",
+                quality: "high",
+              },
+            },
+          ],
+        } as unknown as UIMessage,
+      ],
+    });
+    const { stream } = stubAgentStream();
+
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m2", "continue") }
+    );
+
+    expect(res.status).toBe(200);
+    const prompt = stream.mock.calls.at(-1)?.[0]?.prompt as Array<{
+      content: unknown;
+    }>;
+    const serialized = JSON.stringify(prompt);
+    expect(serialized).not.toContain("call-stuck");
+    expect(serialized).toContain("continue");
   });
 });
 
@@ -448,10 +576,8 @@ describe("POST /chat — turn lifecycle (abort/error)", () => {
 
     expect(res.status).toBe(200);
     // The stopped turn keeps the user's message and partial assistant work.
-    expect(saveConversationMessages).toHaveBeenCalledWith({
-      conversationId: "conv1",
-      messages: COMPLETED,
-    });
+    expect(lastSnapshot().conversationId).toBe("conv1");
+    expect(assistantText(lastSnapshot().messages)).toBe("hello");
     expect(maybeGenerateConversationTitle).not.toHaveBeenCalled();
     // Steps completed before the abort are real spend — they settle.
     expect(settleUsage).toHaveBeenCalledWith(
@@ -459,44 +585,71 @@ describe("POST /chat — turn lifecycle (abort/error)", () => {
     );
   });
 
-  it("settles on a stream error and returns a sanitized message", async () => {
-    const toUIMessageStreamResponse = vi.fn(
-      async (opts: StreamResponseOptions) => {
-        emitStep({ inputTokens: 400, outputTokens: 10 });
-        const clientText = opts.onError(
-          new Error("Bedrock exploded: sk-secret")
-        );
-        expect(clientText).not.toContain("Bedrock");
-        expect(clientText).not.toContain("sk-secret");
-        await opts.onFinish({ messages: COMPLETED, isAborted: false });
-        return new Response("ok");
-      }
-    );
+  it("keeps the step's work and settles when the turn dies mid-stream", async () => {
+    // The completed step must survive, or the conversation reverts.
+    const toUIMessageStream = vi.fn(() => {
+      emitStep({ inputTokens: 400, outputTokens: 10 });
+      return new ReadableStream<UIMessageChunk>({
+        // The error must land a tick later than the last chunk: erroring in the
+        // same tick discards the queue, which no real provider stream does.
+        async start(controller) {
+          for (const chunk of [
+            { type: "start" } as const,
+            { type: "start-step" } as const,
+            { type: "text-start", id: "t1" } as const,
+            { type: "text-delta", delta: "half a scene", id: "t1" } as const,
+            { type: "text-end", id: "t1" } as const,
+            { type: "finish-step" } as const,
+          ]) {
+            controller.enqueue(chunk);
+          }
+          // A macrotask: the chunks must be delivered before the error lands.
+          await new Promise((resolve) => setTimeout(resolve, 0));
+          controller.error(new Error("Bedrock exploded: sk-secret"));
+        },
+      });
+    });
     createManimAgent.mockReturnValue({
-      stream: vi.fn().mockResolvedValue({ toUIMessageStreamResponse }),
+      stream: vi.fn().mockResolvedValue({ toUIMessageStream }),
     });
 
-    await post({ id: "u1" }, { id: "conv1", message: userMessage("m1", "hi") });
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "hi") }
+    );
+    const body = await res.clone().text();
 
-    // Settled exactly once despite both the error and finish paths running.
+    // The completed step was persisted even though the turn never finished.
+    // The write is queued behind the step callback, so wait for it to land.
+    await vi.waitFor(() =>
+      expect(assistantText(lastSnapshot().messages)).toBe("half a scene")
+    );
+    // Settled exactly once despite the error and backstop paths both running.
     expect(settleUsage).toHaveBeenCalledTimes(1);
     expect(settleUsage).toHaveBeenCalledWith(
       expect.objectContaining({ inputTokens: 400, outputTokens: 10 })
     );
+    // The raw provider error never reaches the client.
+    expect(body).not.toContain("Bedrock");
+    expect(body).not.toContain("sk-secret");
   });
 });
 
 describe("POST /chat — per-user concurrency cap", () => {
   it("429s a third simultaneous turn and frees the slot when a turn ends", async () => {
-    // Streams that never finish: the returned response leaves onFinish
-    // uncalled, so the slot stays held.
-    const held: StreamResponseOptions[] = [];
-    const toUIMessageStreamResponse = vi.fn((opts: StreamResponseOptions) => {
-      held.push(opts);
-      return new Response("ok");
-    });
+    // Streams that never close: onFinish never runs, so the slot stays held.
+    const held: ReadableStreamDefaultController<UIMessageChunk>[] = [];
+    const toUIMessageStream = vi.fn(
+      () =>
+        new ReadableStream<UIMessageChunk>({
+          start(controller) {
+            controller.enqueue({ type: "start" });
+            held.push(controller);
+          },
+        })
+    );
     createManimAgent.mockReturnValue({
-      stream: vi.fn().mockResolvedValue({ toUIMessageStreamResponse }),
+      stream: vi.fn().mockResolvedValue({ toUIMessageStream }),
     });
 
     const user = { id: "u-cap" };
@@ -505,9 +658,9 @@ describe("POST /chat — per-user concurrency cap", () => {
       message: userMessage(id, "hi"),
     });
 
-    expect((await post(user, msg("m1"))).status).toBe(200);
-    expect((await post(user, msg("m2"))).status).toBe(200);
-    const third = await post(user, msg("m3"));
+    expect((await postRaw(user, msg("m1"))).status).toBe(200);
+    expect((await postRaw(user, msg("m2"))).status).toBe(200);
+    const third = await postRaw(user, msg("m3"));
     expect(third.status).toBe(429);
 
     // Finish one held turn — its slot frees and the next request is admitted.
@@ -515,8 +668,18 @@ describe("POST /chat — per-user concurrency cap", () => {
     if (!first) {
       throw new Error("expected a held stream");
     }
-    await first.onFinish({ messages: COMPLETED, isAborted: false });
-    expect((await post(user, msg("m4"))).status).toBe(200);
+    first.enqueue({ type: "finish" });
+    first.close();
+    // Poll until the freed slot admits a new turn.
+    await vi.waitFor(async () => {
+      expect((await postRaw(user, msg("m4"))).status).toBe(200);
+    });
+
+    // Release the remaining held turn so its slot does not leak into later tests.
+    for (const controller of held.slice(1)) {
+      controller.enqueue({ type: "finish" });
+      controller.close();
+    }
   });
 
   it("does not leak the slot when the sandbox fails to start", async () => {

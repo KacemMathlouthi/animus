@@ -1,25 +1,18 @@
-/** Pure builders for a shared video's link-preview `<head>` — the Open Graph /
- * Twitter Card meta a crawler reads, plus the helper that splices it into the
- * SPA's index.html. Kept pure (no `node:*`, no env) so the web's Vite dev plugin
- * (and any prod edge injector) can build identical markup.
- *
- * A static SPA serves one index.html for every route, so per-share meta must be
- * injected server-side at the real `/v/:token` URL. index.html wraps its default
- * tags between the markers below; the injector swaps that region per share. */
+/** Link-preview `<head>` builders for a shared video. A static SPA serves one
+ * index.html for every route, so per-share meta must be injected server-side at
+ * the real `/v/:token` URL. Pure, so the dev plugin and the prod route build
+ * identical markup. */
 
 import { OG_HEIGHT, OG_WIDTH } from "./share-card.ts";
 
-/** Markers in index.html delimiting the replaceable meta region. Must match the
- * comments in apps/web/index.html verbatim. */
+/** Must match the comments in apps/web/index.html verbatim. */
 export const SHARE_META_START = "<!-- share-meta:start -->";
 export const SHARE_META_END = "<!-- share-meta:end -->";
 
-/** Default description for share link previews — one string for every
- * injection layer (the Vite dev plugin and the API's prod page route). */
+/** One string for both injection layers, dev plugin and prod route. */
 export const SHARE_META_DESCRIPTION =
   "A narrated explainer, researched and animated by animus. Make your own in minutes.";
 
-/** Default player embed dimensions (our videos are 16:9). */
 const PLAYER_WIDTH = 1280;
 const PLAYER_HEIGHT = 720;
 
@@ -31,22 +24,19 @@ const HTML_ESCAPES: Record<string, string> = {
 };
 const HTML_UNSAFE = /[&<>"]/g;
 
-/** Escape for HTML text and double-quoted attribute values. */
 export function escapeHtml(value: string): string {
   return value.replace(HTML_UNSAFE, (char) => HTML_ESCAPES[char] ?? char);
 }
 
 export interface ShareMetaInput {
   description: string;
-  /** Absolute URL of the iframe player embed (twitter:player). Omit for image-only. */
+  /** twitter:player iframe. Omit for an image-only card. */
   embedUrl?: string;
-  /** Absolute URL of the PNG share card (og:image / twitter:image). */
   imageUrl: string;
-  /** Canonical page URL (og:url) — the `/v/:token` share page. */
   pageUrl: string;
   title: string;
-  /** Absolute URL of a direct, publicly-fetchable mp4 (enables og:video and
-   * inline playback on Discord/Telegram/Slack). Omit for an image-only card. */
+  /** A publicly fetchable mp4, which enables inline playback on Discord,
+   * Telegram and Slack. Omit for an image-only card. */
   videoUrl?: string;
 }
 
@@ -58,9 +48,8 @@ function meta(
   return `<meta ${kind}="${property}" content="${escapeHtml(content)}"/>`;
 }
 
-/** Build the per-share `<title>` + OG/Twitter meta block. When a video URL is
- * supplied it emits `og:video` and a `twitter:card=player`, so platforms that
- * support it render an inline player; the image is always the fallback. */
+/** With a video URL this emits `og:video` and `twitter:card=player`; the image
+ * is always the fallback. */
 export function buildShareMetaTags(input: ShareMetaInput): string {
   const tags: string[] = [
     `<title>${escapeHtml(input.title)} · animus</title>`,
@@ -107,8 +96,7 @@ export function buildShareMetaTags(input: ShareMetaInput): string {
   return tags.join("\n    ");
 }
 
-/** Replace the marked meta region of an index.html with `metaBlock`. Returns the
- * html unchanged if the markers are absent (safe no-op). */
+/** Returns the html unchanged when the markers are absent. */
 export function injectShareMeta(html: string, metaBlock: string): string {
   const start = html.indexOf(SHARE_META_START);
   const end = html.indexOf(SHARE_META_END);

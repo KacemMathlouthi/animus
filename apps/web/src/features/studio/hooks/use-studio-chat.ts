@@ -23,16 +23,12 @@ interface StudioChat {
   send: (text: string) => void;
   status: ChatStatus;
   stop: () => void;
-  /** R2 object key of the rendered explainer, once the render loop produces one.
-   * Undefined until then — the side panel keeps animating while it's absent.
-   * The player resolves it to a presigned URL via useSignedMediaUrl. */
+  /** Undefined until a render succeeds; the panel animates while it is absent. */
   videoKey?: string;
 }
 
-/** The studio's chat session over the streaming /api/chat endpoint. Keyed by
- * chatId; an optional initial prompt is sent once on mount. HITL tool calls pause
- * the agent until the user answers — `respondToTool` sends the answer back and
- * `sendAutomaticallyWhen` resubmits so the agent continues. */
+/** The studio's chat session, keyed by chatId. HITL calls pause the agent:
+ * `respondToTool` answers and `sendAutomaticallyWhen` resubmits. */
 export function useStudioChat({
   chatId,
   initialPrompt,
@@ -59,15 +55,13 @@ export function useStudioChat({
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     onFinish: () => {
       onConversationUpdated?.();
-      // A completed turn may have drawn down the balance — refresh the gauge.
+      // A completed turn may have drawn the balance down.
       notifyCreditsChanged();
     },
   });
 
-  // Auto-run the first prompt exactly once for a genuinely new conversation.
-  // Capture whether the loaded snapshot already had messages at mount: router
-  // navigation state keeps the prompt across a hard refresh, so without this
-  // guard a refresh would re-send it and duplicate the turn.
+  // Router state keeps the prompt across a hard refresh, so without capturing
+  // whether the snapshot already had messages a refresh duplicates the turn.
   const autoSent = useRef(false);
   const hadInitialMessages = useRef((initialMessages?.length ?? 0) > 0).current;
   const [initialSendFailed, setInitialSendFailed] = useState(false);
@@ -91,8 +85,8 @@ export function useStudioChat({
 
   const respondToTool = useCallback<RespondToTool>(
     (tool, toolCallId, output) => {
-      // tool ↔ output correspond at every call site; the union widening here is
-      // the only thing the typed signature can't prove.
+      // Tool and output correspond at every call site; the union widening is
+      // the only thing the signature cannot prove.
       addToolOutput({ tool, toolCallId, output } as never);
     },
     [addToolOutput]
@@ -107,7 +101,6 @@ export function useStudioChat({
     !hasAssistant &&
     (working || (initialPrompt != null && !hasMessages && !initialSendFailed))
   ) {
-    // Booting a fresh conversation, before the first assistant token.
     phase = "loading";
   } else if (hasMessages) {
     phase = "chat";
@@ -115,7 +108,6 @@ export function useStudioChat({
     phase = "idle";
   }
 
-  // The latest successfully rendered scene drives the side panel's player.
   let videoKey: string | undefined;
   for (const message of messages) {
     for (const part of message.parts) {

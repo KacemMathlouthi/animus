@@ -45,12 +45,10 @@ export function initTelemetry(): boolean {
   return true;
 }
 
-/** Whether LLM tracing is currently active. */
 export function isTelemetryEnabled(): boolean {
   return enabled;
 }
 
-/** Build the `experimental_telemetry` settings for an AI SDK call. */
 export function aiTelemetry(opts: {
   functionId: string;
   metadata?: Record<string, string | number | boolean>;

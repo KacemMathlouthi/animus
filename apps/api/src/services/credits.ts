@@ -1,11 +1,6 @@
-/** Credit accounting: seed a user's balance on first touch, expose it, and
- * settle the metered cost of a completed turn. Money is integer micro-USD
- * throughout (see `@animus/core` pricing). Settlement is idempotent — keyed by
- * the completed assistant message id — so a turn is never charged twice.
- *
- * Enforcement is balance-only: the chat route refuses to *start* a metered turn
- * at a non-positive balance, but a running turn is never killed, so a balance
- * may end slightly negative. */
+/** Money is integer micro-USD throughout. Settlement is idempotent on the
+ * per-request turn id, so a turn is never charged twice. Enforcement is
+ * balance-only: a running turn is never killed and may end negative. */
 
 import { randomUUID } from "node:crypto";
 import {
@@ -33,8 +28,7 @@ function toBalance(balanceMicros: number): CreditsBalance {
   return { balanceMicros, grantMicros: FREE_GRANT_MICROS };
 }
 
-/** True when the global free-spend cap is configured and already exceeded, in
- * which case brand-new accounts are seeded at $0 instead of the free grant. */
+/** Past the cap, new accounts seed at $0 instead of the free grant. */
 async function shouldWithholdGrant(): Promise<boolean> {
   const capUsd = getServerEnv().creditsGlobalCapUsd;
   if (!capUsd) {
@@ -49,8 +43,7 @@ async function shouldWithholdGrant(): Promise<boolean> {
   return spentMicros >= capUsd * MICROS_PER_DOLLAR;
 }
 
-/** The user's balance, seeding the row with the free grant (or $0 when the
- * global cap is exceeded) the first time it is read. */
+/** Seeds the row on first read. */
 export async function getOrCreateCredits(
   userId: string
 ): Promise<CreditsBalance> {
@@ -62,7 +55,7 @@ export async function getOrCreateCredits(
   }
 
   const initial = (await shouldWithholdGrant()) ? 0 : FREE_GRANT_MICROS;
-  // onConflictDoNothing guards the race where two concurrent turns both seed.
+  // Guards the race where two concurrent turns both seed.
   await db
     .insert(userCredits)
     .values({ userId, balanceMicros: initial })
@@ -75,28 +68,26 @@ export async function getOrCreateCredits(
 }
 
 export interface SettleUsageInput {
-  /** Cache-read subset of `inputTokens` (priced at the cache-read multiplier). */
+  /** Subset of `inputTokens`, priced at the cache-read multiplier. */
   cacheReadTokens?: number;
-  /** Cache-write subset of `inputTokens` (priced at the cache-write multiplier). */
+  /** Subset of `inputTokens`, priced at the cache-write multiplier. */
   cacheWriteTokens?: number;
   conversationId: string | null;
   inputTokens: number;
-  /** Whether the LLM ran on our key (metered) or the user's own (not). */
+  /** True when the LLM ran on our key rather than the user's own. */
   isLlmMetered: boolean;
-  /** Whether TTS ran on our key (metered) or the user's own (not). */
+  /** True when TTS ran on our key rather than the user's own. */
   isTtsMetered: boolean;
-  /** The metered LLM model id (priced only when `isLlmMetered`). */
   model: string;
   outputTokens: number;
   ttsChars: number;
-  /** The per-request turn id — the idempotency key (one settlement per request). */
+  /** The idempotency key: one settlement per request. */
   turnId: string;
   userId: string;
 }
 
-/** Charge a completed turn against the user's balance and record the usage.
- * No-op when nothing is billable (fully BYOK, or zero usage) or when this turn
- * was already settled. Returns the micro-USD charged. */
+/** Returns the micro-USD charged. A no-op when nothing is billable or the turn
+ * was already settled. */
 export async function settleUsage(input: SettleUsageInput): Promise<number> {
   const llmCost = input.isLlmMetered
     ? estimateLlmCostMicros({
@@ -114,10 +105,9 @@ export async function settleUsage(input: SettleUsageInput): Promise<number> {
     return 0;
   }
 
-  // One transaction: the ledger insert (whose unique turn_id is the
-  // idempotency guard — an existing row skips the debit) and the balance
-  // debit commit or roll back together. Split statements once left a ledger
-  // row without its debit on a crash, permanently blocking the retry.
+  // The ledger insert (whose unique turn_id is the idempotency guard) and the
+  // debit must commit together: split statements once left a row without its
+  // debit on a crash, which permanently blocked the retry.
   return await db.transaction(async (tx) => {
     const inserted = await tx
       .insert(usageEvent)
@@ -157,9 +147,8 @@ export interface ListUsageInput {
   userId: string;
 }
 
-/** A page of the caller's usage ledger, newest first, with conversation titles
- * attached where the conversation still exists (the ledger keeps the plain id
- * after deletion, so cost history survives). */
+/** Newest first. Titles attach only where the conversation still exists: the
+ * ledger keeps the plain id after deletion so cost history survives. */
 export async function listUsage({
   userId,
   limit,

@@ -1,8 +1,6 @@
-/** Public, UNAUTHENTICATED resolution of a video share token. Given an unlisted
- * token, returns the video's title and a freshly minted presigned playback URL so
- * anyone with the link can watch — no session required. Creation of shares is the
- * authenticated `POST /api/media/share`; this route is read-only and never
- * exposes the underlying object key or conversation. */
+/** Unauthenticated resolution of a share token: anyone with the link watches,
+ * no session. Read-only, and never exposes the object key or conversation.
+ * Shares are created by the authenticated `POST /api/media/share`. */
 
 import {
   buildShareMetaTags,
@@ -21,8 +19,7 @@ import type { AppEnv } from "../types.ts";
 
 export const shareRoute = new Hono<AppEnv>();
 
-/** Minimal, self-contained iframe player for `twitter:player` — a full-bleed
- * video with native controls. `token` is the stored (safe) share token. */
+/** The `twitter:player` iframe body. `token` is the stored, safe token. */
 function embedHtml(token: string, title: string): string {
   const video = `/api/share/${token}/video.mp4`;
   const poster = `/api/share/${token}/og.png`;
@@ -40,9 +37,8 @@ function embedHtml(token: string, title: string): string {
 </html>`;
 }
 
-/** Runtime-rendered PNG share card for link previews (Open Graph). Public and
- * unauthenticated — crawlers fetch it without cookies. Derived purely from the
- * share's title + token; nothing is stored, so a day-long cache is safe. */
+/** Crawlers fetch this without cookies. Purely a function of title and token,
+ * so a day-long cache is safe. */
 shareRoute.get("/:token/og.png", async (c) => {
   const share = await getShareByToken(c.req.param("token"));
   if (!share) {
@@ -57,8 +53,8 @@ shareRoute.get("/:token/og.png", async (c) => {
   });
 });
 
-/** Stable public mp4 URL for `og:video` — 302s to a fresh presigned R2 URL each
- * time (the underlying presign expires, so this is only briefly cacheable). */
+/** Stable `og:video` URL that 302s to a fresh presign, which is why it is only
+ * briefly cacheable. */
 shareRoute.get("/:token/video.mp4", async (c) => {
   const share = await getShareByToken(c.req.param("token"));
   if (!share) {
@@ -69,9 +65,8 @@ shareRoute.get("/:token/video.mp4", async (c) => {
   return c.redirect(url, 302);
 });
 
-/** The SPA shell (index.html) fetched from the web origin, cached briefly —
- * it only changes on a web deploy, and a crawler burst must not hammer the
- * origin with one fetch per hit. */
+/** Cached because it changes only on a web deploy, and a crawler burst must
+ * not fetch the origin once per hit. */
 const SHELL_CACHE_TTL_MS = 5 * 60 * 1000;
 let shellCache: { html: string; fetchedAt: number } | null = null;
 
@@ -91,13 +86,10 @@ async function fetchSpaShell(webOrigin: string): Promise<string> {
   return html;
 }
 
-/** The share page itself, with per-share link-preview meta injected. A static
- * SPA serves one index.html for every route, so crawlers hitting `/v/:token`
- * would see no OG tags at all — the web project rewrites `/v/:token` here,
- * and this route serves the SPA shell with the share's meta block spliced in.
- * Humans boot the SPA exactly as before; unknown tokens get the plain shell
- * (the SPA renders its own not-found state). This is the prod counterpart of
- * the web's dev-only Vite plugin (apps/web/plugins/share-meta.ts). */
+/** The SPA shell with per-share meta spliced in; the web rewrites `/v/:token`
+ * here so crawlers see OG tags a static SPA cannot emit. Humans boot the SPA as
+ * normal and unknown tokens get the plain shell. Prod counterpart of the dev
+ * plugin in apps/web/plugins/share-meta.ts. */
 shareRoute.get("/:token/page", async (c) => {
   const { webOrigin } = getServerEnv();
   const [share, shell] = await Promise.all([
@@ -124,7 +116,6 @@ shareRoute.get("/:token/page", async (c) => {
   );
 });
 
-/** The `twitter:player` iframe target — an inline video player crawlers can embed. */
 shareRoute.get("/:token/embed", async (c) => {
   const share = await getShareByToken(c.req.param("token"));
   if (!share) {

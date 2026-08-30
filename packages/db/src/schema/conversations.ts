@@ -79,7 +79,6 @@ export const videoShare = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    /** The R2 object key of the shared video. */
     videoKey: text("video_key").notNull(),
     /** Title snapshot shown on the public page (the conversation's title at share time). */
     title: text("title").notNull(),

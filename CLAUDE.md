@@ -107,7 +107,12 @@ Cross-package "does it compile" = `bun run typecheck`.
   before they're stored. Quota tiers / paid billing remain future work.
 - **Runtime:** `apps/api` (Hono/Bun) hosts the loop as a **long-running
   container** (streaming + live sandbox handles need a persistent process — not
-  serverless). No separate worker/queue in v1.
+  serverless). No separate worker/queue in v1. Two properties the container
+  host depends on: the chat response is wrapped by `withSseHeartbeat`
+  (`lib/sse-heartbeat.ts`) so a silent 600s `renderScene` isn't read as a dead
+  connection by a load balancer or CDN, and SIGTERM/SIGINT drain in-flight
+  requests and close the Postgres pool (`lib/shutdown.ts`) within a bounded
+  20s — every deploy stops the process this way.
 - **Hosting (deployed): Vercel, container image for the API.** The web
   (`animus-web` project, Vite static + SPA fallback rewrite) and the API
   (`animus-api` project) both deploy on Vercel. The API ships as an **OCI
@@ -150,8 +155,10 @@ Cross-package "does it compile" = `bun run typecheck`.
   Resend↔Vercel integration (DKIM + SPF + return-path MX on `send.mail.…`,
   auto-written into Vercel DNS, plus a monitor-mode DMARC record);
   `RESEND_FROM=animus <login@mail.tryanimus.app>`, so magic links deliver to
-  any address. The **root** domain's MX slot is deliberately free for a future
-  receiving mailbox (Zoho/ImprovMX).
+  any address. Inbound mail on the **root** domain is forwarded by **ImprovMX**
+  (MX + its own SPF on the apex). The two SPF records sit on different
+  hostnames and are evaluated independently — never merge them, and never put
+  two SPF TXT records on one host.
 - **Magic-link auth vs inbox scanners.** The verify endpoint consumes its
   single-use token on GET, and mail security scanners open every link in an
   arriving email — some executing JavaScript (proven in prod: an auto-redirect
@@ -177,7 +184,13 @@ Cross-package "does it compile" = `bun run typecheck`.
   that synthesizes speech in-scene during render, so animation timing auto-syncs to
   the narration (`tracker.duration`, bookmarks). The ElevenLabs key is injected into
   the render sandbox via `envVars`. Background music is mixed under the narration in
-  the post-render ffmpeg step.
+  the post-render ffmpeg step. Everything the sandbox echoes back (`runCommand`
+  output, `renderScene` logs, `readFile` content) passes through
+  `createRedactor` (`packages/agent/src/utils/redact.ts`), which matches runs of
+  8+ characters of a known secret so splitting the key across `echo` calls does
+  not defeat it. **This is a speed bump, not a boundary** — the user writes the
+  prompt and can still `curl` the key out. The fix is the sandbox never holding
+  it (a credential-injecting egress proxy).
 - **Link previews & the SPA meta-injection seam (resolved).** A static SPA
   serves one `index.html` for every route, so per-share Open Graph / Twitter meta
   must be written **server-side at the real `/v/:token` URL** — crawlers don't run
@@ -243,7 +256,7 @@ found and fixed so far: Vercel shadowing `AWS_*`, Bedrock throttling →
 retries, wrong voice guidance; still required: a paid ElevenLabs tier, an AWS
 Bedrock quota increase) → playback polish → generalize the render/repair loop
 → later: paid quota tiers / billing, autonomous mode.
-(Parked, deliberately: redacting sandbox secrets from tool output; surfacing
+(Parked, deliberately: surfacing
 stream errors in the studio UI (a stream that dies after the 200 is committed
 is invisible to status monitoring and silent in the UI); email OTP codes as
 the magic-link endgame; the settings `music_track`/`voice_id`
@@ -293,7 +306,7 @@ bun run build          # turbo build (web app)
 bun run typecheck      # tsc across every workspace — the cross-package compile check
 bunx ultracite check   # lint (no writes); `bunx ultracite fix` to auto-fix
 bun run knip           # unused files / deps / exports
-bunx vitest run        # run tests (NOT `bun test`)
+bun run test           # run tests (NOT `bun test`; see note below)
 ```
 
 Database (`packages/db`):
@@ -310,8 +323,18 @@ Sandbox snapshot (`packages/agent`):
 bun run snapshot:build # build/refresh the prebaked Manim+LaTeX Daytona snapshot
 ```
 
+Turbo runs with `"ui": "stream"` (set in `turbo.json`), **not** the
+interactive `"tui"`. The TUI gives each task its own pane, so a failing
+task's output hides behind whichever pane is focused — you cannot see the
+error you are looking for — and it enables terminal mouse tracking that it
+fails to restore on Ctrl-C, after which the shell echoes every mouse move as
+an escape sequence (reproduced on WSL2, turbo 2.10.2). Streaming interleaves
+every task behind a `package:task` prefix and leaves the terminal alone.
+Note `turbo.json` is strict JSON to the editor's language service, so that
+reasoning lives here rather than as a comment in the file.
+
 **Before committing, the change must pass:** `bun run typecheck`,
-`bunx ultracite check`, `bun run knip`, and `bunx vitest run`.
+`bunx ultracite check`, `bun run knip`, and `bun run test`.
 
 ---
 
@@ -327,6 +350,13 @@ bun run snapshot:build # build/refresh the prebaked Manim+LaTeX Daytona snapshot
 - Use structured logs: `logger.info({ ...ctx }, "message")`.
 - **No dead code**, no commented-out blocks, no unreferenced wiring. If a feature
   is added, wire it fully and test it in the same change.
+- **Comments are terse.** Inline comments are **1-2 lines max**; doc comments are
+  **3 lines max**. Write one only when the code cannot say it itself: a
+  non-obvious *why*, a constraint, a gotcha, a workaround with its reason. Never
+  restate what the line does, never narrate a function step by step, never leave
+  a header banner or a section divider. Delete a comment that has gone stale
+  rather than updating it around the edges. If an explanation genuinely needs
+  more room, it belongs in `CLAUDE.md` or `docs/`, not in the source.
 - **Every change (feature, fix, refactor) includes corresponding test additions
   or updates** — untested code is incomplete code.
 - Use `bun` commands only.
@@ -350,7 +380,10 @@ Better Auth wiring) and presentational-only components are intentionally not
 unit-tested.
 
 ### Test runner
-- Use `vitest` (not `bun test`). Run: `bunx vitest run`.
+- Use `vitest` (not `bun test`). Run: `bun run test` (turbo, per workspace).
+  A bare `bunx vitest run` at the repo ROOT silently fails: there is no root
+  `vitest.config.ts` by design, so the 24 `apps/web` files run without jsdom or
+  the `@` alias. It is only correct inside a single workspace.
 - Keep tests close to source in `__tests__/` folders.
 - Shared helpers in `src/__tests__/helpers/` (mock-logger, mock-fetch, fixtures).
 - **`apps/web`** runs under React Testing Library + jsdom via its own
@@ -370,7 +403,7 @@ unit-tested.
 - **Every new feature must include tests** covering its public API, error paths,
   and edge cases.
 - **Every refactor that changes behavior must update affected tests.**
-- **No PR is complete without passing tests** — run `bunx vitest run` before committing.
+- **No PR is complete without passing tests** — run `bun run test` before committing.
 - When modifying an existing module, review its `__tests__/` folder and update
   affected tests.
 
@@ -430,7 +463,11 @@ assume — confirm.
   Server env is behind `@animus/core/env` — **never import it from the web**
   (enforced by a Biome `noRestrictedImports` rule in `apps/web`).
 - **Env:** loaded by the runtime (Bun `--env-file`, Vite for web), validated by
-  Zod in `@animus/core/env`. Never read `process.env` directly in **runtime
+  Zod in `@animus/core/env`. A `superRefine` gated on `NODE_ENV=production`
+  hard-fails the boot when a production-critical variable is missing — most
+  importantly the Bedrock credentials, whose absence otherwise falls through to
+  the AWS SDK's own chain and (on a container host) authenticates as the
+  *instance's* IAM role instead of failing. Never read `process.env` directly in **runtime
   app/server code** — import from `@animus/core/env`. Build-time tooling configs
   (e.g. `drizzle.config.ts`) are the exception: they run via `--env-file`, need
   only `DATABASE_URL`, and must not pull in the full server-env schema.

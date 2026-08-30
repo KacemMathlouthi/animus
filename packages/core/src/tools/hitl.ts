@@ -21,7 +21,6 @@ export type AskUserQuestionInput = z.infer<typeof AskUserQuestionInputSchema>;
 export const AskUserQuestionOutputSchema = z.object({
   /** Labels of the chosen options (one entry unless allowMultiple). */
   selected: z.array(z.string()),
-  /** The user's free-form answer, if any. */
   freeText: z.string().optional(),
 });
 export type AskUserQuestionOutput = z.infer<typeof AskUserQuestionOutputSchema>;
@@ -37,7 +36,6 @@ export type VideoPlan = z.infer<typeof VideoPlanSchema>;
 
 export const FinalizeVideoPlanOutputSchema = z.object({
   approved: z.boolean(),
-  /** Requested changes when not approved. */
   feedback: z.string().optional(),
 });
 export type FinalizeVideoPlanOutput = z.infer<

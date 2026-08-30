@@ -1,9 +1,6 @@
-/** The providers a user can bring their own key for — the shared, framework-
- * agnostic data (ids, env-var names, docs, curated models). The web decorates
- * each with a brand icon; the API validates keys against these ids; the agent
- * maps the id to an SDK client.
-
- * Add a provider or model in one place: here. */
+/** The providers a user can bring a key for. The web adds brand icons, the API
+ * validates against these ids, the agent maps them to SDK clients. Add a
+ * provider or model here and nowhere else. */
 
 import { z } from "zod";
 
@@ -13,22 +10,16 @@ export const ProviderIdSchema = z.enum(PROVIDER_IDS);
 export type ProviderId = (typeof PROVIDER_IDS)[number];
 
 export interface ModelOption {
-  /** The provider's model id, passed verbatim to the SDK. */
   id: string;
-  /** Human label for the settings picker. */
   name: string;
 }
 
 export interface ProviderInfo {
-  /** Where the user creates a key. */
   docsUrl: string;
-  /** Conventional env-var name for this provider's key. */
   envKey: string;
   id: ProviderId;
-  /** Curated models offered for this provider. */
   models: readonly ModelOption[];
   name: string;
-  /** Placeholder shown in the key input. */
   placeholder: string;
 }
 
@@ -74,15 +65,13 @@ export const PROVIDERS: readonly ProviderInfo[] = [
   },
 ];
 
-/** Curated models keyed by provider — the authoritative list the key schema and
- * the agent's model resolver both validate against. */
+/** The list both the key schema and the model resolver validate against. */
 export const LLM_MODELS: Record<ProviderId, readonly ModelOption[]> =
   Object.fromEntries(PROVIDERS.map((p) => [p.id, p.models])) as Record<
     ProviderId,
     readonly ModelOption[]
   >;
 
-/** Whether `model` is a curated model for `provider`. */
 export function isValidModelForProvider(
   provider: ProviderId,
   model: string
@@ -90,9 +79,8 @@ export function isValidModelForProvider(
   return LLM_MODELS[provider].some((m) => m.id === model);
 }
 
-/** The single TTS provider users may bring a key for. Stored in the same
- * `provider_key` table under `kind: "tts"`, so it lives outside `PROVIDER_IDS`
- * (which the agent maps to LLM SDK clients). */
+/** Outside `PROVIDER_IDS`, which the agent maps to LLM SDK clients. Stored in
+ * the same table under `kind: "tts"`. */
 export const TTS_PROVIDER_ID = "elevenlabs" as const;
 export type TtsProviderId = typeof TTS_PROVIDER_ID;
 

@@ -81,12 +81,9 @@ describe("StudioPrompt", () => {
   });
 
   it("offers no reachable file-attachment control", () => {
-    // The upload button was removed because the feature does not exist; this
-    // keeps a stray re-add from shipping a dead affordance. The vendored
-    // PromptInput still renders its file input unconditionally, so assert it
-    // stays Tailwind-hidden with nothing that opens it. (Visibility itself
-    // can't be asserted here — jsdom loads no CSS, so `hidden` never computes
-    // to display:none.)
+    // The vendored PromptInput still renders its file input unconditionally,
+    // so assert nothing opens it. jsdom loads no CSS, so visibility itself
+    // cannot be asserted here.
     render(<StudioPrompt onSubmit={vi.fn()} status="ready" />);
 
     expect(screen.queryByRole("button", { name: ATTACHMENT })).toBeNull();

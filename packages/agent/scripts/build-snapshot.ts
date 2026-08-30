@@ -1,13 +1,7 @@
-/** Builds (or refreshes) the prebaked Manim snapshot that sandboxes boot from.
- *
- * Run it once, and again whenever ../snapshot/Dockerfile changes:
- *   bun run snapshot:build   (from packages/agent)
- *
- * Daytona builds the image remotely from the Dockerfile and registers it under
- * SNAPSHOT_NAME; ensureSandbox then creates sandboxes from that snapshot. This
- * is build-time tooling, so — like drizzle.config.ts — it reads credentials
- * straight from process.env (injected by --env-file) rather than the server-env
- * schema, which would demand the full app config just to build an image. */
+/** Builds the prebaked Manim snapshot sandboxes boot from: `bun run
+ * snapshot:build`, again whenever ../snapshot/Dockerfile changes. Build-time
+ * tooling, so it reads process.env directly rather than the server-env schema,
+ * which would demand the full app config just to build an image. */
 
 import { fileURLToPath } from "node:url";
 import { Daytona, Image } from "@daytonaio/sdk";
@@ -25,9 +19,8 @@ const daytona = new Daytona({ apiKey, target: process.env.DAYTONA_TARGET });
 const dockerfilePath = fileURLToPath(
   new URL("../snapshot/Dockerfile", import.meta.url)
 );
-// The craft skill lives outside the Dockerfile's build context, so bake it in
-// here rather than via a COPY. The agent reads /home/daytona/skill/references
-// on demand; the always-on core is in the system prompt.
+// The skill sits outside the Dockerfile's build context, so it is baked in
+// here rather than COPYed. The agent reads it on demand.
 const skillDir = fileURLToPath(
   new URL("../skills/manim-video", import.meta.url)
 );

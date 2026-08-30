@@ -3,5 +3,23 @@
   "extends": ["ultracite/biome/core"],
   "files": {
     "includes": ["!**/.turbo", "!**/dist", "!**/bun.lock", "!**/drizzle"]
-  }
+  },
+  // Bun is the runtime for apps/api and every package (@types/bun supplies the
+  // types); without this, using `Bun` as a value reads as an undeclared global.
+  "javascript": {
+    "globals": ["Bun"]
+  },
+  "overrides": [
+    {
+      // Biome's formatter is not idempotent on this file's embedded CSS: it
+      // re-indents multi-line comment continuations a little further on every
+      // run (12 -> 20 -> 24 -> 32 spaces observed), and `check` passes after
+      // each one, so the file drifts forever and rides along in unrelated
+      // commits. Linting still applies — it is what caught the missing `lang`
+      // and the untitled SVG when this card was written — only the formatter
+      // is off.
+      "includes": ["scripts/*.html"],
+      "formatter": { "enabled": false }
+    }
+  ]
 }

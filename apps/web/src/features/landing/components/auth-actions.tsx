@@ -9,12 +9,9 @@ import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 export function AuthActions({ stacked = false }: { stacked?: boolean }) {
-  // Rendered straight from the session with no pending gate. The API scales to
-  // zero, so a cold start can leave the session request hanging for seconds —
-  // long enough that an empty header slot reads as a broken page. Showing the
-  // signed-out buttons immediately and swapping them once the session resolves
-  // trades a brief swap for a header that is never blank. `useSession` keeps
-  // the last data across background refetches, so this only ever swaps once.
+  // No pending gate: a cold start can hang the session request for seconds,
+  // and an empty header slot reads as a broken page. `useSession` keeps its
+  // last data across refetches, so this swaps at most once.
   const { data } = useSession();
 
   const size = stacked ? "default" : "sm";

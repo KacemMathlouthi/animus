@@ -1,13 +1,6 @@
-/** Resolves the agent's language model.
- *
- * Default: Claude via Amazon Bedrock (our key, metered). Credentials/region are
- * passed to the provider explicitly from the validated server env — never via
- * the SDK's implicit AWS_* chain, which Vercel shadows at runtime (see getModel
- * below). The id is a Bedrock inference profile from env.
- *
- * BYOK: when the caller passes a decrypted LLM key, the agent runs on that
- * provider's own SDK client with the user's chosen model — and that turn is not
- * metered (the user pays their provider directly). */
+/** Resolves the agent's model: Claude via Bedrock on our key by default, or
+ * the user's own provider client when they brought a key, in which case the
+ * turn is not metered because they pay their provider directly. */
 
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
 import { createAnthropic } from "@ai-sdk/anthropic";
@@ -17,19 +10,15 @@ import type { ProviderId } from "@animus/core";
 import { getServerEnv } from "@animus/core/env";
 import type { LanguageModel } from "ai";
 
-/** A decrypted BYO LLM key, resolved by the API from the user's stored keys. */
 export interface LlmKey {
   apiKey: string;
   model: string;
   provider: ProviderId;
 }
 
-/** The Bedrock model (our key). `modelId` overrides the env inference profile —
- * used by the lightweight title-generation helper. Credentials are passed
- * EXPLICITLY (never via the SDK's AWS_* env chain): Vercel shadows
- * user-supplied AWS_* variables at runtime, so relying on the chain works
- * locally and silently fails in production. Undefined values (local dev
- * without BEDROCK_*) fall back to the SDK's own chain. */
+/** `modelId` overrides the env inference profile, for title generation.
+ * Credentials go in explicitly, never via the SDK's AWS_* chain: Vercel shadows
+ * those at runtime, so the chain works locally and fails silently in prod. */
 export function getModel(modelId?: string): LanguageModel {
   const env = getServerEnv();
   const bedrock = createAmazonBedrock({

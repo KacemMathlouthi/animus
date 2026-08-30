@@ -8,14 +8,9 @@ import {
 } from "@/features/studio/hooks/use-ambient-glow";
 import { useVideoPlayer } from "@/features/studio/hooks/use-video-player";
 
-/** A video player styled to the app's UI that fills its container. Native
- * controls are replaced with a custom overlay (play/pause, scrubber, time,
- * mute, speed, fullscreen). The overlay and cursor auto-hide after a moment of
- * inactivity while playing and reappear on pointer/keyboard activity. Keyboard:
- * space/k play-pause, ←/→ seek, ↑/↓ volume, m mute, f fullscreen.
- *
- * Takes an already-resolved `src` (a presigned URL) so the same player serves
- * both the authed studio and the public share page. */
+/** Native controls replaced by an overlay that auto-hides while playing. Keys:
+ * space/k play-pause, arrows seek and volume, m mute, f fullscreen. Takes an
+ * already-resolved `src`, so it serves the studio and the share page alike. */
 export function VideoPlayer({
   src,
   title,
@@ -25,17 +20,15 @@ export function VideoPlayer({
   src: string | undefined;
   title: string;
   playToken: number;
-  /** Resting overlay shown over the frame until the video first plays (e.g. the
-   * branded share card). Cleared on first play and when the source changes. */
+  /** Shown until first play, then cleared; also cleared when `src` changes. */
   poster?: ReactNode;
 }) {
   const player = useVideoPlayer({ src, playToken });
   const ambientRef = useAmbientGlow(player.videoRef);
 
   return (
-    // role="group" (not "application") keeps screen readers in normal reading
-    // mode; the div stays focusable for playback key shortcuts. A <fieldset>
-    // (the rule's suggestion) is a form control, not a media widget.
+    // role="group" keeps screen readers in normal reading mode while the div
+    // stays focusable for the key shortcuts. A <fieldset> is a form control.
     // biome-ignore lint/a11y/useSemanticElements: a media player is not a fieldset
     // biome-ignore lint/a11y/noNoninteractiveElementInteractions: role=group + tabIndex make this a deliberate keyboard-driven media widget
     <div

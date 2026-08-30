@@ -85,10 +85,8 @@ export function HeroPrompt({ className }: { className?: string }) {
   const canSubmit = text.trim().length > 0 && !creating;
 
   return (
-    // ~10% off the prompt's overall footprint: 37.8rem is max-w-2xl (42rem)
-    // scaled down, and the paddings, type, and control sizes below come down
-    // with it so it reads as the same card at a smaller size rather than a
-    // narrower one with the old chrome.
+    // max-w-2xl scaled down ~10%. The paddings, type and controls scale with
+    // it, so it reads as the same card smaller, not a narrower one.
     <div className={cn("w-full max-w-[37.8rem]", className)}>
       <div className="cta-surface hero-raised flex flex-col gap-1.5 rounded-xl p-2">
         <div className="flex items-center gap-1.5 px-1.5 font-medium text-muted-foreground text-xs">

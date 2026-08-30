@@ -1,6 +1,5 @@
-/** The animus agent: a ToolLoopAgent over the Manim toolset (loop, retries, and
- * orchestration handled by the SDK). Toolset is built per turn — HITL + web
- * research always, plus the Manim sandbox tools bound to this conversation. */
+/** A ToolLoopAgent over the Manim toolset, built per turn: HITL and web
+ * research always, plus sandbox tools bound to this conversation. */
 
 import type { Sandbox } from "@daytonaio/sdk";
 import {
@@ -23,30 +22,23 @@ export function createManimAgent(deps: {
   conversationId: string;
   saveVideo: SaveVideo;
   backgroundMusicUrl: BackgroundMusicUrl;
-  /** The effective ElevenLabs key for this turn (the user's own, or ours). */
   elevenLabsApiKey: string;
-  /** The user's generation settings for this turn: narration voice, and
-   * whether/which music bed to mix under the render. */
   voiceId: string;
   backgroundMusic: boolean;
   musicTrackId: string;
-  /** Per-turn TTS accumulator the caller reads after the turn to meter cost. */
   meter: TurnMeter;
-  /** When present, the turn runs on the user's own LLM key (not metered);
-   * otherwise it runs on our Bedrock model (metered). */
+  /** Present means the turn runs unmetered on the user's own key. */
   llmKey?: LlmKey;
-  /** Per-turn observability; the caller (apps/api) owns policy. Omitted means no tracing. */
+  /** Omitted means no tracing; apps/api owns the policy. */
   telemetry?: TelemetrySettings;
-  /** Fires after every completed LLM step. The caller uses it to accumulate
-   * token usage as it happens — `totalUsage` is empty on an aborted stream,
-   * and the most expensive turns are exactly the ones that get cut. */
+  /** Used to accumulate usage as it happens: `totalUsage` is empty on an
+   * aborted stream, and cut turns are the expensive ones. */
   onStepFinish?: ToolLoopAgentOnStepFinishCallback<ToolSet>;
 }): ToolLoopAgent<never, ToolSet, never> {
   return new ToolLoopAgent({
     model: resolveModel(deps.llmKey).model,
-    // Bedrock throttles fresh accounts hard (429 "Too many requests" a few
-    // calls into a turn). The default 2 retries gives up mid-loop and the turn
-    // stalls; 6 retries of exponential backoff rides out the rate window.
+    // Bedrock 429s fresh accounts a few calls into a turn, and the default 2
+    // retries gives up mid-loop. Six rides out the rate window.
     maxRetries: 6,
     instructions: buildManimSystemPrompt({ voiceId: deps.voiceId }),
     tools: createTools({

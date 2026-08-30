@@ -1,26 +1,16 @@
-/** Cost metering: converts provider usage (LLM tokens, TTS characters) into a
- * single money unit — integer micro-USD (1 µ$ = $1e-6). Everything the credit
- * system stores and compares is micro-USD, so per-token costs (Opus ≈ 5 µ$ per
- * input token) never round to zero. This module is PURE and framework-agnostic;
- * the API meters against it and the web formats balances with it.
- *
- * Prices below are the exact per-model list prices from LiteLLM's public price
- * list (input/output USD per million tokens). Bump them here when provider
- * pricing changes — this is the single source of truth. */
+/** Converts provider usage into integer micro-USD (1 µ$ = $1e-6), so per-token
+ * costs never round to zero. Pure. Prices are LiteLLM's public list prices and
+ * this is the single source of truth for them. */
 
-/** Micro-USD per whole dollar. */
 export const MICROS_PER_DOLLAR = 1_000_000;
 
-/** The one-time free grant a new account starts with, in micro-USD ($5). Kept in
- * sync with the `user_credits.balance_micros` column default in the DB schema —
- * change both together. Also the denominator for the balance gauge in the UI. */
+/** The one-time $5 grant. Mirrors the `user_credits.balance_micros` column
+ * default — change both together. Also the balance gauge's denominator. */
 export const FREE_GRANT_MICROS = 5 * MICROS_PER_DOLLAR;
 
-/** Anthropic prompt-cache multipliers on the base input rate: a cache *read* is
- * billed at 10% of a normal input token, a 5-minute cache *write* at 125%. We
- * only ever meter Bedrock Claude (see LLM_PRICES), so this one schedule applies
- * to every priced model. A tool loop re-sends a large system prompt every step,
- * so cache reads dominate — pricing them at the full input rate over-charges. */
+/** Anthropic cache multipliers on the input rate. A tool loop re-sends a large
+ * system prompt every step, so cache reads dominate and pricing them at the
+ * full rate over-charges. Only Bedrock Claude is metered, so one schedule. */
 const CACHE_READ_MULTIPLIER = 0.1;
 const CACHE_WRITE_MULTIPLIER = 1.25;
 
@@ -31,12 +21,8 @@ interface LlmPrice {
   outputPerMTokUsd: number;
 }
 
-/** Exact per-model prices (USD per million tokens), from LiteLLM's public price
- * list. Only the platform's Bedrock **Claude** model is ever metered — BYOK
- * (Anthropic/OpenAI/Google on the user's own key) is never charged, so those
- * models are intentionally absent here; the BYOK selection list lives in
- * `providers.ts`. `BEDROCK_MODEL` is one of these Claude ids, embedded in a
- * Bedrock inference-profile id and resolved by the substring match below. */
+/** USD per million tokens. Only the platform's Bedrock Claude model is metered,
+ * so BYOK models are deliberately absent (their list lives in `providers.ts`). */
 const LLM_PRICES: Record<string, LlmPrice> = {
   "claude-opus-4-8": { inputPerMTokUsd: 5, outputPerMTokUsd: 25 },
   "claude-opus-4-7": { inputPerMTokUsd: 5, outputPerMTokUsd: 25 },
@@ -45,16 +31,14 @@ const LLM_PRICES: Record<string, LlmPrice> = {
   "claude-sonnet-4-6": { inputPerMTokUsd: 3, outputPerMTokUsd: 15 },
 };
 
-/** Fallback when a metered model isn't in the table — our default Bedrock tier
- * (Opus), so an unpriced model is never wildly mis-charged. */
+/** Our Opus tier, so an unpriced model is never wildly mis-charged. */
 const DEFAULT_LLM_PRICE: LlmPrice = {
   inputPerMTokUsd: 5,
   outputPerMTokUsd: 25,
 };
 
-/** Resolve a model id to its price. Exact match first; otherwise the longest
- * price key it contains — our metered model is a Bedrock inference-profile id
- * (e.g. "us.anthropic.claude-opus-4-6-v1") that embeds the plain model id. */
+/** Exact match, else the longest key contained in the id: the metered model is
+ * an inference-profile id like "us.anthropic.claude-opus-4-6-v1". */
 function priceForModel(modelId: string): LlmPrice {
   const exact = LLM_PRICES[modelId];
   if (exact) {
@@ -71,17 +55,12 @@ function priceForModel(modelId: string): LlmPrice {
   return best ?? DEFAULT_LLM_PRICE;
 }
 
-/** USD per 1,000 synthesized characters of ElevenLabs narration. Conservative
- * relative to typical paid-tier effective rates. */
+/** USD per 1k narration characters. Conservative against paid-tier rates. */
 export const ELEVENLABS_USD_PER_1K_CHARS = 0.3;
 
-/** Cost in micro-USD of an LLM turn, from summed token usage. `inputTokens` is
- * the *total* prompt tokens for the turn and already includes any cache-read and
- * cache-write tokens; passing `cacheReadTokens`/`cacheWriteTokens` re-prices
- * those subsets at the cache multipliers instead of the full input rate. Missing
- * or negative counts are treated as zero, and the cached subsets are clamped so
- * they can never exceed the total (which would make the uncached remainder go
- * negative). Omitting the cache fields reproduces the flat all-input pricing. */
+/** `inputTokens` is the turn total and already includes the cached subsets;
+ * passing those re-prices them at the cache rates. Missing or negative counts
+ * read as zero, and omitting the cache fields gives flat all-input pricing. */
 export function estimateLlmCostMicros(input: {
   model: string;
   inputTokens: number;
@@ -108,28 +87,25 @@ export function estimateLlmCostMicros(input: {
   return Math.round((inputUsd + outputUsd) * MICROS_PER_DOLLAR);
 }
 
-/** Cost in micro-USD of synthesizing `chars` characters of narration. */
 export function ttsCostMicros(chars: number): number {
   const n = Math.max(0, chars || 0);
   const usd = (n / 1000) * ELEVENLABS_USD_PER_1K_CHARS;
   return Math.round(usd * MICROS_PER_DOLLAR);
 }
 
-/** Micro-USD → whole dollars (float), for display math. */
 export function microsToUsd(micros: number): number {
   return micros / MICROS_PER_DOLLAR;
 }
 
-/** Format a micro-USD amount as a dollar string, e.g. `$4.20`. Clamps negatives
- * to `$0.00` so a slight overshoot never shows a negative balance to the user. */
+/** Clamps negatives to `$0.00`: a slight settlement overshoot must never show
+ * the user a negative balance. */
 export function formatUsd(micros: number): string {
   const usd = Math.max(0, microsToUsd(micros));
   return `$${usd.toFixed(2)}`;
 }
 
-/** Format a micro-USD cost with sub-cent precision, e.g. `$0.0132` — per-turn
- * ledger amounts are usually fractions of a cent, which `formatUsd` would
- * flatten to `$0.00`. Dollar-plus amounts keep the familiar two decimals. */
+/** Sub-cent precision for ledger rows, which `formatUsd` would flatten to
+ * `$0.00`. Dollar-plus amounts keep the familiar two decimals. */
 export function formatUsdPrecise(micros: number): string {
   const usd = Math.max(0, microsToUsd(micros));
   return usd >= 1 ? `$${usd.toFixed(2)}` : `$${usd.toFixed(4)}`;

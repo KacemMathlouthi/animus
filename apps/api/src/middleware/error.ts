@@ -1,10 +1,6 @@
-/** Centralised error handling. Known errors (thrown as HTTPException) keep their
- * intended status; anything else is logged and returned as a generic 500 so we
- * never leak internals to clients.
- *
- * Every error body is JSON of the shape `{ message, code? }` — the contract the
- * web's ApiError parser reads. HTTPException's own getResponse() would emit
- * text/plain, reducing every server message to the client's generic fallback. */
+/** HTTPExceptions keep their status; anything else logs and 500s. Bodies are
+ * always `{ message, code? }` JSON, which the web's ApiError parser reads —
+ * HTTPException's own getResponse() emits text/plain and loses the message. */
 
 import type { ErrorHandler, NotFoundHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -12,7 +8,7 @@ import { logger } from "../lib/logger.ts";
 
 export const onError: ErrorHandler = (err, c) => {
   if (err instanceof HTTPException) {
-    // An explicitly attached Response (constructed with `{ res }`) wins.
+    // A Response attached via `{ res }` wins.
     if (err.res) {
       return err.res;
     }
