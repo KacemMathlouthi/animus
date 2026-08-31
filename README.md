@@ -1,7 +1,8 @@
-<h1 align="center">
-  <img align="middle" alt="" height="34" src=".github/logo.png">
-  animus
-</h1>
+<p align="center">
+  <img alt="" height="64" src=".github/logo.png">
+</p>
+
+<h1 align="center">animus</h1>
 
 <p align="center">
   <a href="https://tryanimus.app"><strong>tryanimus.app</strong></a>
@@ -21,8 +22,6 @@
   <img alt="Manim" src="https://img.shields.io/badge/Manim-Community-2b8a78">
   <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-2ea043"></a>
 </p>
-
----
 
 <p align="center">
   <img alt="animus" src=".github/social-preview.jpg" width="100%">
@@ -76,13 +75,10 @@ SSE and abortable mid flight. Two ideas hold the design together:
   conversation, suspended between turns and resumed on the next message. The
   Manim project lives there across turns.
 
-| Claude Code (local) | animus (cloud) |
-| --- | --- |
-| Loop runs in your terminal | Loop runs in `apps/api` |
-| Tools act on local files | Tools act on a remote sandbox |
-| Streams to the terminal | Streams to the browser |
-| Ctrl-C to interrupt | Abort the stream from the UI |
-| General coding | Manim tools, render and watch |
+Because the project persists, a video is never a one shot artifact. Come back
+three turns later and ask for a slower second act, a different colour, one more
+scene: the agent edits the same files, re renders, and hands you a new cut. The
+conversation and the project stay in step.
 
 The agent gets file tools (`writeFile`, `editFile`, `readFile`, `listFiles`), a
 shell (`runCommand`), a delivery tool (`renderScene`), web research through
@@ -94,7 +90,7 @@ installed, so there is no per turn cold install.
 
 ## Stack
 
-| | |
+| Layer | Choice |
 | --- | --- |
 | Runtime, package manager, tests | Bun, Vitest |
 | Monorepo | Turborepo, source first (no per package build) |
