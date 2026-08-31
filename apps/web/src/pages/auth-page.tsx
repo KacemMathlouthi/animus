@@ -185,10 +185,11 @@ export function AuthPage() {
         <div className="z-10 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-xl">
-              &ldquo;I described it over coffee — it animated the rest.&rdquo;
+              &ldquo;Nothing in life is to be feared, it is only to be
+              understood.&rdquo;
             </p>
             <footer className="font-mono font-semibold text-muted-foreground text-sm">
-              ~ an early animus user
+              Marie Curie
             </footer>
           </blockquote>
         </div>
