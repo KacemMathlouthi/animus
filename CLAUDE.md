@@ -62,7 +62,7 @@ Cross-package "does it compile" = `bun run typecheck`.
   installed (no per-turn bootstrap). The snapshot is built from
   `packages/agent/snapshot/Dockerfile` via `bun run snapshot:build` (registers it
   as `animus-manim:<tag>`; the tag currently in use is `SNAPSHOT_NAME` in
-  `packages/agent/src/sandbox/index.ts` — `animus-manim:0.8`). The lifecycle lives
+  `packages/agent/src/sandbox/index.ts` — `animus-manim:0.9.1`). The lifecycle lives
   in `packages/agent/src/sandbox` as plain functions
   (`ensureSandbox`/`destroySandbox`) returning the Daytona handle directly — the
   tools call the SDK natively (no wrapper adapter).

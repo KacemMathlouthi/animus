@@ -1,7 +1,8 @@
-<h1 align="center">
-  <img align="middle" alt="" height="34" src=".github/logo.png">
-  animus
-</h1>
+<p align="center">
+  <img alt="" height="64" src=".github/logo.png">
+</p>
+
+<h1 align="center">animus</h1>
 
 <p align="center">
   <a href="https://tryanimus.app"><strong>tryanimus.app</strong></a>
@@ -22,8 +23,6 @@
   <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-2ea043"></a>
 </p>
 
----
-
 <p align="center">
   <img alt="animus" src=".github/social-preview.jpg" width="100%">
 </p>
@@ -31,70 +30,75 @@
 animus is an interactive coding agent for [Manim](https://www.manim.community)
 videos. Think Claude Code, but in the cloud and pointed at explainer animations.
 
-You describe a topic. The agent researches it, settles a scene plan with you,
-then writes and renders Manim in a persistent cloud sandbox, reads its own
-errors, and repairs until the scene is clean. Narration is synthesized during
-the render, so the animation times itself to the speech instead of the other way
-around.
+- **Describe a topic.** The agent researches it and settles a scene plan with you.
+- **It writes and renders Manim** in a persistent cloud sandbox.
+- **It reads its own errors** and repairs until the scene is clean.
+- **Narration is synthesized during the render,** so the animation times itself
+  to the speech instead of the other way around.
 
-The product is that render, diagnose, repair loop driven conversationally. Not
+That render, diagnose, repair loop driven conversationally is the product. Not
 one shot codegen.
 
 ## What it does
 
-**Researches before it claims.** Any specific number, date, quote or recent
-event gets a web search first. A wrong fact in a finished video is treated as a
-defect, not a rounding error.
-
-**Plans with you, not at you.** The agent asks when a decision could reasonably
-go two ways, then proposes an ordered scene list for you to approve or send back.
-No production work starts before you agree.
-
-**Narrates itself.** Scenes are written as `manim-voiceover` scenes against
-ElevenLabs. Each beat is wrapped in its narration, so `run_time` follows
-`tracker.duration` and the timing cannot drift. A music bed is mixed underneath
-after the render.
-
-**Takes any subject.** Manim is an animation engine, not a maths tool. Biology,
-history, distributed systems and monetary policy are as much in scope as
-calculus.
-
-**Repairs its own work.** Render fails, agent reads the traceback, edits the
-file, renders again. You watch it happen and can interrupt at any point.
-
-**Ships somewhere.** Finished videos download as mp4 or publish to a permanent
-unlisted link with a branded page and real link previews.
+- **Researches before it claims.** Any specific number, date, quote or recent
+  event gets a web search first. A wrong fact in a finished video is treated as a
+  defect, not a rounding error.
+- **Plans with you, not at you.** The agent asks when a decision could reasonably
+  go two ways, then proposes an ordered scene list for you to approve or send
+  back. No production work starts before you agree.
+- **Narrates itself.** Scenes are written as `manim-voiceover` scenes against
+  ElevenLabs. Each beat is wrapped in its narration, so `run_time` follows
+  `tracker.duration` and the timing cannot drift. A music bed is mixed underneath
+  after the render.
+- **Takes any subject.** Manim is an animation engine, not a maths tool. Biology,
+  history, distributed systems and monetary policy are as much in scope as
+  calculus.
+- **Repairs its own work.** Render fails, agent reads the traceback, edits the
+  file, renders again. You watch it happen and can interrupt at any point.
+- **Ships somewhere.** Finished videos download as mp4 or publish to a permanent
+  unlisted link with a branded page and real link previews.
 
 ## How it works
 
-Each user turn is one AI SDK tool calling loop, streamed to the browser over
-SSE and abortable mid flight. Two ideas hold the design together:
+Each user turn is one AI SDK tool calling loop, streamed to the browser over SSE
+and abortable mid flight.
+
+<p align="center">
+  <img alt="The animus studio, asking what you want to understand" src=".github/studio.jpg" width="100%">
+</p>
+
+**What holds the design together.**
 
 - **The turn is ephemeral.** If it crashes or you stop it, you just send another
   message. Nothing durable is lost.
 - **The sandbox is the state.** One [Daytona](https://www.daytona.io) sandbox per
   conversation, suspended between turns and resumed on the next message. The
   Manim project lives there across turns.
+- **So a video is never a one shot artifact.** Come back three turns later and
+  ask for a slower second act, a different colour, one more scene: the agent
+  edits the same files, re renders, and hands you a new cut.
 
-| Claude Code (local) | animus (cloud) |
+**What the agent can reach for.**
+
+| Tools | What they do |
 | --- | --- |
-| Loop runs in your terminal | Loop runs in `apps/api` |
-| Tools act on local files | Tools act on a remote sandbox |
-| Streams to the terminal | Streams to the browser |
-| Ctrl-C to interrupt | Abort the stream from the UI |
-| General coding | Manim tools, render and watch |
-
-The agent gets file tools (`writeFile`, `editFile`, `readFile`, `listFiles`), a
-shell (`runCommand`), a delivery tool (`renderScene`), web research through
-[Exa](https://exa.ai), and two human in the loop tools that pause the loop until
-you answer.
+| `writeFile` `editFile` `readFile` `listFiles` | the Manim project in the sandbox |
+| `runCommand` | a shell in the sandbox |
+| `renderScene` | render, mix the music bed, deliver the mp4 |
+| `webSearch` `webFetch` | research through [Exa](https://exa.ai) |
+| `askUserQuestion` `finalizeVideoPlan` | pause the loop until you answer |
 
 Sandboxes boot from a prebaked snapshot with Manim, ffmpeg and LaTeX already
 installed, so there is no per turn cold install.
 
+<p align="center">
+  <img alt="The agent running commands, checking its render and delivering the video" src=".github/chat.jpg" width="100%">
+</p>
+
 ## Stack
 
-| | |
+| Layer | Choice |
 | --- | --- |
 | Runtime, package manager, tests | Bun, Vitest |
 | Monorepo | Turborepo, source first (no per package build) |
@@ -107,8 +111,9 @@ installed, so there is no per turn cold install.
 | Narration | manim-voiceover, ElevenLabs |
 | Quality | Ultracite and Biome, Knip, strict TypeScript |
 
-Costs are metered per component in integer micro USD. Bring your own model or
-narration key and that half runs unmetered on your account.
+- **Metered per component** in integer micro USD.
+- **Bring your own model or narration key** and that half runs unmetered on your
+  own account.
 
 ## Run it locally
 
@@ -120,15 +125,18 @@ cd packages/db && bun run db:migrate && cd ../..
 bun run dev            # web on :5173, api on :8787
 ```
 
-The API validates its env at boot, so `ELEVENLABS_API_KEY` and the four `R2_*`
-vars must be present (any non empty value) even if you never render. That is a
-known rough edge. `DAYTONA_API_KEY` and `EXA_API_KEY` are genuinely optional and
-only resolve when a turn needs the sandbox or web research. Without
-`RESEND_API_KEY`, magic links print to the API console instead of being emailed,
-which is enough to sign in.
+**Env notes.**
 
-Narration needs a paid ElevenLabs tier. The free tier caps at 10k characters a
-month and blocks synthesis from datacenter IPs, which is where the sandbox runs.
+- **Required even if you never render:** `ELEVENLABS_API_KEY` and the four
+  `R2_*` vars, at any non empty value. The API validates its env at boot. Known
+  rough edge.
+- **Genuinely optional:** `DAYTONA_API_KEY` and `EXA_API_KEY`, resolved only
+  when a turn needs the sandbox or web research.
+- **Without `RESEND_API_KEY`,** magic links print to the API console instead of
+  being emailed, which is enough to sign in.
+- **Narration needs a paid ElevenLabs tier.** The free tier caps at 10k
+  characters a month and blocks synthesis from datacenter IPs, which is where
+  the sandbox runs.
 
 ## Commands
 
@@ -156,10 +164,12 @@ packages/
 
 ## Contributing
 
-Contributions are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers setup, the
-four checks every change has to pass, and the conventions the codebase holds to.
-[CLAUDE.md](CLAUDE.md) is the full decision record and explains why things are
-the way they are.
+Contributions are welcome.
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — setup, the four checks every change has to
+  pass, and the conventions the codebase holds to.
+- [CLAUDE.md](CLAUDE.md) — the full decision record, and why things are the way
+  they are.
 
 ## License
 
