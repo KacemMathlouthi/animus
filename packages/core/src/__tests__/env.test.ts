@@ -33,6 +33,39 @@ describe("parseServerEnv", () => {
     ).toThrow("BETTER_AUTH_SECRET");
   });
 
+  it("defaults the client IP headers to x-forwarded-for", () => {
+    expect(parseServerEnv(MINIMAL).clientIpHeaders).toEqual([
+      "x-forwarded-for",
+    ]);
+  });
+
+  it("splits, trims and lowercases CLIENT_IP_HEADERS", () => {
+    const env = parseServerEnv({
+      ...MINIMAL,
+      CLIENT_IP_HEADERS: " X-Vercel-Forwarded-For , CF-Connecting-IP ",
+    });
+    expect(env.clientIpHeaders).toEqual([
+      "x-vercel-forwarded-for",
+      "cf-connecting-ip",
+    ]);
+  });
+
+  it("falls back to the default rather than an empty header list", () => {
+    // An empty list would make Better Auth read no header at all.
+    const env = parseServerEnv({ ...MINIMAL, CLIENT_IP_HEADERS: " , ," });
+    expect(env.clientIpHeaders).toEqual(["x-forwarded-for"]);
+  });
+
+  it("leaves the cookie domain unset by default", () => {
+    // Host-only cookies are correct when the web and API share a host.
+    expect(parseServerEnv(MINIMAL).cookieDomain).toBeUndefined();
+  });
+
+  it("carries COOKIE_DOMAIN through for sibling-host deployments", () => {
+    const env = parseServerEnv({ ...MINIMAL, COOKIE_DOMAIN: ".example.com" });
+    expect(env.cookieDomain).toBe(".example.com");
+  });
+
   it("coerces PORT to a number", () => {
     const env = parseServerEnv({ ...MINIMAL, PORT: "9000" });
     expect(env.port).toBe(9000);

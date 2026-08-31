@@ -37,12 +37,27 @@ export const auth = betterAuth({
   },
 
   // One person, many logins: the same email on Google and GitHub links to one
-  // user instead of erroring.
+  // user instead of erroring. No trustedProviders — that would link even when
+  // the provider reports the email unverified, which is an account-takeover path.
   account: {
-    accountLinking: {
-      enabled: true,
-      trustedProviders: ["github", "google"],
-    },
+    accountLinking: { enabled: true },
+  },
+
+  advanced: {
+    // Without this the rate limiter resolves no IP and falls back to a single
+    // bucket shared by every user, so one client can lock out sign-in for all.
+    ipAddress: { ipAddressHeaders: env.clientIpHeaders },
+    // The web and API sit on sibling hosts in prod, so the session cookie has
+    // to be scoped to their shared parent. Same-site, so SameSite=Lax still
+    // sends it; this is not the cross-site case.
+    ...(env.cookieDomain
+      ? {
+          crossSubDomainCookies: {
+            enabled: true,
+            domain: env.cookieDomain,
+          },
+        }
+      : {}),
   },
 
   socialProviders: {
