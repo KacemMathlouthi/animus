@@ -22,6 +22,10 @@ const ServerEnvBaseSchema = z.object({
    * name what the edge in front of the API actually writes: a header that never
    * resolves leaves auth rate limiting on one bucket shared by every user. */
   CLIENT_IP_HEADERS: z.string().default(CLIENT_IP_HEADERS_DEFAULT),
+  /** Set to a parent domain (".example.com") to share the session cookie with
+   * every subdomain, which is what lets the web and API sit on sibling hosts.
+   * Unset keeps host-only cookies, which is correct for local dev. */
+  COOKIE_DOMAIN: z.string().optional(),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   /** Base64 32-byte AES-256-GCM key. Needed only once a key is stored. */
   ENCRYPTION_KEY: z.string().optional(),
@@ -189,6 +193,8 @@ export interface ServerEnv {
   braintrustProject: string;
   /** Headers to read the client IP from, most trusted first. */
   clientIpHeaders: string[];
+  /** Parent domain the session cookie is scoped to; unset means host-only. */
+  cookieDomain?: string;
   /** Whole-USD global free-spend cap; 0 means no cap. */
   creditsGlobalCapUsd: number;
   databaseUrl: string;
@@ -234,6 +240,7 @@ export function parseServerEnv(
     port: e.PORT,
     webOrigin: e.WEB_ORIGIN,
     clientIpHeaders: parseHeaderList(e.CLIENT_IP_HEADERS),
+    cookieDomain: e.COOKIE_DOMAIN,
     databaseUrl: e.DATABASE_URL,
     encryptionKey: e.ENCRYPTION_KEY,
     exaApiKey: e.EXA_API_KEY,

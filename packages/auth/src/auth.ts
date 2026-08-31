@@ -47,6 +47,17 @@ export const auth = betterAuth({
     // Without this the rate limiter resolves no IP and falls back to a single
     // bucket shared by every user, so one client can lock out sign-in for all.
     ipAddress: { ipAddressHeaders: env.clientIpHeaders },
+    // The web and API sit on sibling hosts in prod, so the session cookie has
+    // to be scoped to their shared parent. Same-site, so SameSite=Lax still
+    // sends it; this is not the cross-site case.
+    ...(env.cookieDomain
+      ? {
+          crossSubDomainCookies: {
+            enabled: true,
+            domain: env.cookieDomain,
+          },
+        }
+      : {}),
   },
 
   socialProviders: {

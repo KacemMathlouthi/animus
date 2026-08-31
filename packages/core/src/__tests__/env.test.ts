@@ -56,6 +56,16 @@ describe("parseServerEnv", () => {
     expect(env.clientIpHeaders).toEqual(["x-forwarded-for"]);
   });
 
+  it("leaves the cookie domain unset by default", () => {
+    // Host-only cookies are correct when the web and API share a host.
+    expect(parseServerEnv(MINIMAL).cookieDomain).toBeUndefined();
+  });
+
+  it("carries COOKIE_DOMAIN through for sibling-host deployments", () => {
+    const env = parseServerEnv({ ...MINIMAL, COOKIE_DOMAIN: ".example.com" });
+    expect(env.cookieDomain).toBe(".example.com");
+  });
+
   it("coerces PORT to a number", () => {
     const env = parseServerEnv({ ...MINIMAL, PORT: "9000" });
     expect(env.port).toBe(9000);
