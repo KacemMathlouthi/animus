@@ -39,6 +39,10 @@ around.
 The product is that render, diagnose, repair loop driven conversationally. Not
 one shot codegen.
 
+<p align="center">
+  <img alt="The animus studio, asking what you want to understand" src=".github/studio.jpg" width="100%">
+</p>
+
 ## What it does
 
 **Researches before it claims.** Any specific number, date, quote or recent
@@ -87,6 +91,10 @@ you answer.
 
 Sandboxes boot from a prebaked snapshot with Manim, ffmpeg and LaTeX already
 installed, so there is no per turn cold install.
+
+<p align="center">
+  <img alt="The agent running commands, checking its render and delivering the video" src=".github/chat.jpg" width="100%">
+</p>
 
 ## Stack
 
