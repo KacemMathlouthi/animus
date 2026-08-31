@@ -7,12 +7,31 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
-/** Internal single-slash paths only, so the redirect cannot leave the app. */
+/** Internal destinations only, so the redirect cannot leave the app, returned
+ * absolute: the API resolves a relative callback against its own base URL,
+ * which is a different host than the web app in production. */
 function safeCallback(value: string | null): string {
-  if (value?.startsWith("/") && !value.startsWith("//")) {
+  return new URL(internalPath(value), window.location.origin).toString();
+}
+
+function internalPath(value: string | null): string {
+  const fallback = "/studio";
+  if (!value) {
+    return fallback;
+  }
+  // A single leading slash: "//host" would be protocol-relative and escape.
+  if (value.startsWith("/") && !value.startsWith("//")) {
     return value;
   }
-  return "/studio";
+  try {
+    const parsed = new URL(value);
+    if (parsed.origin === window.location.origin) {
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    }
+  } catch {
+    // Not a URL at all, so fall through.
+  }
+  return fallback;
 }
 
 /** The email links here, not to the API's verify endpoint, because scanners
