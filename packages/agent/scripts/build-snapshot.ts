@@ -35,7 +35,7 @@ await daytona.snapshot.create(
     name: SNAPSHOT_NAME,
     image,
     // Manim renders are CPU/memory heavy and TeX Live needs real disk.
-    resources: { cpu: 2, memory: 4, disk: 7 },
+    resources: { cpu: 2, memory: 3, disk: 7 },
   },
   { onLogs: (chunk) => process.stdout.write(chunk), timeout: 0 }
 );
