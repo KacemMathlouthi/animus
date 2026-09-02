@@ -259,6 +259,15 @@ describe("renderMagicLinkHtml", () => {
     expect(renderMagicLinkHtml(URL)).toContain('bgcolor="#0a0806"');
   });
 
+  it("declares a dark color scheme so clients do not re-tint it", async () => {
+    const { renderMagicLinkHtml } = await importModule();
+
+    const html = renderMagicLinkHtml(URL);
+
+    expect(html).toContain('name="color-scheme" content="dark"');
+    expect(html).toContain('name="supported-color-schemes" content="dark"');
+  });
+
   it("insets the content card so the art reads as a frame around it", async () => {
     const { renderMagicLinkHtml } = await importModule();
 

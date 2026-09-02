@@ -19,19 +19,21 @@ const PANEL_WIDTH = 448;
 const PANEL_INSET = 48;
 const CARD_WIDTH = PANEL_WIDTH - 2 * PANEL_INSET;
 
-const PAGE = "#faf9f7";
+const PAGE = "#080706";
 /** Shows through wherever the art does not: Outlook desktop drops background
  * images outright, and any client may block them. A dark frame either way. */
 const FRAME_INK = "#0a0806";
-const CARD = "#ffffff";
-const CARD_BORDER = "#e6e4e0";
-const INK = "#0c0c0c";
-const MUTED = "#71716c";
-const MUTED_DIM = "#a1a19b";
-const CORNER = "#ccc9c3";
-const RULE = "#efeee9";
-const ACCENT = "#4a3212";
-const ACCENT_TEXT = "#fbfdf6";
+const CARD = "#12100d";
+/** Carries the layering on its own when the art is blocked, so it is a step
+ * lighter than anything either side of it rather than a hairline. */
+const CARD_BORDER = "#3a2e1e";
+const INK = "#f4eee2";
+const MUTED = "#b3a692";
+const MUTED_DIM = "#8a7f6e";
+const CORNER = "#5d4e3a";
+const RULE = "#282118";
+const ACCENT = "#e7d3ae";
+const ACCENT_TEXT = "#2a1c08";
 
 /** Served from the web app, not attached: no mail client will use an inline
  * attachment as a CSS background. Bump ?v when the art changes — Gmail's image
@@ -71,6 +73,9 @@ export function renderMagicLinkHtml(url: string): string {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!-- Dark by design; without these, Gmail and Apple Mail re-tint it. -->
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
     <title>Sign in to animus</title>
   </head>
   <body style="margin:0;padding:0;background:${PAGE};">
