@@ -25,6 +25,22 @@ const chatFetch: typeof fetch = async (input, init) => {
     }
     throw new ApiError(402, body?.message ?? "Out of credits", body?.code);
   }
+  // Also JSON rather than a stream, so it needs the same interception: the
+  // sandbox host refused before the turn ever began. The code is passed through
+  // rather than assumed — a 503 can equally come from the load balancer while
+  // the API is draining a deploy, which is not a capacity problem.
+  if (response.status === 503) {
+    const body = (await response.json().catch(() => null)) as {
+      code?: string;
+      message?: string;
+    } | null;
+    throw new ApiError(
+      503,
+      body?.message ??
+        "The service is unavailable right now. Try again shortly.",
+      body?.code
+    );
+  }
   return response;
 };
 

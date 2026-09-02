@@ -3,7 +3,14 @@
  * a sandbox boots ready with no bootstrap. Tools act on the handle directly. */
 
 import { getServerEnv } from "@animus/core/env";
-import { Daytona, type Sandbox } from "@daytonaio/sdk";
+import {
+  Daytona,
+  DaytonaAuthenticationError,
+  DaytonaAuthorizationError,
+  DaytonaError,
+  DaytonaNotFoundError,
+  type Sandbox,
+} from "@daytonaio/sdk";
 
 /** The snapshot makes this world-writable, so any Daytona user can work in it. */
 export const PROJECT_DIR = "/home/daytona/project";
@@ -15,6 +22,10 @@ export const SNAPSHOT_NAME = "animus-manim:0.9.1";
 const CREATE_TIMEOUT_SEC = 180;
 const DELETE_TIMEOUT_SEC = 60;
 const AUTO_STOP_MINUTES = 30;
+/** Stopping frees compute but not disk; only archiving does. The SDK default
+ * of 7 days is long enough to exhaust the account's storage quota, after which
+ * every new conversation fails to get a sandbox. */
+const AUTO_ARCHIVE_MINUTES = 60;
 
 /** executeCommand puts stdout under `artifacts`, falling back to `result`. */
 export function commandOutput(res: {
@@ -62,6 +73,7 @@ export async function ensureSandbox(input: {
     {
       snapshot: SNAPSHOT_NAME,
       autoStopInterval: AUTO_STOP_MINUTES,
+      autoArchiveInterval: AUTO_ARCHIVE_MINUTES,
       labels: { app: "animus", conversationId: input.conversationId },
       envVars: {
         ELEVEN_API_KEY: input.elevenLabsApiKey,
@@ -70,6 +82,21 @@ export async function ensureSandbox(input: {
     },
     { timeout: CREATE_TIMEOUT_SEC }
   );
+}
+
+/** True when the sandbox host itself refused (quota, rate limit, unreachable),
+ * as opposed to a bug on our side. Lets the API answer 503 rather than 500
+ * without taking a dependency on the Daytona SDK. Rejected credentials are
+ * excluded deliberately: they never clear on their own, so "try again in a few
+ * minutes" would dress a total outage up as a busy afternoon. */
+export function isSandboxProvisioningError(error: unknown): boolean {
+  if (
+    error instanceof DaytonaAuthenticationError ||
+    error instanceof DaytonaAuthorizationError
+  ) {
+    return false;
+  }
+  return error instanceof DaytonaError;
 }
 
 /** No-op if the sandbox is already gone. */
@@ -82,7 +109,10 @@ export async function destroySandbox(sandboxId: string): Promise<void> {
   }
 }
 
-/** Starts it if stopped. Null when it is gone, so the caller creates afresh. */
+/** Starts it if stopped. Null only when the sandbox is genuinely gone, so the
+ * caller creates afresh. Every other failure propagates: replacing a sandbox
+ * that still exists orphans it (nothing but conversation delete reclaims one)
+ * and silently drops the conversation's project files. */
 async function resume(
   daytona: Daytona,
   sandboxId: string
@@ -93,7 +123,10 @@ async function resume(
       await sandbox.start();
     }
     return sandbox;
-  } catch {
-    return null;
+  } catch (error) {
+    if (error instanceof DaytonaNotFoundError) {
+      return null;
+    }
+    throw error;
   }
 }

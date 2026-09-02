@@ -1,4 +1,8 @@
-import { FREE_GRANT_MICROS, OUT_OF_CREDITS } from "@animus/core";
+import {
+  FREE_GRANT_MICROS,
+  OUT_OF_CREDITS,
+  SANDBOX_UNAVAILABLE,
+} from "@animus/core";
 import {
   simulateReadableStream,
   type UIMessage,
@@ -37,7 +41,19 @@ const {
   settleUsage: vi.fn(),
 }));
 
-vi.mock("@animus/agent", () => ({ createManimAgent, ensureSandbox }));
+// Stands in for a Daytona error. apps/api deliberately has no dependency on
+// the SDK — the real predicate is unit-tested in @animus/agent.
+const { SandboxHostError } = vi.hoisted(() => ({
+  SandboxHostError: class extends Error {},
+}));
+
+vi.mock("@animus/agent", () => ({
+  createManimAgent,
+  ensureSandbox,
+  // The real predicate: what the route does with it is the point.
+  isSandboxProvisioningError: (error: unknown) =>
+    error instanceof SandboxHostError,
+}));
 vi.mock("@animus/core/env", () => ({
   getServerEnv: () => ({
     bedrockModel: "model-x",
@@ -699,5 +715,58 @@ describe("POST /chat — per-user concurrency cap", () => {
       (await post(user, { id: "conv1", message: userMessage("m2", "hi") }))
         .status
     ).toBe(200);
+  });
+});
+
+describe("POST /chat — sandbox capacity", () => {
+  it("503s with a typed code when the sandbox host refuses", async () => {
+    // The Daytona storage quota is account-wide, so this hits every new
+    // conversation at once. A bare 500 leaves the studio with nothing to show.
+    ensureSandbox.mockRejectedValue(
+      new SandboxHostError("Total disk limit exceeded. Maximum: 30GiB.")
+    );
+
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "make a video") }
+    );
+
+    expect(res.status).toBe(503);
+    await expect(res.json()).resolves.toMatchObject({
+      code: SANDBOX_UNAVAILABLE,
+    });
+  });
+
+  it("does not charge the user for a turn that never started", async () => {
+    ensureSandbox.mockRejectedValue(new SandboxHostError("no capacity"));
+
+    await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "make a video") }
+    );
+
+    expect(settleUsage).not.toHaveBeenCalled();
+    expect(createManimAgent).not.toHaveBeenCalled();
+  });
+
+  it("releases the turn slot so the user is not locked out", async () => {
+    ensureSandbox.mockRejectedValue(new SandboxHostError("no capacity"));
+    const send = () =>
+      post({ id: "u1" }, { id: "conv1", message: userMessage("m1", "hi") });
+
+    await send();
+    // A leaked slot would make this a 429 "already generating" forever.
+    expect((await send()).status).toBe(503);
+  });
+
+  it("still 500s on a bug of ours, which is not a capacity problem", async () => {
+    ensureSandbox.mockRejectedValue(new Error("DAYTONA_API_KEY is required"));
+
+    const res = await post(
+      { id: "u1" },
+      { id: "conv1", message: userMessage("m1", "hi") }
+    );
+
+    expect(res.status).toBe(500);
   });
 });
