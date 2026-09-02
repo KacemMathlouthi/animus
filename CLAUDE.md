@@ -179,7 +179,17 @@ Cross-package "does it compile" = `bun run typecheck`.
   any address. Inbound mail on the **root** domain is forwarded by **ImprovMX**
   (MX + its own SPF on the apex). The two SPF records sit on different
   hostnames and are evaluated independently — never merge them, and never put
-  two SPF TXT records on one host.
+  two SPF TXT records on one host. The sign-in email is a white content card
+  matted inside a thick band of the brand art. That art is a **static file on
+  the web app** (`apps/web/public/email/auth-bg.jpg`, addressed off
+  `WEB_ORIGIN`), not an attachment: no mail client will use a `cid:` attachment
+  as a CSS background. So the API's email depends on a **web** deploy — ship the
+  asset before the template that points at it, and bump the `?v=` when the art
+  changes, because Gmail's image proxy caches by URL forever. Outlook desktop
+  drops background images entirely, so the frame carries a solid `bgcolor` and
+  no text ever sits on the art. `bun run email:preview` (in `packages/auth`)
+  writes a self-contained HTML file with the art and logo inlined as data URIs;
+  `--send=<address>` posts the real one through Resend.
 - **Magic-link auth vs inbox scanners.** The verify endpoint consumes its
   single-use token on GET, and mail security scanners open every link in an
   arriving email — some executing JavaScript (proven in prod: an auto-redirect
