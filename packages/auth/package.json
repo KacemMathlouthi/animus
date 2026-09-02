@@ -9,7 +9,8 @@
   "scripts": {
     "auth:generate": "bun --env-file=../../.env better-auth generate --config ./src/auth.ts --output ../db/src/schema/auth.ts -y",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "email:preview": "bun --env-file=../../.env ./scripts/preview-email.ts"
   },
   "dependencies": {
     "@animus/core": "workspace:*",

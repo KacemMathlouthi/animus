@@ -6,6 +6,7 @@ const state = vi.hoisted(() => ({
   nodeEnv: "development" as "development" | "production" | "test",
   resendApiKey: "re_test_key" as string | undefined,
   resendFrom: "animus <no-reply@animus.dev>",
+  webOrigin: "https://tryanimus.app",
 }));
 
 const { send, readFile } = vi.hoisted(() => ({
@@ -18,6 +19,7 @@ vi.mock("@animus/core/env", () => ({
     nodeEnv: state.nodeEnv,
     resendApiKey: state.resendApiKey,
     resendFrom: state.resendFrom,
+    webOrigin: state.webOrigin,
   }),
 }));
 
@@ -36,6 +38,8 @@ const URL_TOKEN = "abc123token";
 const URL = `https://animus.dev/api/auth/magic-link/verify?token=${URL_TOKEN}`;
 const SEND_FAILED = /Failed to send the magic link/;
 const MISSING_KEY = /RESEND_API_KEY/;
+/** Any text node, to prove none sits on the art. */
+const TEXT_NODE = />[A-Za-z]/;
 
 async function importModule(): Promise<typeof import("../email.ts")> {
   return await import("../email.ts");
@@ -45,6 +49,7 @@ beforeEach(() => {
   state.nodeEnv = "development";
   state.resendApiKey = "re_test_key";
   state.resendFrom = "animus <no-reply@animus.dev>";
+  state.webOrigin = "https://tryanimus.app";
   send.mockReset();
   readFile.mockReset();
   readFile.mockResolvedValue(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
@@ -221,5 +226,74 @@ describe("deliverMagicLink in production", () => {
       deliverMagicLink({ email: EMAIL, url: URL })
     ).resolves.toBeUndefined();
     expect(console.log).not.toHaveBeenCalled();
+  });
+});
+
+describe("renderMagicLinkHtml", () => {
+  it("points the background at WEB_ORIGIN, not at an inline attachment", async () => {
+    // A cid: attachment is never used as a CSS background by mail clients, so
+    // the art has to come from a public URL.
+    const { renderMagicLinkHtml } = await importModule();
+
+    const html = renderMagicLinkHtml(URL);
+
+    expect(html).toContain("https://tryanimus.app/email/auth-bg.jpg");
+    expect(html).not.toContain("cid:auth-bg");
+  });
+
+  it("does not double the slash when WEB_ORIGIN carries a trailing one", async () => {
+    state.webOrigin = "https://tryanimus.app/";
+    vi.resetModules();
+    const { renderMagicLinkHtml } = await importModule();
+
+    expect(renderMagicLinkHtml(URL)).toContain(
+      "https://tryanimus.app/email/auth-bg.jpg"
+    );
+  });
+
+  it("keeps a solid dark bgcolor behind the art", async () => {
+    // Outlook desktop drops background images and any client may block them,
+    // so the frame has to degrade to a flat dark border rather than to nothing.
+    const { renderMagicLinkHtml } = await importModule();
+
+    expect(renderMagicLinkHtml(URL)).toContain('bgcolor="#0a0806"');
+  });
+
+  it("insets the content card so the art reads as a frame around it", async () => {
+    const { renderMagicLinkHtml } = await importModule();
+
+    const html = renderMagicLinkHtml(URL);
+
+    // 448px panel, a 48px inset on each side, 352px card inside it.
+    expect(html).toContain("padding:48px");
+    expect(html).toContain("width:352px");
+    // No text sits on the art, so its brightness can never hurt legibility.
+    const frameCell = html.slice(
+      html.indexOf("background-image"),
+      html.indexOf("<table", html.indexOf("background-image"))
+    );
+    expect(frameCell).not.toMatch(TEXT_NODE);
+  });
+
+  it("carries a hidden preheader ahead of the body content", async () => {
+    const { renderMagicLinkHtml } = await importModule();
+
+    const html = renderMagicLinkHtml(URL);
+    const preheader = html.indexOf("Your sign-in link is ready");
+    const firstTable = html.indexOf("<table");
+
+    // Hidden, and ahead of everything a client could scrape instead.
+    expect(preheader).toBeGreaterThan(-1);
+    expect(preheader).toBeLessThan(firstTable);
+    expect(html).toContain("max-height:0;overflow:hidden");
+  });
+
+  it("still offers the raw link for anyone who cannot use the button", async () => {
+    const { renderMagicLinkHtml } = await importModule();
+
+    const html = renderMagicLinkHtml(URL);
+
+    expect(html).toContain("or paste this link into your browser");
+    expect(html.split(URL).length - 1).toBe(3);
   });
 });

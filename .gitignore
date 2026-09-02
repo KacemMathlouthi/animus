@@ -49,3 +49,4 @@ docs/
 # launch-video brief for the motion designer (local only)
 launch-video/
 .vercel
+email-preview.html
