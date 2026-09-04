@@ -13,7 +13,7 @@ import { getServerEnv } from "@animus/core/env";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { signDownloadUrl, signMediaUrl } from "../lib/media.ts";
-import { renderShareCardPng } from "../lib/og.ts";
+import { shareCardPng } from "../lib/og.ts";
 import { getShareByToken } from "../services/shares.ts";
 import type { AppEnv } from "../types.ts";
 
@@ -44,7 +44,7 @@ shareRoute.get("/:token/og.png", async (c) => {
   if (!share) {
     throw new HTTPException(404, { message: "Share not found" });
   }
-  const png = renderShareCardPng({ title: share.title, seed: share.token });
+  const png = await shareCardPng({ title: share.title, seed: share.token });
   return new Response(new Uint8Array(png), {
     headers: {
       "Content-Type": "image/png",
