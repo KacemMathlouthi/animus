@@ -14,17 +14,45 @@ const resend = env.resendApiKey ? new Resend(env.resendApiKey) : null;
 const FONT_STACK =
   "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
+const PANEL_WIDTH = 448;
+/** The inset that leaves the art showing as a frame around the content card. */
+const PANEL_INSET = 48;
+const CARD_WIDTH = PANEL_WIDTH - 2 * PANEL_INSET;
+
+const PAGE = "#080706";
+/** Shows through wherever the art does not: Outlook desktop drops background
+ * images outright, and any client may block them. A dark frame either way. */
+const FRAME_INK = "#0a0806";
+const CARD = "#12100d";
+/** Carries the layering on its own when the art is blocked, so it is a step
+ * lighter than anything either side of it rather than a hairline. */
+const CARD_BORDER = "#3a2e1e";
+const INK = "#f4eee2";
+const MUTED = "#b3a692";
+const MUTED_DIM = "#8a7f6e";
+const CORNER = "#5d4e3a";
+const RULE = "#282118";
+const ACCENT = "#e7d3ae";
+const ACCENT_TEXT = "#2a1c08";
+
+/** Served from the web app, not attached: no mail client will use an inline
+ * attachment as a CSS background. Bump ?v when the art changes — Gmail's image
+ * proxy caches by URL indefinitely. */
+const backgroundUrl = `${env.webOrigin.replace(/\/$/, "")}/email/auth-bg.jpg?v=1`;
+
 const LOGO_IMG =
   '<img src="cid:logo" width="36" height="48" alt="animus" style="display:block;margin:0 auto;border:0;outline:none;" />';
 
-const CORNER_ROW = `<tr>
+function cornerRow(color: string): string {
+  return `<tr>
               <td style="padding:10px 12px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-                  <td align="left" style="font-family:monospace;font-size:13px;color:#ccc9c3;line-height:1;">+</td>
-                  <td align="right" style="font-family:monospace;font-size:13px;color:#ccc9c3;line-height:1;">+</td>
+                  <td align="left" style="font-family:monospace;font-size:13px;color:${color};line-height:1;">+</td>
+                  <td align="right" style="font-family:monospace;font-size:13px;color:${color};line-height:1;">+</td>
                 </tr></table>
               </td>
             </tr>`;
+}
 
 let logoBytes: Buffer | null = null;
 async function logoContent(): Promise<Buffer> {
@@ -34,59 +62,79 @@ async function logoContent(): Promise<Buffer> {
   return logoBytes;
 }
 
-function renderHtml(url: string): string {
+/** The line clients show next to the subject. Without one they scrape the
+ * first body text, which here is the hidden alt of the logo. */
+const PREHEADER =
+  "Your sign-in link is ready. It works once and expires in 5 minutes.";
+
+export function renderMagicLinkHtml(url: string): string {
   return `<!doctype html>
 <html lang="en">
-  <body style="margin:0;padding:0;background:#faf9f7;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#faf9f7;padding:48px 16px;">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!-- Dark by design; without these, Gmail and Apple Mail re-tint it. -->
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
+    <title>Sign in to animus</title>
+  </head>
+  <body style="margin:0;padding:0;background:${PAGE};">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${PREHEADER}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAGE};padding:48px 16px;">
       <tr>
         <td align="center">
-          <table role="presentation" cellpadding="0" cellspacing="0" width="400" style="width:400px;max-width:400px;background:#ffffff;border:1px solid #e6e4e0;font-family:${FONT_STACK};">
-            ${CORNER_ROW}
+          <table role="presentation" cellpadding="0" cellspacing="0" width="${PANEL_WIDTH}" style="width:${PANEL_WIDTH}px;max-width:${PANEL_WIDTH}px;">
             <tr>
-              <td align="center" style="padding:8px 36px 0;">
-                ${LOGO_IMG}
-                <div style="font-size:22px;font-weight:600;color:#0c0c0c;letter-spacing:-0.01em;margin-top:12px;">animus</div>
+              <td align="center" background="${backgroundUrl}" bgcolor="${FRAME_INK}" style="padding:${PANEL_INSET}px;background-color:${FRAME_INK};background-image:url('${backgroundUrl}');background-repeat:no-repeat;background-position:center;background-size:cover;">
+                <table role="presentation" cellpadding="0" cellspacing="0" width="${CARD_WIDTH}" style="width:${CARD_WIDTH}px;max-width:${CARD_WIDTH}px;background:${CARD};border:1px solid ${CARD_BORDER};font-family:${FONT_STACK};">
+                  ${cornerRow(CORNER)}
+                  <tr>
+                    <td align="center" style="padding:8px 28px 0;">
+                      ${LOGO_IMG}
+                      <div style="font-size:22px;font-weight:600;color:${INK};letter-spacing:-0.01em;margin-top:12px;">animus</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:26px 28px 0;font-size:19px;font-weight:600;color:${INK};letter-spacing:-0.01em;">
+                      Sign in to animus
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:8px 28px 0;font-size:15px;line-height:1.6;color:${MUTED};">
+                      This link signs you in once and expires in 5 minutes.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:26px 28px;">
+                      <a href="${url}" style="display:inline-block;background:${ACCENT};color:${ACCENT_TEXT};font-size:15px;font-weight:600;text-decoration:none;padding:13px 28px;border-radius:10px;">
+                        Sign in
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:0 28px;font-size:12px;color:${MUTED_DIM};">
+                      or paste this link into your browser
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:6px 28px 26px;font-size:12px;line-height:1.5;word-break:break-all;">
+                      <a href="${url}" style="color:${ACCENT};text-decoration:underline;">${url}</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 28px;">
+                      <div style="border-top:1px solid ${RULE};"></div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:18px 28px;font-size:12px;line-height:1.6;color:${MUTED_DIM};">
+                      If you didn't request this, you can safely ignore this email.
+                    </td>
+                  </tr>
+                  ${cornerRow(CORNER)}
+                </table>
               </td>
             </tr>
-            <tr>
-              <td align="center" style="padding:26px 36px 0;font-size:19px;font-weight:600;color:#0c0c0c;letter-spacing:-0.01em;">
-                Sign in to animus
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:8px 36px 0;font-size:15px;line-height:1.6;color:#71716c;">
-                Click below to securely sign in. This link works once and expires in 5 minutes.
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:26px 36px;">
-                <a href="${url}" style="display:inline-block;background:#4a3212;color:#fbfdf6;font-size:15px;font-weight:600;text-decoration:none;padding:13px 28px;border-radius:10px;">
-                  Sign in
-                </a>
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:0 36px;font-size:12px;color:#a1a19b;">
-                or paste this link into your browser
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:6px 36px 26px;font-size:12px;line-height:1.5;word-break:break-all;">
-                <a href="${url}" style="color:#4a3212;text-decoration:underline;">${url}</a>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:0 36px;">
-                <div style="border-top:1px solid #efeee9;"></div>
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:18px 36px;font-size:12px;line-height:1.6;color:#a1a19b;">
-                If you didn't request this, you can safely ignore this email.
-              </td>
-            </tr>
-            ${CORNER_ROW}
           </table>
         </td>
       </tr>
@@ -95,7 +143,7 @@ function renderHtml(url: string): string {
 </html>`;
 }
 
-function renderText(url: string): string {
+export function renderMagicLinkText(url: string): string {
   return `Sign in to animus
 
 Open this link to sign in (works once, expires in 5 minutes):
@@ -103,7 +151,6 @@ ${url}
 
 If you didn't request this, you can safely ignore this email.`;
 }
-
 /** Points at a page in the web app, not the API's verify endpoint: mail
  * scanners prefetch every link, and verify spends its single-use token on GET,
  * so a direct link arrives already invalid. Scanners do not click buttons. */
@@ -142,8 +189,8 @@ export async function deliverMagicLink({
     from,
     to: email,
     subject: "Your animus sign-in link",
-    html: renderHtml(url),
-    text: renderText(url),
+    html: renderMagicLinkHtml(url),
+    text: renderMagicLinkText(url),
     attachments: [
       {
         filename: "logo.png",

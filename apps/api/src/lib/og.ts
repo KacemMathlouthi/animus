@@ -11,7 +11,7 @@ import {
   SHARE_IMAGES,
   shareImageName,
 } from "@animus/core";
-import { Resvg } from "@resvg/resvg-js";
+import { renderAsync } from "@resvg/resvg-js";
 
 /** Relative to this module, so source and bundle both resolve. */
 function assetPath(relative: string): string {
@@ -57,10 +57,16 @@ function paintingDataUri(seed: string): string {
   return paintingDataUris.get(name) ?? loadPaintingDataUri(name);
 }
 
-export function renderShareCardPng(input: {
+const FONT_OPTIONS = {
+  fontFiles: FONT_FILES,
+  defaultFontFamily: "Geist",
+  loadSystemFonts: false,
+};
+
+async function rasterize(input: {
   title: string;
   seed: string;
-}): Buffer {
+}): Promise<Buffer> {
   const svg = buildShareCardSvg({
     title: input.title,
     seed: input.seed,
@@ -68,12 +74,57 @@ export function renderShareCardPng(input: {
     width: OG_WIDTH,
     height: OG_HEIGHT,
   });
-  const resvg = new Resvg(svg, {
-    font: {
-      fontFiles: FONT_FILES,
-      defaultFontFamily: "Geist",
-      loadSystemFonts: false,
-    },
-  });
-  return resvg.render().asPng();
+  // Async so rasterizing runs off the event loop. The sync API froze it for
+  // ~55ms a card, and this route is public, uncached and CDN-less, so a shared
+  // link fanning out to crawlers stalled every live SSE stream on the one task.
+  const image = await renderAsync(svg, { font: FONT_OPTIONS });
+  return image.asPng();
+}
+
+/** A card is ~600KB, so this bounds the cache near 10MB. One hot link needs a
+ * single entry; the rest is headroom for several circulating at once. */
+const CACHE_LIMIT = 16;
+const cache = new Map<string, Buffer>();
+/** A crawler burst hits one URL many times at once, before anything is cached,
+ * so identical concurrent requests must share a single render. */
+const inFlight = new Map<string, Promise<Buffer>>();
+
+function remember(key: string, png: Buffer): void {
+  cache.set(key, png);
+  if (cache.size > CACHE_LIMIT) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) {
+      cache.delete(oldest);
+    }
+  }
+}
+
+/** Memoized because a card is a pure function of its title and seed. */
+export function shareCardPng(input: {
+  title: string;
+  seed: string;
+}): Promise<Buffer> {
+  const key = `${input.seed}\u0000${input.title}`;
+
+  const hit = cache.get(key);
+  if (hit) {
+    // Re-insert so the map's insertion order stays least-recently-used first.
+    cache.delete(key);
+    cache.set(key, hit);
+    return Promise.resolve(hit);
+  }
+
+  const pending = inFlight.get(key);
+  if (pending) {
+    return pending;
+  }
+
+  const promise = rasterize(input)
+    .then((png) => {
+      remember(key, png);
+      return png;
+    })
+    .finally(() => inFlight.delete(key));
+  inFlight.set(key, promise);
+  return promise;
 }

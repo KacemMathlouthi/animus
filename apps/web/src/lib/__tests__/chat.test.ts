@@ -1,4 +1,4 @@
-import { OUT_OF_CREDITS } from "@animus/core";
+import { OUT_OF_CREDITS, SANDBOX_UNAVAILABLE } from "@animus/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { DefaultChatTransport } = vi.hoisted(() => ({
@@ -121,6 +121,66 @@ describe("chat transport", () => {
       await expect(options.fetch("/api/chat")).rejects.toThrow(
         "Out of credits"
       );
+    });
+  });
+});
+
+describe("sandbox capacity gate", () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("turns a 503 into a typed error carrying the server's message", async () => {
+    // Like the 402, this is JSON rather than SSE: without interception it
+    // would surface as an opaque stream error with no cause.
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          code: SANDBOX_UNAVAILABLE,
+          message: "The render environment is at capacity right now.",
+        },
+        503
+      )
+    );
+
+    await expect(options.fetch("/api/chat")).rejects.toMatchObject({
+      status: 503,
+      code: SANDBOX_UNAVAILABLE,
+      message: "The render environment is at capacity right now.",
+    });
+  });
+
+  it("falls back to a readable message when the body is not JSON", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: () => Promise.reject(new Error("not json")),
+    } as Response);
+
+    await expect(options.fetch("/api/chat")).rejects.toMatchObject({
+      status: 503,
+      message: expect.stringContaining("Try again shortly"),
+    });
+  });
+
+  it("does not claim capacity for a 503 the API did not send", async () => {
+    // The load balancer answers 503 while the task drains a deploy. Inventing
+    // SANDBOX_UNAVAILABLE there would point every deploy at the wrong cause.
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: () => Promise.reject(new Error("not json")),
+    } as Response);
+
+    await expect(options.fetch("/api/chat")).rejects.not.toMatchObject({
+      code: SANDBOX_UNAVAILABLE,
     });
   });
 });

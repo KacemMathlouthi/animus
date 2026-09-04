@@ -181,6 +181,8 @@ const ServerEnvSchema = ServerEnvBaseSchema.superRefine((e, ctx) => {
 });
 
 export interface ServerEnv {
+  /** The API's own public origin, derived from BETTER_AUTH_URL. */
+  apiOrigin: string;
   /** Undefined lets the SDK's own credential chain apply. */
   bedrockAccessKeyId?: string;
   bedrockModel: string;
@@ -254,6 +256,9 @@ export function parseServerEnv(
     logLevel: e.LOG_LEVEL,
     betterAuthSecret: e.BETTER_AUTH_SECRET,
     betterAuthUrl: e.BETTER_AUTH_URL,
+    // Public URLs the API hands to crawlers must point at the API, which in
+    // production is a different host from the web app.
+    apiOrigin: new URL(e.BETTER_AUTH_URL).origin,
     betterAuthApiKey: e.BETTER_AUTH_API_KEY,
     githubClientId: e.GITHUB_CLIENT_ID,
     githubClientSecret: e.GITHUB_CLIENT_SECRET,

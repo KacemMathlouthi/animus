@@ -70,7 +70,7 @@ Cross-package "does it compile" = `bun run typecheck`.
   agent resolves its model through `@ai-sdk/amazon-bedrock` — a Bedrock
   inference-profile id (`BEDROCK_MODEL`, e.g. `us.anthropic.claude-opus-4-6-v1`).
   The **code default** is Opus 4.6; **prod is expected to set `BEDROCK_MODEL`
-  explicitly** on the `animus-api` Vercel project. Recommended prod value once
+  explicitly** as an SSM parameter under `/animus/prod/`. Recommended prod value once
   Sonnet 5 model access is enabled in the Bedrock console:
   `us.anthropic.claude-sonnet-5` (~60% cheaper than Opus; the `@animus/core`
   pricing table already prices `claude-sonnet-5`, and `priceForModel`
@@ -79,9 +79,12 @@ Cross-package "does it compile" = `bun run typecheck`.
   Credentials are passed to the provider **explicitly** from the validated
   server env (`BEDROCK_ACCESS_KEY_ID`/`BEDROCK_SECRET_ACCESS_KEY`/
   `BEDROCK_REGION`, falling back to `AWS_*` so local `.env` files keep
-  working): **never rely on the SDK's implicit `AWS_*` env chain in prod** —
-  Vercel owns that namespace at runtime and shadows user-supplied values, which
-  silently broke every chat turn once. The agent runs with `maxRetries: 6` —
+  working): **never rely on the SDK's implicit `AWS_*` env chain in prod**. The
+  `BEDROCK_*` names exist because Vercel owned the `AWS_*` namespace at runtime
+  and shadowed user-supplied values, which silently broke every chat turn once;
+  they are kept on ECS for a second reason — with no task role, an unset
+  credential must fail loudly rather than resolve to the account's own IAM
+  identity. The agent runs with `maxRetries: 6` —
   fresh-account Bedrock quotas 429 mid-turn and the default 2 retries abandons
   the loop (an AWS Service Quotas increase is the durable fix). Still
   provider-agnostic at the AI SDK layer.
@@ -113,44 +116,62 @@ Cross-package "does it compile" = `bun run typecheck`.
   connection by a load balancer or CDN, and SIGTERM/SIGINT drain in-flight
   requests and close the Postgres pool (`lib/shutdown.ts`) within a bounded
   20s — every deploy stops the process this way.
-- **Hosting (deployed): Vercel, container image for the API.** The web
-  (`animus-web` project, Vite static + SPA fallback rewrite) and the API
-  (`animus-api` project) both deploy on Vercel. The API ships as an **OCI
-  container image** — `Dockerfile.vercel` at the repo root (project Root
-  Directory = repo root; Container preset) runs `bun apps/api/src/server.ts`
-  on `oven/bun`, so the source-first workspace resolves exactly as in local
-  dev. The image is kept slim (~470MB): `apps/web` source is excluded from the
-  build context (its `package.json` stays — the lockfile validates every
-  workspace member) and the install is `--production`. Vercel's
-  serverless-function pipeline is structurally incompatible with this monorepo
-  (per-file transpile keeps `.ts` specifiers, packager rejects Bun's symlinked
-  workspaces) — don't go back there. Ignore-file dialects differ:
-  `.dockerignore` anchors bare names to the context root, `.vercelignore` uses
-  gitignore semantics (a bare `assets` once stripped `apps/api/assets` at any
-  depth and took prod down) — anchor root-only excludes with a leading `/`. Entry split:
-  `src/app.ts` (pure Hono app) + `src/server.ts` (Bun bootstrap; disables the
-  idle timeout on `/api/chat`). Postgres is **Neon** (free tier; the app uses
-  the **pooled** `-pooler` URL, migrations run against the direct URL).
-  Platform limits accepted for now: scale-to-zero after ~5 min idle (cold
-  start) and the **function duration cap** — a hard 300s on the Hobby plan the
-  team runs on (confirmed by the CLI; the Pro upgrade would raise it to 800s —
-  relevant because renderScene alone allows 600s, so long render turns can be
-  cut mid-stream today). Prod env vars live on the Vercel projects
-  (`WEB_ORIGIN`/`BETTER_AUTH_URL` must be the deployed origins, not the
-  localhost `.env` values; `VITE_API_URL` on the web is **build-time** — a
-  redeploy is needed when it changes).
-- **Domain & single origin (live): `tryanimus.app`** (bought on Vercel;
-  Vercel nameservers/DNS). The web serves at `https://tryanimus.app`; the API
-  has **no public domain of its own** — `apps/web/vercel.json` rewrites
-  `/api/:path*` to the `animus-api` deployment, so browsers see one origin.
-  That proxy is what makes auth cookies **first-party** (the two `*.vercel.app`
-  hosts are distinct *sites* — vercel.app is on the Public Suffix List — so
-  cross-origin cookies die with `state_mismatch`; don't split origins again).
-  `VITE_API_URL`, `WEB_ORIGIN`, and `BETTER_AUTH_URL` all equal
-  `https://tryanimus.app`. OAuth callbacks (GitHub app + Google client) point
-  at `https://tryanimus.app/api/auth/callback/{github,google}` — GitHub allows
-  one callback URL, so local dev OAuth needs a separate app. The API's
-  `/health` (not under `/api/`) is reachable only via the deployment URL.
+- **Hosting (deployed): AWS for the API, Vercel for the web.** The API runs as
+  an **OCI container image** on **ECS Fargate** (cluster `animus`, service
+  `animus-api`, one task, public subnet, no NAT) behind an **ALB** with an ACM
+  certificate. `Dockerfile` at the repo root runs `bun apps/api/src/server.ts`
+  on `oven/bun`, so the source-first workspace resolves exactly as in local dev.
+  The image is ~470MB compressed in ECR (2.8GB uncompressed). **One task only**:
+  `inFlightTurns` in `routes/chat.ts` is an in-memory Map, so the per-user turn
+  cap is per container. The ALB idle timeout is **4000s** and the task drains in
+  20s (`lib/shutdown.ts`), so `deregistration_delay` is 30s. **No ECS task
+  role** — the app calls no AWS APIs directly, and an empty task role means a
+  missing `BEDROCK_ACCESS_KEY_ID` cannot silently fall through to the account's
+  own IAM identity; for the same reason `AWS_*` names are never set on ECS, only
+  `BEDROCK_*`. Every env var lives in **SSM Parameter Store** under
+  `/animus/prod/` (SecureString, free; Secrets Manager would be ~$8/mo), and a
+  new parameter is **not** injected until the task definition lists it in
+  `secrets`. Postgres is **Neon**. The web (`animus-web`, Vite static + SPA
+  fallback) stays on Vercel; `VITE_API_URL` is **build-time**, so changing it
+  needs a redeploy. Ignore-file gotcha kept from the Vercel era:
+  `.dockerignore` anchors bare names to the context root, and a bare `assets`
+  once stripped `apps/api/assets` and took prod down — anchor root-only excludes
+  with a leading `/`. Entry split: `src/app.ts` (pure Hono app) + `src/server.ts`
+  (Bun bootstrap; disables the idle timeout on `/api/chat`).
+- **Deploys are automated (live).** `.github/workflows/deploy-api.yml` runs on
+  `workflow_run` after **CI passes on main**, so broken code cannot reach prod.
+  It authenticates with **GitHub OIDC** (no AWS keys stored anywhere; the role
+  trusts exactly `repo:KacemMathlouthi/animus:environment:Production`), builds
+  and pushes to ECR tagged by **full commit SHA** (never `latest`, so a task
+  restart cannot pull different code), then uses the official
+  `amazon-ecs-render-task-definition` + `amazon-ecs-deploy-task-definition`
+  actions with `wait-for-service-stability`. The task definition is **fetched
+  live, never committed** — this repo is public and the file carries the account
+  id, ECR URI and role ARN. The job declares `environment: Production`, which is
+  what puts runs in the repo's Deployments tab; that name is also the OIDC
+  subject, so it must match the IAM trust policy exactly (`Production`, not
+  `production`).
+- **Domain (live): `tryanimus.app`**, web and API on **sibling hosts of the
+  same site**. The web serves at `https://tryanimus.app` (Vercel); the API at
+  `https://api.tryanimus.app` (Vercel DNS CNAME → ALB). Cookies work across the
+  two because they share a registrable domain, so a cookie scoped to
+  `.tryanimus.app` (`COOKIE_DOMAIN` → Better Auth `crossSubDomainCookies`) is
+  sent to both and `SameSite=Lax` still applies. The earlier `state_mismatch`
+  failure was **not** about splitting origins in general: `vercel.app` is on the
+  Public Suffix List, so `animus-web.vercel.app` and `animus-api.vercel.app` are
+  different *sites* and can never share cookies. The rule is **never split
+  across a PSL boundary**. `WEB_ORIGIN` is `https://tryanimus.app`;
+  `VITE_API_URL` and `BETTER_AUTH_URL` are `https://api.tryanimus.app`. OAuth
+  callbacks point at `https://api.tryanimus.app/api/auth/callback/{github,google}`
+  — GitHub allows one callback URL, so local dev OAuth needs a separate app.
+  `apps/web/vercel.json` keeps one rewrite, `/v/:token` → the API's share page;
+  the old `/api/:path*` proxy is gone, so the browser calls the API directly and
+  no proxy imposes a request duration cap. **CloudFront was refused** by AWS
+  account review, which is why there is no CDN and no S3 static hosting; the
+  subdomain makes both unnecessary. **ACM renewal depends on two DNS records**
+  that must never be deleted: the validation CNAME, and `0 issue "amazon.com"`
+  in the apex CAA set — Vercel publishes its own CAA records there, and without
+  Amazon in the list ACM cannot issue at all.
 - **Email (live): Resend on `mail.tryanimus.app`** — verified via the
   Resend↔Vercel integration (DKIM + SPF + return-path MX on `send.mail.…`,
   auto-written into Vercel DNS, plus a monitor-mode DMARC record);
@@ -158,7 +179,17 @@ Cross-package "does it compile" = `bun run typecheck`.
   any address. Inbound mail on the **root** domain is forwarded by **ImprovMX**
   (MX + its own SPF on the apex). The two SPF records sit on different
   hostnames and are evaluated independently — never merge them, and never put
-  two SPF TXT records on one host.
+  two SPF TXT records on one host. The sign-in email is a white content card
+  matted inside a thick band of the brand art. That art is a **static file on
+  the web app** (`apps/web/public/email/auth-bg.jpg`, addressed off
+  `WEB_ORIGIN`), not an attachment: no mail client will use a `cid:` attachment
+  as a CSS background. So the API's email depends on a **web** deploy — ship the
+  asset before the template that points at it, and bump the `?v=` when the art
+  changes, because Gmail's image proxy caches by URL forever. Outlook desktop
+  drops background images entirely, so the frame carries a solid `bgcolor` and
+  no text ever sits on the art. `bun run email:preview` (in `packages/auth`)
+  writes a self-contained HTML file with the art and logo inlined as data URIs;
+  `--send=<address>` posts the real one through Resend.
 - **Magic-link auth vs inbox scanners.** The verify endpoint consumes its
   single-use token on GET, and mail security scanners open every link in an
   arriving email — some executing JavaScript (proven in prod: an auto-redirect
@@ -166,7 +197,25 @@ Cross-package "does it compile" = `bun run typecheck`.
   email therefore links to `/auth/verify`, a page where only an **explicit
   button click** spends the token. If a scanner class that presses buttons
   ever appears, the endgame is Better Auth's `emailOTP` plugin (typed 6-digit
-  codes — nothing clickable), which is also the more familiar UX.
+  codes — nothing clickable), which is also the more familiar UX. The verify
+  page must send an **absolute** `callbackURL`: Better Auth resolves a relative
+  one against its own `baseURL`, which is now a different host from the web app,
+  so a relative path lands the user on the API's 404.
+- **Better Auth is held below 1.7 (`~1.6.22`).** 1.7 requires an
+  `account.issuer` column plus a unique index on `(issuer, accountId)` that the
+  Drizzle schema does not have, and every OAuth callback 500s without it. The
+  range is a tilde, not a caret, because `^1.6.19` re-resolves straight to 1.7.x.
+  `~1.6.22` is still past the pre-account-hijacking advisory
+  (GHSA-qq9h-g4jm-xgf3), which is not exploitable here anyway — it needs an
+  email/password provider, and there is none. Moving to 1.7 is a real migration:
+  a required column backfilled on live rows, and a new unique index.
+  `accountLinking` runs **without `trustedProviders`**, so a provider reporting
+  an unverified email cannot force a link. `advanced.ipAddress.ipAddressHeaders`
+  comes from `CLIENT_IP_HEADERS`; unset, Better Auth resolves no client IP behind
+  a proxy and silently falls back to **one rate-limit bucket shared by every
+  user**. Behind the ALB the true client IP is the *rightmost* `x-forwarded-for`
+  entry, which Better Auth only returns when `trustedProxies` is also set — so
+  setting the header alone does not fix it, and it is still unfixed.
 - **Narration requires a paid ElevenLabs tier.** The free tier is 10k
   chars/month (≈2–3 videos) and restricts synthesis from datacenter IPs (the
   Daytona sandbox). TTS metering charges users for narration on the platform
@@ -206,9 +255,20 @@ Cross-package "does it compile" = `bun run typecheck`.
   wired to the real URL by a `/v/:token` rewrite in `apps/web/vercel.json`
   (placed before the SPA fallback). Both layers reuse the same pure core
   builders and the shared `SHARE_META_DESCRIPTION`. Humans still boot the SPA
-  as normal; unknown tokens get the plain shell. Single origin also done:
-  web + API sit behind `tryanimus.app` (the `/api` rewrite), so external
-  viewers can play shared videos.
+  as normal; unknown tokens get the plain shell. **Every URL a crawler is
+  handed must be built from `apiOrigin`** (derived from `BETTER_AUTH_URL`),
+  never from `WEB_ORIGIN` — only `og:url` is a web URL, because only the page
+  is. The web dropped its `/api` proxy in the AWS move, so a web-origin asset
+  URL now falls through to the SPA catch-all and answers **200 text/html**:
+  crawlers asked for a PNG, got HTML, and nothing errored. That shipped, and a
+  route test had asserted the broken URL. Dev hides it — `vite.config.ts`
+  still proxies `/api`, so previews look right on localhost.
+  The card PNG is rendered with resvg's **async** API and memoized (LRU, keyed
+  on title+seed, with in-flight de-duplication so a crawler burst on one link
+  rasterizes once). The sync API blocked the event loop ~55ms per card, and
+  `GET /api/share/:token/og.png` is public, unauthenticated and has no CDN in
+  front of it — on a single ECS task that stalls every live SSE turn and
+  eventually the ALB health check.
 
 **Roadmap:** shell ✓ (settings backend; conversation persistence with generated
 titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` →
@@ -249,12 +309,17 @@ per-route document titles via `useDocumentTitle`) → cost control ✓ (free-cre
 metering + BYOK for LLM and ElevenLabs, per-component; balance-only enforcement
 with a `402 OUT_OF_CREDITS` gate + depletion dialog; header balance gauge; see the
 Cost-control decision above) → deployed to prod ✓ (tryanimus.app — container
-image API + static web on Vercel behind one origin, Neon Postgres, Resend
+image API + static web, Neon Postgres, Resend
 email, GitHub/Google OAuth + magic-link live; see the Hosting/Domain/Email
-decisions above) → **now:** first end-to-end prod video validation (blockers
+decisions above) → migrated the API to AWS ✓ (ECS Fargate behind an ALB at
+`api.tryanimus.app`, CloudFront refused so the subdomain replaces the
+single-origin design; all three sign-in paths verified in prod) → CI/CD ✓
+(deploys run from GitHub Actions on green CI via OIDC; see the Deploys
+decision above) → **now:** first end-to-end prod video validation (blockers
 found and fixed so far: Vercel shadowing `AWS_*`, Bedrock throttling →
-retries, wrong voice guidance; still required: a paid ElevenLabs tier, an AWS
-Bedrock quota increase) → playback polish → generalize the render/repair loop
+retries, wrong voice guidance, better-auth 1.7's `account.issuer` schema
+change; still required: a paid ElevenLabs tier, an AWS Bedrock quota
+increase) → playback polish → generalize the render/repair loop
 → later: paid quota tiers / billing, autonomous mode.
 (Parked, deliberately: surfacing
 stream errors in the studio UI (a stream that dies after the 200 is committed

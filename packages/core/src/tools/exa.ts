@@ -3,7 +3,12 @@ import { z } from "zod";
 /** webSearch — search the web through Exa for grounded source material. */
 export const WebSearchInputSchema = z
   .object({
-    query: z.string().min(1),
+    query: z
+      .string()
+      .min(1)
+      .describe(
+        "Natural-language search query. Search settings are fixed by animus."
+      ),
   })
   .strict();
 export type WebSearchInput = z.infer<typeof WebSearchInputSchema>;
@@ -11,7 +16,11 @@ export type WebSearchInput = z.infer<typeof WebSearchInputSchema>;
 /** webFetch — fetch readable content from known URLs through Exa. */
 export const WebFetchInputSchema = z
   .object({
-    urls: z.array(z.httpUrl()).min(1).max(5),
+    urls: z
+      .array(z.httpUrl())
+      .min(1)
+      .max(5)
+      .describe("Up to 5 http(s) URLs to read in full."),
   })
   .strict();
 export type WebFetchInput = z.infer<typeof WebFetchInputSchema>;

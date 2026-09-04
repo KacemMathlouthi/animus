@@ -5,7 +5,7 @@ const REPO_URL = "https://github.com/KacemMathlouthi/animus";
 
 export function PrivacyPage() {
   return (
-    <LegalLayout lastUpdated="August 22, 2026" title="Privacy Policy">
+    <LegalLayout lastUpdated="September 2, 2026" title="Privacy Policy">
       <p>
         This page explains, in plain terms, what data animus holds when you use
         it, who else it passes through, and how to get it deleted. The short
@@ -68,8 +68,13 @@ export function PrivacyPage() {
       </p>
       <ul>
         <li>
-          <strong>Vercel</strong> — hosting for the website and API, plus
+          <strong>Vercel</strong> — hosting for the website, plus
           privacy-friendly analytics and page-performance measurement.
+        </li>
+        <li>
+          <strong>Amazon Web Services</strong> — runs the API itself. Every
+          request you make passes through it, and its logs record request paths,
+          timings and IP addresses.
         </li>
         <li>
           <strong>Neon</strong> — the Postgres database holding your account,
@@ -80,9 +85,9 @@ export function PrivacyPage() {
           videos.
         </li>
         <li>
-          <strong>Amazon Bedrock</strong> — runs the Claude model that powers
-          the agent. Your prompts and conversation are sent to it to generate
-          replies.
+          <strong>Amazon Bedrock</strong> — the AWS service running the Claude
+          model that powers the agent. Your prompts and conversation are sent to
+          it to generate replies.
         </li>
         <li>
           <strong>Anthropic, OpenAI or Google</strong> — only if you bring your
@@ -108,6 +113,10 @@ export function PrivacyPage() {
         </li>
         <li>
           <strong>Resend</strong> — delivers magic-link sign-in emails.
+        </li>
+        <li>
+          <strong>ImprovMX</strong> — forwards mail sent to our published
+          addresses, so anything you email us passes through it.
         </li>
         <li>
           <strong>GitHub</strong> and <strong>Google</strong> — optional social

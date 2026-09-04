@@ -13,7 +13,7 @@ import { getServerEnv } from "@animus/core/env";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { signDownloadUrl, signMediaUrl } from "../lib/media.ts";
-import { renderShareCardPng } from "../lib/og.ts";
+import { shareCardPng } from "../lib/og.ts";
 import { getShareByToken } from "../services/shares.ts";
 import type { AppEnv } from "../types.ts";
 
@@ -44,7 +44,7 @@ shareRoute.get("/:token/og.png", async (c) => {
   if (!share) {
     throw new HTTPException(404, { message: "Share not found" });
   }
-  const png = renderShareCardPng({ title: share.title, seed: share.token });
+  const png = await shareCardPng({ title: share.title, seed: share.token });
   return new Response(new Uint8Array(png), {
     headers: {
       "Content-Type": "image/png",
@@ -91,7 +91,7 @@ async function fetchSpaShell(webOrigin: string): Promise<string> {
  * normal and unknown tokens get the plain shell. Prod counterpart of the dev
  * plugin in apps/web/plugins/share-meta.ts. */
 shareRoute.get("/:token/page", async (c) => {
-  const { webOrigin } = getServerEnv();
+  const { webOrigin, apiOrigin } = getServerEnv();
   const [share, shell] = await Promise.all([
     getShareByToken(c.req.param("token")),
     fetchSpaShell(webOrigin),
@@ -100,7 +100,10 @@ shareRoute.get("/:token/page", async (c) => {
   if (!share) {
     return c.html(shell);
   }
-  const base = `${webOrigin}/api/share/${share.token}`;
+  // The API's origin, never the web's: prod dropped the web's /api proxy, so a
+  // web-origin asset URL falls through to the SPA catch-all and answers 200
+  // text/html. Crawlers asking for a PNG got HTML, and nothing errored.
+  const base = `${apiOrigin}/api/share/${share.token}`;
   return c.html(
     injectShareMeta(
       shell,

@@ -3,8 +3,16 @@
  * persisted per step so a turn dying mid-flight does not revert the thread. */
 
 import { randomUUID } from "node:crypto";
-import { createManimAgent, ensureSandbox } from "@animus/agent";
-import { GENERATION_DEFAULTS, OUT_OF_CREDITS } from "@animus/core";
+import {
+  createManimAgent,
+  ensureSandbox,
+  isSandboxProvisioningError,
+} from "@animus/agent";
+import {
+  GENERATION_DEFAULTS,
+  OUT_OF_CREDITS,
+  SANDBOX_UNAVAILABLE,
+} from "@animus/core";
 import { getServerEnv } from "@animus/core/env";
 import {
   consumeStream,
@@ -152,6 +160,26 @@ chatRoute.post("/", async (c) => {
       conversationId,
       sandboxId: found.conversation.sandboxId,
       elevenLabsApiKey,
+    }).catch((error: unknown) => {
+      // Quota, rate limit or an unreachable host: not the user's fault and not
+      // a broken turn, so say so instead of a bare 500 the UI cannot read.
+      if (isSandboxProvisioningError(error)) {
+        logger.error(
+          { conversationId, error: describeError(error) },
+          "could not provision a sandbox"
+        );
+        throw new HTTPException(503, {
+          res: c.json(
+            {
+              code: SANDBOX_UNAVAILABLE,
+              message:
+                "The render environment is at capacity right now. Try again in a few minutes.",
+            },
+            503
+          ),
+        });
+      }
+      throw error;
     });
     if (sandbox.id !== found.conversation.sandboxId) {
       await setConversationSandboxId(conversationId, sandbox.id);
