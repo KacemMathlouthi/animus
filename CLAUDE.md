@@ -255,9 +255,20 @@ Cross-package "does it compile" = `bun run typecheck`.
   wired to the real URL by a `/v/:token` rewrite in `apps/web/vercel.json`
   (placed before the SPA fallback). Both layers reuse the same pure core
   builders and the shared `SHARE_META_DESCRIPTION`. Humans still boot the SPA
-  as normal; unknown tokens get the plain shell. Single origin also done:
-  web + API sit behind `tryanimus.app` (the `/api` rewrite), so external
-  viewers can play shared videos.
+  as normal; unknown tokens get the plain shell. **Every URL a crawler is
+  handed must be built from `apiOrigin`** (derived from `BETTER_AUTH_URL`),
+  never from `WEB_ORIGIN` — only `og:url` is a web URL, because only the page
+  is. The web dropped its `/api` proxy in the AWS move, so a web-origin asset
+  URL now falls through to the SPA catch-all and answers **200 text/html**:
+  crawlers asked for a PNG, got HTML, and nothing errored. That shipped, and a
+  route test had asserted the broken URL. Dev hides it — `vite.config.ts`
+  still proxies `/api`, so previews look right on localhost.
+  The card PNG is rendered with resvg's **async** API and memoized (LRU, keyed
+  on title+seed, with in-flight de-duplication so a crawler burst on one link
+  rasterizes once). The sync API blocked the event loop ~55ms per card, and
+  `GET /api/share/:token/og.png` is public, unauthenticated and has no CDN in
+  front of it — on a single ECS task that stalls every live SSE turn and
+  eventually the ALB health check.
 
 **Roadmap:** shell ✓ (settings backend; conversation persistence with generated
 titles; sidebar list/search/rename/delete) → streaming chat ✓ (`/api/chat` →
