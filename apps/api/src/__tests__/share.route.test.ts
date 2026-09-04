@@ -10,7 +10,10 @@ const { getShareByToken, signDownloadUrl, signMediaUrl } = vi.hoisted(() => ({
 vi.mock("../lib/media.ts", () => ({ signDownloadUrl, signMediaUrl }));
 vi.mock("../services/shares.ts", () => ({ getShareByToken }));
 vi.mock("@animus/core/env", () => ({
-  getServerEnv: () => ({ webOrigin: "https://web.test" }),
+  getServerEnv: () => ({
+    webOrigin: "https://web.test",
+    apiOrigin: "https://api.test",
+  }),
 }));
 
 const { shareRoute } = await import("../routes/share.ts");
@@ -181,9 +184,15 @@ describe("GET /share/:token/page", () => {
     expect(res.headers.get("content-type")).toContain("text/html");
     expect(res.headers.get("cache-control")).toContain("max-age");
     const html = await res.text();
-    // Meta is injected with absolute web-origin URLs and escaped content.
+    // Assets resolve against the API; only the human-facing page is the web.
     expect(html).toContain(
-      '<meta property="og:image" content="https://web.test/api/share/tok123/og.png"/>'
+      '<meta property="og:image" content="https://api.test/api/share/tok123/og.png"/>'
+    );
+    expect(html).toContain(
+      '<meta property="og:video" content="https://api.test/api/share/tok123/video.mp4"/>'
+    );
+    expect(html).toContain(
+      '<meta name="twitter:player" content="https://api.test/api/share/tok123/embed"/>'
     );
     expect(html).toContain(
       '<meta property="og:url" content="https://web.test/v/tok123"/>'
@@ -216,5 +225,21 @@ describe("GET /share/:token/page", () => {
     await app().request("/share/nope/page");
 
     expect(fetchShell).not.toHaveBeenCalled();
+  });
+
+  it("never points a crawler asset at the web origin", async () => {
+    // Prod dropped the web's /api proxy, so a web-origin asset URL falls
+    // through to the SPA catch-all and answers 200 text/html. A crawler asking
+    // for a PNG got HTML, and nothing errored.
+    fetchShell.mockResolvedValue(new Response(SHELL, { status: 200 }));
+    getShareByToken.mockResolvedValue({
+      token: "tok123",
+      videoKey: "videos/conv1/Scene-ab12cd34.mp4",
+      title: "Fourier",
+    });
+
+    const html = await (await app().request("/share/tok123/page")).text();
+
+    expect(html).not.toContain("https://web.test/api/");
   });
 });

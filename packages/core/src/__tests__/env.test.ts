@@ -21,6 +21,24 @@ describe("parseServerEnv", () => {
     expect(env.resendFrom).toBe("animus <onboarding@resend.dev>");
   });
 
+  it("derives apiOrigin from BETTER_AUTH_URL", () => {
+    // Public URLs handed to crawlers must resolve on the API, which in prod is
+    // a different host from the web app.
+    expect(
+      parseServerEnv({ ...MINIMAL, BETTER_AUTH_URL: "https://api.example.com" })
+        .apiOrigin
+    ).toBe("https://api.example.com");
+  });
+
+  it("strips any path from BETTER_AUTH_URL when deriving apiOrigin", () => {
+    expect(
+      parseServerEnv({
+        ...MINIMAL,
+        BETTER_AUTH_URL: "https://api.example.com/base/",
+      }).apiOrigin
+    ).toBe("https://api.example.com");
+  });
+
   it("throws when DATABASE_URL is missing", () => {
     expect(() =>
       parseServerEnv({ BETTER_AUTH_SECRET: "a-test-secret" })

@@ -91,7 +91,7 @@ async function fetchSpaShell(webOrigin: string): Promise<string> {
  * normal and unknown tokens get the plain shell. Prod counterpart of the dev
  * plugin in apps/web/plugins/share-meta.ts. */
 shareRoute.get("/:token/page", async (c) => {
-  const { webOrigin } = getServerEnv();
+  const { webOrigin, apiOrigin } = getServerEnv();
   const [share, shell] = await Promise.all([
     getShareByToken(c.req.param("token")),
     fetchSpaShell(webOrigin),
@@ -100,7 +100,10 @@ shareRoute.get("/:token/page", async (c) => {
   if (!share) {
     return c.html(shell);
   }
-  const base = `${webOrigin}/api/share/${share.token}`;
+  // The API's origin, never the web's: prod dropped the web's /api proxy, so a
+  // web-origin asset URL falls through to the SPA catch-all and answers 200
+  // text/html. Crawlers asking for a PNG got HTML, and nothing errored.
+  const base = `${apiOrigin}/api/share/${share.token}`;
   return c.html(
     injectShareMeta(
       shell,
