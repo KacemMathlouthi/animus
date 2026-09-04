@@ -197,7 +197,7 @@ export function createManimTools(deps: {
     }),
     readFile: tool({
       description:
-        "Read a file from the Manim project to inspect what you previously wrote.",
+        "Read a file: a project file you wrote, or a reference from the bundled skill under /home/daytona/skill.",
       inputSchema: ReadFileInputSchema,
       execute: async ({ path }): Promise<ReadFileOutput> => {
         const buffer = await sandbox.fs.downloadFile(resolvePath(path));
