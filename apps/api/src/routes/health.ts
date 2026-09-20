@@ -1,15 +1,28 @@
-/** Liveness + readiness. 200 when the API, its database, and the bundled
- * share-card assets are all present, 503 when any check fails — a build
- * shipped without apps/api/assets must be visible here, not discovered on the
- * first OG request (assets load lazily precisely so boot survives). */
+/** Liveness and readiness, split: the load balancer polls `/health`, which must
+ * touch nothing external — a probe querying Postgres defeated Neon's autosuspend
+ * and turned the outage into a restart loop. `/ready` checks deps, nothing acts on it. */
 
 import { sql } from "@animus/db";
 import { Hono } from "hono";
 import { shareCardAssetsPresent } from "../lib/og.ts";
 
 export const healthRoute = new Hono();
+export const readyRoute = new Hono();
 
-healthRoute.get("/", async (c) => {
+healthRoute.get("/", (c) => {
+  const assets: "up" | "down" = shareCardAssetsPresent() ? "up" : "down";
+
+  return c.json(
+    {
+      status: assets === "up" ? "ok" : "degraded",
+      assets,
+      uptime: process.uptime(),
+    },
+    assets === "up" ? 200 : 503
+  );
+});
+
+readyRoute.get("/", async (c) => {
   let database: "up" | "down" = "up";
   try {
     await sql`select 1`;
@@ -18,15 +31,15 @@ healthRoute.get("/", async (c) => {
   }
 
   const assets: "up" | "down" = shareCardAssetsPresent() ? "up" : "down";
-  const healthy = database === "up" && assets === "up";
+  const ready = database === "up" && assets === "up";
 
   return c.json(
     {
-      status: healthy ? "ok" : "degraded",
+      status: ready ? "ok" : "degraded",
       database,
       assets,
       uptime: process.uptime(),
     },
-    healthy ? 200 : 503
+    ready ? 200 : 503
   );
 });

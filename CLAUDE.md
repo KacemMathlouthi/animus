@@ -214,8 +214,25 @@ Cross-package "does it compile" = `bun run typecheck`.
   comes from `CLIENT_IP_HEADERS`; unset, Better Auth resolves no client IP behind
   a proxy and silently falls back to **one rate-limit bucket shared by every
   user**. Behind the ALB the true client IP is the *rightmost* `x-forwarded-for`
-  entry, which Better Auth only returns when `trustedProxies` is also set — so
-  setting the header alone does not fix it, and it is still unfixed.
+  entry, which Better Auth only returns when `trustedProxies` is also set — the
+  header alone does not fix it. Both are now wired: `trustedProxies` comes from
+  `TRUSTED_PROXIES` (comma-separated IPs/CIDRs), which **prod must set to the VPC
+  CIDR `172.31.0.0/16`** as a plain `environment` entry, not an SSM `secrets` one
+  — it is not a secret and every `secrets` entry costs a KMS decrypt per boot.
+  Unset, the shared-bucket fallback returns, and Better Auth logs it: grep for
+  "could not determine a client IP" to tell whether it is live.
+- **Health checks must never touch a scale-to-zero database.** `/health` is
+  liveness only (process + bundled share-card assets); `/ready` carries the
+  Postgres check and **nothing restarts on its verdict**. The ALB polls `/health`
+  from three nodes every 30s — one hit per ~10s — so a `select 1` there made
+  Neon's 5-minute autosuspend unreachable and pinned compute awake 24/7. Neon
+  Free is **100 CU-hours/month at 0.25 CU = 400 hours**, i.e. the probe alone
+  exhausts the month around **day 17 with zero users**; it did, on 2026-09-18.
+  Then it compounded: quota exhausted → `/health` 503 → ECS replaced the task
+  every ~4 min → 27 SSM SecureStrings decrypted per boot → ~700 KMS calls/day,
+  which blew the KMS free tier and was the only alert that fired. Two rules
+  follow: a readiness probe must not gate liveness for a dependency a restart
+  cannot fix, and any always-on container defeats scale-to-zero billing.
 - **Narration requires a paid ElevenLabs tier.** The free tier is 10k
   chars/month (≈2–3 videos) and restricts synthesis from datacenter IPs (the
   Daytona sandbox). TTS metering charges users for narration on the platform

@@ -74,6 +74,24 @@ describe("parseServerEnv", () => {
     expect(env.clientIpHeaders).toEqual(["x-forwarded-for"]);
   });
 
+  it("leaves the trusted proxy list empty by default", () => {
+    expect(parseServerEnv(MINIMAL).trustedProxies).toEqual([]);
+  });
+
+  it("splits and trims TRUSTED_PROXIES, preserving CIDR case", () => {
+    const env = parseServerEnv({
+      ...MINIMAL,
+      TRUSTED_PROXIES: " 172.31.0.0/16 , 10.0.0.1 ",
+    });
+    expect(env.trustedProxies).toEqual(["172.31.0.0/16", "10.0.0.1"]);
+  });
+
+  it("treats a blank TRUSTED_PROXIES as no proxies rather than one empty entry", () => {
+    // A list holding "" would be rejected by Better Auth as an invalid CIDR.
+    const env = parseServerEnv({ ...MINIMAL, TRUSTED_PROXIES: " , ," });
+    expect(env.trustedProxies).toEqual([]);
+  });
+
   it("leaves the cookie domain unset by default", () => {
     // Host-only cookies are correct when the web and API share a host.
     expect(parseServerEnv(MINIMAL).cookieDomain).toBeUndefined();
