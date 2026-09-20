@@ -44,9 +44,14 @@ export const auth = betterAuth({
   },
 
   advanced: {
-    // Without this the rate limiter resolves no IP and falls back to a single
-    // bucket shared by every user, so one client can lock out sign-in for all.
-    ipAddress: { ipAddressHeaders: env.clientIpHeaders },
+    // Both are needed: an x-forwarded-for with more than one entry is discarded
+    // unless the proxies are known, leaving one bucket shared by every user.
+    ipAddress: {
+      ipAddressHeaders: env.clientIpHeaders,
+      ...(env.trustedProxies.length > 0
+        ? { trustedProxies: env.trustedProxies }
+        : {}),
+    },
     // The web and API sit on sibling hosts in prod, so the session cookie has
     // to be scoped to their shared parent. Same-site, so SameSite=Lax still
     // sends it; this is not the cross-site case.

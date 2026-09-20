@@ -22,6 +22,9 @@ const ServerEnvBaseSchema = z.object({
    * name what the edge in front of the API actually writes: a header that never
    * resolves leaves auth rate limiting on one bucket shared by every user. */
   CLIENT_IP_HEADERS: z.string().default(CLIENT_IP_HEADERS_DEFAULT),
+  /** Comma-separated IPs/CIDRs of the proxies in front of the API. Unset, Better
+   * Auth trusts an x-forwarded-for only when it carries exactly one entry. */
+  TRUSTED_PROXIES: z.string().default(""),
   /** Set to a parent domain (".example.com") to share the session cookie with
    * every subdomain, which is what lets the web and API sit on sibling hosts.
    * Unset keeps host-only cookies, which is correct for local dev. */
@@ -100,6 +103,14 @@ function parseHeaderList(value: string): string[] {
     .map((name) => name.trim().toLowerCase())
     .filter(Boolean);
   return names.length > 0 ? names : [CLIENT_IP_HEADERS_DEFAULT];
+}
+
+/** Empty means no proxy configured; a list holding "" would be rejected. */
+function parseProxyList(value: string): string[] {
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 /** Vars kept optional in dev so a contributor can run without every account,
@@ -218,6 +229,8 @@ export interface ServerEnv {
   r2SecretAccessKey: string;
   resendApiKey?: string;
   resendFrom: string;
+  /** IPs/CIDRs of trusted proxies; empty means none is configured. */
+  trustedProxies: string[];
   webOrigin: string;
 }
 
@@ -242,6 +255,7 @@ export function parseServerEnv(
     port: e.PORT,
     webOrigin: e.WEB_ORIGIN,
     clientIpHeaders: parseHeaderList(e.CLIENT_IP_HEADERS),
+    trustedProxies: parseProxyList(e.TRUSTED_PROXIES),
     cookieDomain: e.COOKIE_DOMAIN,
     databaseUrl: e.DATABASE_URL,
     encryptionKey: e.ENCRYPTION_KEY,
