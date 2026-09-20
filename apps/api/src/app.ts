@@ -11,7 +11,7 @@ import { initTelemetry } from "./observability/telemetry.ts";
 import { chatRoute } from "./routes/chat.ts";
 import { conversationsRoute } from "./routes/conversations.ts";
 import { creditsRoute } from "./routes/credits.ts";
-import { healthRoute } from "./routes/health.ts";
+import { healthRoute, readyRoute } from "./routes/health.ts";
 import { mediaRoute } from "./routes/media.ts";
 import { settingsRoute } from "./routes/settings.ts";
 import { shareRoute } from "./routes/share.ts";
@@ -49,6 +49,8 @@ app.notFound(onNotFound);
 app.get("/", (c) => c.json({ name: "animus-api", status: "ok" }));
 
 app.route("/health", healthRoute);
+// Dependency check, deliberately not what the load balancer polls (see health.ts).
+app.route("/ready", readyRoute);
 app.route("/api/settings", settingsRoute);
 app.route("/api/conversations", conversationsRoute);
 app.route("/api/credits", creditsRoute);

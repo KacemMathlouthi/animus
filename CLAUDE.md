@@ -216,6 +216,18 @@ Cross-package "does it compile" = `bun run typecheck`.
   user**. Behind the ALB the true client IP is the *rightmost* `x-forwarded-for`
   entry, which Better Auth only returns when `trustedProxies` is also set — so
   setting the header alone does not fix it, and it is still unfixed.
+- **Health checks must never touch a scale-to-zero database.** `/health` is
+  liveness only (process + bundled share-card assets); `/ready` carries the
+  Postgres check and **nothing restarts on its verdict**. The ALB polls `/health`
+  from three nodes every 30s — one hit per ~10s — so a `select 1` there made
+  Neon's 5-minute autosuspend unreachable and pinned compute awake 24/7. Neon
+  Free is **100 CU-hours/month at 0.25 CU = 400 hours**, i.e. the probe alone
+  exhausts the month around **day 17 with zero users**; it did, on 2026-09-18.
+  Then it compounded: quota exhausted → `/health` 503 → ECS replaced the task
+  every ~4 min → 27 SSM SecureStrings decrypted per boot → ~700 KMS calls/day,
+  which blew the KMS free tier and was the only alert that fired. Two rules
+  follow: a readiness probe must not gate liveness for a dependency a restart
+  cannot fix, and any always-on container defeats scale-to-zero billing.
 - **Narration requires a paid ElevenLabs tier.** The free tier is 10k
   chars/month (≈2–3 videos) and restricts synthesis from datacenter IPs (the
   Daytona sandbox). TTS metering charges users for narration on the platform
